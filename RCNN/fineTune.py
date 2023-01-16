@@ -1,7 +1,7 @@
 from RCNN.utils.data.batch_sampler import BatchSampler
 from RCNN.utils.data.finetune_dataset import FineTuneDataset
 from RCNN.utils.util import check_dir
-from RCNN.models.models import AlexNet, alexnet
+from RCNN.models.models import VGG16, AlexNet, alexnet
 from RCNN.utils.globalParams import Global
 import os
 import copy
@@ -134,11 +134,8 @@ class FineTune:
 
                         if phase == "train":
                             optimizer.zero_grad()
-                            # l1_loss = self._get_l1_loss(model)
-                            # loss += l1_loss
                             loss.backward()
                             optimizer.step()
-                            lr_scheduler.step()
 
                         step_loss = loss.item()
                         step_acc = torch.sum(
@@ -157,15 +154,11 @@ class FineTune:
                                 self.tbWriter.add_scalar(f"a_train/Step Train Acc", round(
                                     step_acc.item(), 3), batch_counter_train)
 
-                            if batch_counter_train % 100 == 0:
-                                self.tbWriter.add_scalar(
-                                    f"lr", current_lr, batch_counter_train)
-
                             batch_counter_train += 1
 
                         elif phase == "val":
 
-                            if batch_counter_val % 1000 == 0:
+                            if batch_counter_val % 500 == 0:
 
                                 self.tbWriter.add_scalar(f"b_val/Step Val Loss", round(
                                     step_loss, 3), batch_counter_val)
@@ -239,12 +232,12 @@ class FineTune:
 
 def performFineTuning(epochs=25, debug=False):
 
-    model = alexnet(pretrained=True)
+    model = alexnet(pretrained=False)
 
     transformation_train = A.Compose(
         [
-            A.HorizontalFlip(p=0.7),
-            A.FancyPCA(p=0.7),
+            A.HorizontalFlip(p=0.5),
+            A.FancyPCA(p=0.5),
             A.Resize(
                 height=Global.FINETUNE_IMAGE_SIZE[0], width=Global.FINETUNE_IMAGE_SIZE[1], always_apply=True, interpolation=2, p=1),
             A.Normalize(always_apply=True, p=1),
@@ -269,18 +262,10 @@ def performFineTuning(epochs=25, debug=False):
     fineTune.load_data(transformation=transformation)
     fineTune.set_device()
 
-    num_iterations = len(fineTune.data_loaders["train"])
-
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(model.parameters(), lr=1e-4)
-    lr_scheduler = optim.lr_scheduler.CyclicLR(optimizer,
-                                               base_lr=1e-4,
-                                               max_lr=(1e-3 + 1e-4)/2,
-                                               step_size_up=num_iterations,
-                                               mode="triangular2"
-                                               )
+    optimizer = optim.Adam(params=model.parameters(), lr=1e-3, weight_decay=1e-5)
 
-    fineTune.train(model, criterion, optimizer, lr_scheduler, epochs)
+    fineTune.train(model, criterion, optimizer, None, epochs)
 
 
 def loadBestFineTuneModel():
