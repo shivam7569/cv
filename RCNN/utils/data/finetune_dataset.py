@@ -6,7 +6,6 @@ import cv2
 from tqdm import tqdm
 from torch.utils.data import Dataset
 from tqdm import tqdm
-import torchvision.transforms as transforms
 from RCNN.utils.globalParams import Global
 import warnings
 warnings.filterwarnings("error")
@@ -25,7 +24,7 @@ class FineTuneDataset(Dataset):
             "_")[0] + ".jpg" for i in os.listdir(os.path.join(root_dir, "Annotations"))]))
 
         if debug:
-            samples = random.sample(samples, 500)
+            samples = random.sample(samples, 300)
 
         positive_annot = [os.path.join(
             root_dir, "Annotations", i[:-4] + "_1" + ".json") for i in samples]

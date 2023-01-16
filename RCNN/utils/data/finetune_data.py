@@ -1,12 +1,11 @@
 import json
 import os
 import random
-import shutil
 import cv2
 import time
 import numpy as np
 from RCNN.utils.globalParams import Global
-from RCNN.utils.util import check_dir, parse_xml
+from RCNN.utils.util import check_dir
 from RCNN.utils.computations import compute_IOUs, selectiveSearch
 
 

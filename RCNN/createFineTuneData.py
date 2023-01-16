@@ -1,7 +1,5 @@
-import os
 import multiprocessing
 from multiprocessing import Pool
-import sys
 from pycocotools.coco import COCO
 from RCNN.utils.globalParams import Global
 from RCNN.utils.data.finetune_data import process_data

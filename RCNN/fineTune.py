@@ -1,7 +1,7 @@
 from RCNN.utils.data.batch_sampler import BatchSampler
 from RCNN.utils.data.finetune_dataset import FineTuneDataset
 from RCNN.utils.util import check_dir
-from RCNN.models.models import VGG16, AlexNet, alexnet
+from RCNN.models.models import AlexNet, alexnet
 from RCNN.utils.globalParams import Global
 import os
 import copy
@@ -135,7 +135,7 @@ class FineTune:
 
                         if phase == "train":
 
-                            if batch_counter_train % 10000 == 0:
+                            if batch_counter_train % 1000 == 0:
 
                                 self.tbWriter.add_scalar(f"a_train/Step Train Loss", round(
                                     step_loss, 3), batch_counter_train)
@@ -146,7 +146,7 @@ class FineTune:
 
                         elif phase == "val":
 
-                            if batch_counter_val % 500 == 0:
+                            if batch_counter_val % 250 == 0:
 
                                 self.tbWriter.add_scalar(f"b_val/Step Val Loss", round(
                                     step_loss, 3), batch_counter_val)
@@ -219,7 +219,7 @@ class FineTune:
 
 def performFineTuning(epochs=25, debug=False):
 
-    model = alexnet(pretrained=False)
+    model = alexnet(pretrained=True)
 
     transformation_train = A.Compose(
         [
@@ -250,7 +250,11 @@ def performFineTuning(epochs=25, debug=False):
     fineTune.set_device()
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(params=model.parameters(), lr=1e-3, weight_decay=1e-5)
+    optimizer = optim.SGD([
+        {"params": model.features.parameters(), "lr": 5.5e-5},
+        {"params": model.classifier.parameters(), "lr": 1e-3}
+    ], lr=1e-4, momentum=0.9)
+    # optimizer = optim.Adam(params=model.parameters(), lr=1e-3, weight_decay=1e-5)
 
     fineTune.train(model, criterion, optimizer, epochs)
 
