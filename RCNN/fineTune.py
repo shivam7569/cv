@@ -83,18 +83,8 @@ class FineTune:
         optimizer.load_state_dict(checkpoint["optimizer"])
 
         return model, optimizer, checkpoint["epoch"]
-
-    def _get_lr(self, optimizer):
-        for param_group in optimizer.param_groups:
-            return param_group['lr']
-
-    def _get_l1_loss(self, model):
-        params = torch.cat([x.view(-1) for x in model.parameters()])
-        l1_regularization = 1e-3 * torch.norm(params, 1)
-
-        return l1_regularization
-
-    def train(self, model, criterion, optimizer, lr_scheduler, epochs):
+    
+    def train(self, model, criterion, optimizer, epochs):
 
         best_model_weights = copy.deepcopy(model.state_dict())
         best_acc = 0.0
@@ -143,8 +133,6 @@ class FineTune:
                         running_loss += step_loss
                         running_corrects += step_acc
 
-                        current_lr = self._get_lr(optimizer)
-
                         if phase == "train":
 
                             if batch_counter_train % 10000 == 0:
@@ -167,8 +155,7 @@ class FineTune:
 
                             batch_counter_val += 1
 
-                        tepoch.set_postfix(lr=current_lr, loss=round(
-                            step_loss, 3), accuracy=round(step_acc.item(), 3))
+                        tepoch.set_postfix(loss=round(step_loss, 3), accuracy=round(step_acc.item(), 3))
 
                         sleep(0.1)
 
@@ -265,7 +252,7 @@ def performFineTuning(epochs=25, debug=False):
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(params=model.parameters(), lr=1e-3, weight_decay=1e-5)
 
-    fineTune.train(model, criterion, optimizer, None, epochs)
+    fineTune.train(model, criterion, optimizer, epochs)
 
 
 def loadBestFineTuneModel():
