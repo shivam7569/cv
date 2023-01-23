@@ -1,91 +1,104 @@
-from RCNN.utils.data.batch_sampler import BatchSampler
-from RCNN.utils.data.finetune_dataset import FineTuneDataset
-from RCNN.utils.util import check_dir
-from RCNN.models.models import VGG16, AlexNet, alexnet
-from RCNN.utils.globalParams import Global
 import os
+import random
 from time import sleep
 import torch
-import torch.nn as nn
+from torch.utils.data import DataLoader
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
-import torch.optim as optim
-from torch.utils.data import DataLoader
-from tensorboardX import SummaryWriter
 from tqdm import tqdm
+import torch.optim as optim
+from RCNN.models.models import svm
+from RCNN.utils.data.batch_sampler import BatchSampler
+from RCNN.utils.data.classifier_dataset import ClassifierDataset
+from RCNN.utils.data.hard_negative_mining import HardNegativeMiningDataset
+from RCNN.utils.globalParams import Global
+from RCNN.utils.util import check_dir
+
+from tensorboardX import SummaryWriter
+
 import warnings
-warnings.filterwarnings("ignore")
+warnings.simplefilter("ignore", UserWarning)
 
+class SVM:
 
-class FineTune:
-
-    def __init__(self, debug=False, model_name="alexnet"):
-
+    def __init__(self, debug=False):
         self.debug = debug
-        self.model_name = model_name
-        check_dir(Global.FINETUNE_TENSORBOARD_LOG_DIR)
-        check_dir(Global.FINETUNE_TENSORBOARD_LOG_DIR + model_name + "/")
-        self.tbWriter = SummaryWriter(Global.FINETUNE_TENSORBOARD_LOG_DIR + model_name + "/")
-        check_dir(Global.FINETUNE_TENSORBOARD_LOG_DIR + model_name + "/" + "train/")
+        check_dir(Global.SVM_TENSORBOARD_LOG_DIR)
+        self.tbWriter = SummaryWriter(Global.SVM_TENSORBOARD_LOG_DIR)
+        check_dir(Global.SVM_TENSORBOARD_LOG_DIR + "/train/")
         self.trainTbWriter = SummaryWriter(
-            Global.FINETUNE_TENSORBOARD_LOG_DIR + model_name + "/" + "train/")
-        check_dir(Global.FINETUNE_TENSORBOARD_LOG_DIR + model_name + "/" + "val/")
+            Global.SVM_TENSORBOARD_LOG_DIR + "/train/")
+        check_dir(Global.SVM_TENSORBOARD_LOG_DIR + "/val/")
         self.valTbWriter = SummaryWriter(
-            Global.FINETUNE_TENSORBOARD_LOG_DIR + model_name + "/" + "val/")
-
+            Global.SVM_TENSORBOARD_LOG_DIR + "/val/")
+        
     def load_data(self, transformation):
-        num_workers = 33 if self.model_name == "alexnet" else 4
 
         data_loaders = {}
         data_sizes = {}
+        remain_negative_list = []
 
         for phase in ["train", "val"]:
-            data_dir = os.path.join(Global.FINETUNE_DATA_DIR, phase)
-            dataset = FineTuneDataset(
-                data_dir, transformation[phase], phase, self.debug)
+            data_dir = os.path.join(Global.CLASSIFIER_DATA_DIR, phase)
+            dataset = ClassifierDataset(data_dir, transformation[phase], phase, self.debug)
 
-            print(
-                f"\nNumber of positive and negative samples in {phase} are {dataset.get_positive_num()} and {dataset.get_negative_num()} respectively")
+            if phase == "train":
+
+                positive_list = dataset.get_positives()
+                negative_list = dataset.get_negatives()
+
+                init_negative_idxs = random.sample(range(len(negative_list)), len(positive_list))
+
+                init_negative_list = [
+                        negative_list[idx] 
+                        for idx in range(len(negative_list)) 
+                        if idx in init_negative_idxs
+                    ]
+                remain_negative_list = [
+                        negative_list[idx] 
+                        for idx in range(len(negative_list)) 
+                        if idx not in init_negative_idxs
+                    ]
+                
+                dataset.set_negative_list(init_negative_list)
+                data_loaders["remain"] = remain_negative_list
 
             data_sampler = BatchSampler(
                 dataset.get_positive_num(),
                 dataset.get_negative_num(),
-                batch_positive=Global.FINETUNE_POSITIVE_SAMPLES,
-                batch_negative=Global.FINETUNE_NEGATIVE_SAMPLES,
+                batch_positive=Global.SVM_POSITIVE_SAMPLES,
+                batch_negative=Global.SVM_NEGATIVE_SAMPLES,
                 shuffle=True
             )
             data_loader = DataLoader(
                 dataset=dataset,
-                batch_size=Global.FINETUNE_BATCH_SIZE,
+                batch_size=Global.SVM_BATCH_SIZE,
                 sampler=data_sampler,
-                num_workers=num_workers,
+                num_workers=2,
                 drop_last=True
             )
 
             data_loaders[phase] = data_loader
-            data_sizes[phase] = data_sampler.__len__()
+            data_sizes[phase] = len(data_sampler)
 
         self.data_loaders = data_loaders
         self.data_sizes = data_sizes
+    
+    def _hinge_loss(self, outputs, labels):
 
+        batch_size = len(labels)
+        corrects = outputs[range(batch_size), labels].unsqueeze(0).T
+
+        margin = 1.0
+        margins = outputs - corrects + margin
+
+        loss = torch.sum(torch.max(margins, 1)[0]) / batch_size
+
+        return loss
+    
     def set_device(self):
         self.device = Global.TORCH_DEVICE
 
-    def load_model(self, model, optimizer, path):
-        checkpoint = torch.load(path)
-        model = model.load_state_dict(checkpoint['state_dict'])
-        optimizer = optimizer.load_state_dict(checkpoint["state_dict"])
-        epoch = checkpoint["epoch"]
-
-        return model, optimizer, epoch
-
-    def resume_training(self, model, optimizer, path):
-        checkpoint = torch.load(path)
-        model.load_state_dict(checkpoint["state_dict"])
-        optimizer.load_state_dict(checkpoint["optimizer"])
-
-        return model, optimizer, checkpoint["epoch"]
-    
     def train(self, model, criterion, optimizer, epochs):
 
         best_acc = 0.0
@@ -113,12 +126,13 @@ class FineTune:
                 dtLoaderLen = len(self.data_loaders[phase])
 
                 with tqdm(self.data_loaders[phase], unit="batch", total=dtLoaderLen) as tepoch:
-                    for imgs, labels in tepoch:
+                    for imgs, labels, _ in tepoch:
 
                         tepoch.set_description(f"Epoch: {epoch+1}/{phase}")
 
                         imgs = imgs.to(self.device)
                         labels = labels.to(self.device).to(torch.int64)
+
                         outputs = model(imgs)
                         _, preds = torch.max(outputs, 1)
                         loss = criterion(outputs, labels)
@@ -187,9 +201,8 @@ class FineTune:
                     }
 
                     checkpoint_name = f"epoch_{epoch+1}_val_acc_{round(best_acc, 4)}.pt"
-                    check_dir(Global.FINETUNE_CHECKPOINT_DIR)
-                    check_dir(Global.FINETUNE_CHECKPOINT_DIR + self.model_name + "/")
-                    torch.save(checkpoint, Global.FINETUNE_CHECKPOINT_DIR + self.model_name + "/" +
+                    check_dir(Global.CLASSIFIER_CHECKPOINT_DIR)
+                    torch.save(checkpoint, Global.CLASSIFIER_CHECKPOINT_DIR +
                                checkpoint_name)
 
             with torch.no_grad():
@@ -209,16 +222,76 @@ class FineTune:
 
             epoch_counter += 1
 
-def performFineTuning(epochs=25, model_name="alexnet", debug=False):
+            train_dataset = self.data_loaders["train"].dataset
+            remain_negative_list = self.data_loaders["remain"]
+            jpeg_images = train_dataset.get_images()
+            transform = train_dataset.get_transform()
 
-    model = alexnet(pretrained=True) if model_name == "alexnet" else VGG16(pretrained=True)
+            with torch.set_grad_enabled(mode=False):
 
+                print("\nHard Negative Mining")
+
+                remain_dataset = HardNegativeMiningDataset(remain_negative_list, jpeg_images, transform, "train")
+                remain_data_loader = DataLoader(
+                    remain_dataset,
+                    batch_size=Global.SVM_BATCH_SIZE,
+                    num_workers=2,
+                    drop_last=True
+                )
+
+                negative_list = train_dataset.get_negatives()
+                add_negative_list = self.data_loaders.get("add_negative", [])
+
+                running_corrs = 0
+
+                dtLoaderLen = len(remain_data_loader)
+                with tqdm(remain_data_loader, unit="batch", total=dtLoaderLen) as tepoch:
+                    for imgs, labels, cached_dicts in tepoch:
+
+                        tepoch.set_description(f"mining")
+
+                        imgs = imgs.to(self.device)
+                        labels = labels.to(self.device).to(torch.int64)
+
+                        optimizer.zero_grad()
+                        outputs = model(imgs)
+                        _, preds = torch.max(outputs, 1)
+
+                        running_corrs += torch.sum(preds == labels.data)
+
+                        hard_negative_list, _ = remain_dataset.get_hard_negatives(preds.cpu().numpy(), cached_dicts)
+                        remain_dataset.add_hard_negatives(hard_negative_list, negative_list, add_negative_list)
+
+                    remain_acc = running_corrs.double() / len(remain_negative_list)
+                    print('Remain Negative Size: {}, acc: {:.3f}'.format(len(remain_negative_list), remain_acc))
+
+                    train_dataset.set_negative_list(negative_list)
+
+                    new_sampler = BatchSampler(
+                        train_dataset.get_positive_num(),
+                        train_dataset.get_negative_num(),
+                        Global.SVM_POSITIVE_SAMPLES, Global.SVM_NEGATIVE_SAMPLES,
+                        shuffle=True
+                    )
+
+                    self.data_loaders["train"] = DataLoader(
+                        train_dataset, batch_size=Global.SVM_BATCH_SIZE,
+                        sampler=new_sampler, num_workers=2, drop_last=True
+                    )
+                    self.data_loaders['add_negative'] = add_negative_list
+                    self.data_sizes['train'] = len(new_sampler)
+
+
+
+def trainSVM(feature_model_path, epochs=25, debug=False):
+
+    print()
+    model = svm(feature_model_path, model_name="vgg16")
+    
     transformation_train = A.Compose(
         [
-            A.HorizontalFlip(p=0.6),
-            A.FancyPCA(p=0.6),
-            A.GaussNoise(p=0.5),
-            A.ISONoise(p=0.5),
+            A.HorizontalFlip(p=0.5),
+            A.FancyPCA(p=0.5),
             A.Resize(
                 height=Global.FINETUNE_IMAGE_SIZE[0], width=Global.FINETUNE_IMAGE_SIZE[1], always_apply=True, interpolation=2, p=1),
             A.Normalize(always_apply=True, p=1),
@@ -239,22 +312,14 @@ def performFineTuning(epochs=25, model_name="alexnet", debug=False):
     transformation["train"] = transformation_train
     transformation["val"] = transformation_val
 
-    fineTune = FineTune(debug=debug, model_name=model_name)
-    fineTune.load_data(transformation=transformation)
-    fineTune.set_device()
+    transformation ["train"] = None
+    transformation ["val"] = None
 
-    criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD([
-        {"params": model.features.parameters(), "lr": 1e-6},
-        {"params": model.classifier.parameters(), "lr": 1e-4}
-    ], lr=1e-4, momentum=0.9, weight_decay=1e-5)
+    classifier = SVM(debug=debug)
+    classifier.load_data(transformation=transformation)
+    classifier.set_device()
 
-    fineTune.train(model, criterion, optimizer, epochs)
+    criterion = classifier._hinge_loss
+    optimizer = optim.SGD(model.parameters(), lr=1e-4, momentum=0.9)
 
-
-def loadBestFineTuneModel():
-    fineTune = FineTune(debug=False)
-    alexnet = AlexNet(pretrained=False)
-    fineTune.load_model(alexnet, Global.BEST_FINETUNE_MODEL)
-
-    return alexnet
+    classifier.train(model, criterion, optimizer, epochs)

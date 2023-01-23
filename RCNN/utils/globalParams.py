@@ -10,9 +10,10 @@ class Global:
     FINETUNE_DATA_DIR = "./RCNN/data/finetune/"
     CLASSIFIER_DATA_DIR = "./RCNN/data/classifier/"
     RESOURCE_DIR = "./RCNN/resources/"
-    RCNN_TENSORBOARD_LOG_DIR = OUTPUT_DIR + "tensorboard/RCNN/"
-    IMAGENET_TENSORBOARD_LOG_DIR = OUTPUT_DIR + "tensorboard/IMAGENET/"
-    CHECKPOINT_DIR = MODEL_PATH + "./checkpoints/"
+    FINETUNE_TENSORBOARD_LOG_DIR = OUTPUT_DIR + "tensorboard/Finetune/"
+    SVM_TENSORBOARD_LOG_DIR = OUTPUT_DIR + "tensorboard/SVM/"
+    FINETUNE_CHECKPOINT_DIR = MODEL_PATH + "checkpoints/" + "finetune/"
+    CLASSIFIER_CHECKPOINT_DIR = MODEL_PATH + "checkpoints/" + "svm_classifier/"
 
     CLASS_LABELS = {
         0: "none",
@@ -68,11 +69,16 @@ class Global:
     IMG_TEXT_COLOR = (0, 0, 0)
 
     FINETUNE_IMAGE_SIZE = (224, 224)
-    FINETUNE_BATCH_SIZE = 256
-    FINETUNE_POSITIVE_SAMPLES = 192
-    FINETUNE_NEGATIVE_SAMPLES = 64
+    FINETUNE_BATCH_SIZE = 64
+    FINETUNE_POSITIVE_SAMPLES = 48
+    FINETUNE_NEGATIVE_SAMPLES = 16
 
-    GPU_ID = 6
+    SVM_BATCH_SIZE = 16
+    SVM_POSITIVE_SAMPLES = 12
+    SVM_NEGATIVE_SAMPLES = 4
+
+
+    GPU_ID = 3
     TORCH_DEVICE = torch.device(
         f"cuda:{GPU_ID}" if torch.cuda.is_available() else "cpu")
     ALEXNET_WEIGHTS = "/home/hqh2kor/handsOn/ObjectDetection/RCNN/models/alexnet_weights/alexnet.pth"

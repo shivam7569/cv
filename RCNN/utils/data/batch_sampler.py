@@ -12,7 +12,7 @@ from RCNN.utils.data.finetune_dataset import FineTuneDataset
 
 class BatchSampler(Sampler):
 
-    def __init__(self, num_positive, num_negative, batch_positive, batch_negative, shuffle):
+    def __init__(self, num_positive, num_negative, batch_positive, batch_negative, shuffle=True):
 
         self.shuffle = shuffle
         self.num_positive = num_positive

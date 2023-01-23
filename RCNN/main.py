@@ -1,6 +1,7 @@
 from RCNN.createFineTuneData import createFineTuneData
 from RCNN.createClassifierData import createClassifierData
 from RCNN.fineTune import loadBestFineTuneModel, performFineTuning
+from RCNN.svm import trainSVM
 
 ##### Preparing fine tuning data #####
 
@@ -10,7 +11,7 @@ from RCNN.fineTune import loadBestFineTuneModel, performFineTuning
 
 ##### Fine Tuning #####
 
-performFineTuning(epochs=500, debug=False)
+# performFineTuning(epochs=500, debug=False, model_name="vgg16")
 
 ##### *********** #####
 
@@ -26,4 +27,10 @@ performFineTuning(epochs=500, debug=False)
 
 ##### *********************** #####
 
-# events.out.tfevents.1670179168.erd-server
+##### Train SVM Classifier #####
+
+feature_model_path = "RCNN/models/checkpoints/finetune/vgg16/epoch_1_val_acc_0.7004.pt"
+trainSVM(feature_model_path, epochs=25, debug=False)
+
+##### ******************** #####
+

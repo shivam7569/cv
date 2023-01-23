@@ -23,8 +23,7 @@ class FineTuneDataset(Dataset):
         samples = list(set([i.split(
             "_")[0] + ".jpg" for i in os.listdir(os.path.join(root_dir, "Annotations"))]))
 
-        if debug:
-            samples = random.sample(samples, 300)
+        if debug: samples = random.sample(samples, 100)
 
         positive_annot = [os.path.join(
             root_dir, "Annotations", i[:-4] + "_1" + ".json") for i in samples]
