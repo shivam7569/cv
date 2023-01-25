@@ -30,7 +30,7 @@ class HardNegativeMiningDataset(Dataset):
             transformed_proposal = self.transform(image=proposal)
             proposal = transformed_proposal["image"]
         else:
-            proposal = cv2.resize(proposal, Global.FINETUNE_IMAGE_SIZE)
+            proposal = cv2.resize(proposal, Global.IMAGE_SIZE)
             proposal = torch.from_numpy(np.moveaxis(proposal, -1, 0)).float()
 
         return proposal, target, negative_dict
@@ -47,14 +47,6 @@ class HardNegativeMiningDataset(Dataset):
     def get_hard_negatives(self, preds, cache_dicts):
         false_positive_mask = preds != 0
         true_negative_mask = preds == 0
-
-        # false_positive_rects = cache_dicts["rect"][false_positive_mask].numpy()
-        # false_positive_ids = cache_dicts["image_id"][false_positive_mask].numpy()
-        # false_positive_names = cache_dicts["image_name"][false_positive_mask].numpy()
-
-        # true_negative_rects = cache_dicts["rect"][true_negative_mask].numpy()
-        # true_negative_ids = cache_dicts["image_id"][true_negative_mask].numpy()
-        # true_negatives_names = cache_dicts["image_name"][true_negative_mask]
 
         hard_negative_list = []
         easy_negative_list = []
@@ -79,39 +71,4 @@ class HardNegativeMiningDataset(Dataset):
                 }
                 easy_negative_list.append(entry)
 
-
-
-
-        # hard_negative_list = [
-        #     {
-        #         "rect": false_positive_rects[idx],
-        #         "image_id": false_positive_ids[idx],
-        #         "image_name": false_positive_names[idx]
-        #     }
-        #     for idx in range(len(false_positive_rects))
-        # ]
-        # easy_negative_list = [
-        #     {
-        #         "rect": true_negative_rects[idx],
-        #         "image_id": true_negative_ids[idx],
-        #         "image_name": true_negatives_names[idx]
-        #     }
-        #     for idx in range(len(true_negative_rects))
-        # ]
-
         return hard_negative_list, easy_negative_list
-    
-# data_dir = os.path.join(Global.CLASSIFIER_DATA_DIR, "train")
-# dataset = ClassifierDataset(data_dir, None, "train", False)
-
-# negative_list = dataset.get_negatives()
-# jpeg_images = dataset.get_images()
-# transform = dataset.get_transform()
-
-# hard_negative_dataset = HardNegativeMiningDataset(negative_list, jpeg_images, transform, "train")
-# image, target, negative_dict = hard_negative_dataset.__getitem__(5)
-
-# print(image.shape)
-# print(target)
-# print(negative_dict)
-# print()

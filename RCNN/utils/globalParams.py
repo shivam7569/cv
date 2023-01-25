@@ -9,11 +9,14 @@ class Global:
     DATA_DIR = "./RCNN/data/coco2017/"
     FINETUNE_DATA_DIR = "./RCNN/data/finetune/"
     CLASSIFIER_DATA_DIR = "./RCNN/data/classifier/"
+    BBOX_REGRESSOR_DIR = "./RCNN/data/bbox_regression/"
     RESOURCE_DIR = "./RCNN/resources/"
     FINETUNE_TENSORBOARD_LOG_DIR = OUTPUT_DIR + "tensorboard/Finetune/"
     SVM_TENSORBOARD_LOG_DIR = OUTPUT_DIR + "tensorboard/SVM/"
+    REGRESSOR_TENSORBOARD_LOG_DIR = OUTPUT_DIR + "tensorboard/Regressor/"
     FINETUNE_CHECKPOINT_DIR = MODEL_PATH + "checkpoints/" + "finetune/"
     CLASSIFIER_CHECKPOINT_DIR = MODEL_PATH + "checkpoints/" + "svm_classifier/"
+    REGRESSOR_CHECKPOINT_DIR = MODEL_PATH + "checkpoints/" + "bbox_regressor/"
 
     CLASS_LABELS = {
         0: "none",
@@ -58,27 +61,29 @@ class Global:
     NUM_CLASSES = len(CLASS_LABELS.keys())
 
     NUM_PROPOSALS = 2000
-    PROPOSAL_BBOX_COLOR = (0, 255, 0)
-    BBOX_THICKNESS = 3
+    PROPOSAL_BBOX_COLOR = (0, 0, 255)
+    BBOX_THICKNESS = 1
     PROPOSAL_BBOX_THICKNESS = 1
-    BBOX_COLOR = (0, 0, 255)
+    BBOX_COLOR = (0, 255, 0)
     IMG_TEXT_FONT = cv2.FONT_HERSHEY_COMPLEX
     IMG_TEXT_THICKNESS = 1
     IMG_TEXT_LINE_TYPE = 1
-    IMG_TEXT_FONT_SCALE = 1
+    IMG_TEXT_FONT_SCALE = 0.5
     IMG_TEXT_COLOR = (0, 0, 0)
 
-    FINETUNE_IMAGE_SIZE = (224, 224)
+    IMAGE_SIZE = (224, 224)
     FINETUNE_BATCH_SIZE = 64
     FINETUNE_POSITIVE_SAMPLES = 48
     FINETUNE_NEGATIVE_SAMPLES = 16
 
-    SVM_BATCH_SIZE = 16
-    SVM_POSITIVE_SAMPLES = 12
-    SVM_NEGATIVE_SAMPLES = 4
+    SVM_BATCH_SIZE = 256
+    SVM_POSITIVE_SAMPLES = 192
+    SVM_NEGATIVE_SAMPLES = 64
+    SVM_THRESHOLD = 0.1
 
+    NON_MAX_SUPPRESSION_IOU_THRESHOLD = 0.5
 
-    GPU_ID = 3
+    GPU_ID = 7
     TORCH_DEVICE = torch.device(
         f"cuda:{GPU_ID}" if torch.cuda.is_available() else "cpu")
     ALEXNET_WEIGHTS = "/home/hqh2kor/handsOn/ObjectDetection/RCNN/models/alexnet_weights/alexnet.pth"

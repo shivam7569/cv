@@ -174,3 +174,12 @@ def image_grid(train_images, preds):
         plt.imshow(train_images[i], cmap=plt.cm.binary)
 
     return figure
+
+def draw_box_with_text(img, rect_list, score_list):
+    
+    for i in range(len(rect_list)):
+        xmin, ymin, xmax, ymax = rect_list[i]
+        score = score_list[i]
+
+        cv2.rectangle(img, (xmin, ymin), (xmax, ymax), color=Global.PROPOSAL_BBOX_COLOR, thickness=Global.PROPOSAL_BBOX_THICKNESS)
+        cv2.putText(img, "{:.3f}".format(score), (xmin, ymin), Global.IMG_TEXT_FONT, Global.IMG_TEXT_FONT_SCALE, Global.IMG_TEXT_COLOR, Global.IMG_TEXT_THICKNESS)

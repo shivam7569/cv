@@ -9,10 +9,8 @@ __pycache__/
 # Distribution / packaging
 .Python
 build/
-rcnn/data/
 RCNN/data/
 RCNN/res/
-RCNN/resources/
 RCNN/models/
 workshop/
 develop-eggs/

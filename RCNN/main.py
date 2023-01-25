@@ -11,7 +11,7 @@ from RCNN.svm import trainSVM
 
 ##### Fine Tuning #####
 
-# performFineTuning(epochs=500, debug=False, model_name="vgg16")
+performFineTuning(epochs=500, debug=False, model_name="vgg16")
 
 ##### *********** #####
 
@@ -29,8 +29,7 @@ from RCNN.svm import trainSVM
 
 ##### Train SVM Classifier #####
 
-feature_model_path = "RCNN/models/checkpoints/finetune/vgg16/epoch_1_val_acc_0.7004.pt"
-trainSVM(feature_model_path, epochs=25, debug=False)
+# feature_model_path = "RCNN/models/checkpoints/finetune/vgg16/epoch_2_val_acc_0.7145.pt"
+# trainSVM(feature_model_path, epochs=500, debug=False)
 
 ##### ******************** #####
-

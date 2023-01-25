@@ -86,6 +86,12 @@ class FineTune:
 
         return model, optimizer, checkpoint["epoch"]
     
+    def _get_l1_loss(self, model):
+        params = torch.cat([x.view(-1) for x in model.classifier.parameters()])
+        l1_regularization = 1e-4 * torch.norm(params, 1)
+
+        return l1_regularization
+    
     def train(self, model, criterion, optimizer, epochs):
 
         best_acc = 0.0
@@ -125,6 +131,8 @@ class FineTune:
 
                         if phase == "train":
                             optimizer.zero_grad()
+                            l1_loss = self._get_l1_loss(model)
+                            loss += l1_loss
                             loss.backward()
                             optimizer.step()
 
@@ -215,12 +223,12 @@ def performFineTuning(epochs=25, model_name="alexnet", debug=False):
 
     transformation_train = A.Compose(
         [
-            A.HorizontalFlip(p=0.6),
-            A.FancyPCA(p=0.6),
+            A.HorizontalFlip(p=0.5),
+            A.FancyPCA(p=0.5),
             A.GaussNoise(p=0.5),
-            A.ISONoise(p=0.5),
+            A.Rotate(limit=15, p=0.2),
             A.Resize(
-                height=Global.FINETUNE_IMAGE_SIZE[0], width=Global.FINETUNE_IMAGE_SIZE[1], always_apply=True, interpolation=2, p=1),
+                height=Global.IMAGE_SIZE[0], width=Global.IMAGE_SIZE[1], always_apply=True, interpolation=2, p=1),
             A.Normalize(always_apply=True, p=1),
             ToTensorV2()
         ]
@@ -229,7 +237,7 @@ def performFineTuning(epochs=25, model_name="alexnet", debug=False):
     transformation_val = A.Compose(
         [
             A.Resize(
-                height=Global.FINETUNE_IMAGE_SIZE[0], width=Global.FINETUNE_IMAGE_SIZE[1], always_apply=True, p=1),
+                height=Global.IMAGE_SIZE[0], width=Global.IMAGE_SIZE[1], always_apply=True, p=1),
             A.Normalize(always_apply=True, p=1),
             ToTensorV2()
         ]
@@ -245,9 +253,9 @@ def performFineTuning(epochs=25, model_name="alexnet", debug=False):
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD([
-        {"params": model.features.parameters(), "lr": 1e-6},
+        {"params": model.features.parameters(), "lr": 1e-5},
         {"params": model.classifier.parameters(), "lr": 1e-4}
-    ], lr=1e-4, momentum=0.9, weight_decay=1e-5)
+    ], lr=1e-4, momentum=0.9, weight_decay=1e-4)
 
     fineTune.train(model, criterion, optimizer, epochs)
 

@@ -47,17 +47,16 @@ class SVM:
                 positive_list = dataset.get_positives()
                 negative_list = dataset.get_negatives()
 
-                init_negative_idxs = random.sample(range(len(negative_list)), len(positive_list))
+                init_negative_idxs = set(random.sample(range(len(negative_list)), len(positive_list)))
+                remain_negative_idx = set(range(len(negative_list))).difference(init_negative_idxs)
 
                 init_negative_list = [
                         negative_list[idx] 
-                        for idx in range(len(negative_list)) 
-                        if idx in init_negative_idxs
+                        for idx in init_negative_idxs
                     ]
                 remain_negative_list = [
                         negative_list[idx] 
-                        for idx in range(len(negative_list)) 
-                        if idx not in init_negative_idxs
+                        for idx in remain_negative_idx
                     ]
                 
                 dataset.set_negative_list(init_negative_list)
@@ -74,7 +73,7 @@ class SVM:
                 dataset=dataset,
                 batch_size=Global.SVM_BATCH_SIZE,
                 sampler=data_sampler,
-                num_workers=2,
+                num_workers=8,
                 drop_last=True
             )
 
@@ -150,7 +149,7 @@ class SVM:
 
                         if phase == "train":
 
-                            if batch_counter_train % 1000 == 0:
+                            if batch_counter_train % 100 == 0:
 
                                 self.tbWriter.add_scalar(f"a_train/Step Train Loss", round(
                                     step_loss, 3), batch_counter_train)
@@ -161,7 +160,7 @@ class SVM:
 
                         elif phase == "val":
 
-                            if batch_counter_val % 250 == 0:
+                            if batch_counter_val % 100 == 0:
 
                                 self.tbWriter.add_scalar(f"b_val/Step Val Loss", round(
                                     step_loss, 3), batch_counter_val)
@@ -235,7 +234,7 @@ class SVM:
                 remain_data_loader = DataLoader(
                     remain_dataset,
                     batch_size=Global.SVM_BATCH_SIZE,
-                    num_workers=2,
+                    num_workers=8,
                     drop_last=True
                 )
 
@@ -276,7 +275,7 @@ class SVM:
 
                     self.data_loaders["train"] = DataLoader(
                         train_dataset, batch_size=Global.SVM_BATCH_SIZE,
-                        sampler=new_sampler, num_workers=2, drop_last=True
+                        sampler=new_sampler, num_workers=8, drop_last=True
                     )
                     self.data_loaders['add_negative'] = add_negative_list
                     self.data_sizes['train'] = len(new_sampler)
@@ -291,9 +290,8 @@ def trainSVM(feature_model_path, epochs=25, debug=False):
     transformation_train = A.Compose(
         [
             A.HorizontalFlip(p=0.5),
-            A.FancyPCA(p=0.5),
             A.Resize(
-                height=Global.FINETUNE_IMAGE_SIZE[0], width=Global.FINETUNE_IMAGE_SIZE[1], always_apply=True, interpolation=2, p=1),
+                height=Global.IMAGE_SIZE[0], width=Global.IMAGE_SIZE[1], always_apply=True, interpolation=2, p=1),
             A.Normalize(always_apply=True, p=1),
             ToTensorV2()
         ]
@@ -302,7 +300,7 @@ def trainSVM(feature_model_path, epochs=25, debug=False):
     transformation_val = A.Compose(
         [
             A.Resize(
-                height=Global.FINETUNE_IMAGE_SIZE[0], width=Global.FINETUNE_IMAGE_SIZE[1], always_apply=True, p=1),
+                height=Global.IMAGE_SIZE[0], width=Global.IMAGE_SIZE[1], always_apply=True, p=1),
             A.Normalize(always_apply=True, p=1),
             ToTensorV2()
         ]
@@ -311,9 +309,6 @@ def trainSVM(feature_model_path, epochs=25, debug=False):
     transformation = {}
     transformation["train"] = transformation_train
     transformation["val"] = transformation_val
-
-    transformation ["train"] = None
-    transformation ["val"] = None
 
     classifier = SVM(debug=debug)
     classifier.load_data(transformation=transformation)

@@ -120,7 +120,7 @@ class ClassifierDataset(Dataset):
             transformed_proposal = self.transform(image=proposal)
             proposal = transformed_proposal["image"]
         else:
-            proposal = cv2.resize(proposal, Global.FINETUNE_IMAGE_SIZE)
+            proposal = cv2.resize(proposal, Global.IMAGE_SIZE)
             proposal = torch.from_numpy(np.moveaxis(proposal, -1, 0)).float()
 
         return proposal, Global.MAPPED_CLASS_LABELS[target], cache_dict
