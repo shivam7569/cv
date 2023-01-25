@@ -41,7 +41,6 @@ def detect(model_path, model_name):
 
     annIds = val_coco.getAnnIds(imgIds=[test_img_id])
     anns = val_coco.loadAnns(annIds)
-    bndboxes = []
 
     for data in anns:
         x1, y1, x2, y2 = int(data["bbox"][0]), int(data["bbox"][1]), int(
@@ -83,7 +82,8 @@ def detect(model_path, model_name):
             nms_rects, nms_scores = non_max_suppression(pos_rects, pos_scores)
             draw_box_with_text(img, nms_rects, nms_scores)
     
-    cv2.imwrite("./Sample.png", img)
+    output_img_name = os.path.join(Global.DETECTOR_OUTPUT_DIR, str(test_img_id) + ".png")
+    cv2.imwrite(output_img_name, img)
 
 for _ in range(10):
     classifier_path = "RCNN/models/checkpoints/svm_classifier/epoch_1_val_acc_0.7257.pt"

@@ -9,14 +9,12 @@ class Global:
     DATA_DIR = "./RCNN/data/coco2017/"
     FINETUNE_DATA_DIR = "./RCNN/data/finetune/"
     CLASSIFIER_DATA_DIR = "./RCNN/data/classifier/"
-    BBOX_REGRESSOR_DIR = "./RCNN/data/bbox_regression/"
     RESOURCE_DIR = "./RCNN/resources/"
     FINETUNE_TENSORBOARD_LOG_DIR = OUTPUT_DIR + "tensorboard/Finetune/"
     SVM_TENSORBOARD_LOG_DIR = OUTPUT_DIR + "tensorboard/SVM/"
-    REGRESSOR_TENSORBOARD_LOG_DIR = OUTPUT_DIR + "tensorboard/Regressor/"
     FINETUNE_CHECKPOINT_DIR = MODEL_PATH + "checkpoints/" + "finetune/"
     CLASSIFIER_CHECKPOINT_DIR = MODEL_PATH + "checkpoints/" + "svm_classifier/"
-    REGRESSOR_CHECKPOINT_DIR = MODEL_PATH + "checkpoints/" + "bbox_regressor/"
+    DETECTOR_OUTPUT_DIR = OUTPUT_DIR + "detector/"
 
     CLASS_LABELS = {
         0: "none",
@@ -79,11 +77,11 @@ class Global:
     SVM_BATCH_SIZE = 256
     SVM_POSITIVE_SAMPLES = 192
     SVM_NEGATIVE_SAMPLES = 64
-    SVM_THRESHOLD = 0.1
+    SVM_THRESHOLD = 0.6
 
     NON_MAX_SUPPRESSION_IOU_THRESHOLD = 0.5
 
-    GPU_ID = 7
+    GPU_ID = 3
     TORCH_DEVICE = torch.device(
         f"cuda:{GPU_ID}" if torch.cuda.is_available() else "cpu")
     ALEXNET_WEIGHTS = "/home/hqh2kor/handsOn/ObjectDetection/RCNN/models/alexnet_weights/alexnet.pth"
