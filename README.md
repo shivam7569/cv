@@ -8,11 +8,13 @@
 - [ ] [InceptionNet](https://arxiv.org/abs/1409.4842)
 - [ ] [ResNet](https://arxiv.org/abs/1512.03385)
 - [ ] [EfficientNet](https://arxiv.org/abs/1905.11946)
+- [ ] [ConvNeXt](https://arxiv.org/abs/2201.03545)
 - ### Attention based:
   - [ ] [Vision Transformers](https://arxiv.org/abs/2010.11929)
   - [ ] [Swin-Transformers](https://arxiv.org/abs/2103.14030)
   - [ ] [Dino](https://arxiv.org/abs/2104.14294)
   - [ ] [Dinov2](https://arxiv.org/abs/2304.07193)
+  - [ ] [EVA](https://arxiv.org/abs/2211.07636)
 
 ## Object Detection
 
@@ -21,6 +23,7 @@
 - [ ] [Faster R-CNN](https://arxiv.org/abs/1506.01497)
 - [ ] [Cascade R-CNN](https://arxiv.org/abs/1712.00726)
 - [ ] [YOLO](https://arxiv.org/abs/1506.02640)
+- [ ] [YOLOv3](https://arxiv.org/abs/1804.02767)
 - [ ] [SSD](https://arxiv.org/abs/1512.02325)
 - [ ] [RetinaNet](https://arxiv.org/abs/1708.02002)
 - [ ] [EfficientDet](https://arxiv.org/abs/1911.09070)
