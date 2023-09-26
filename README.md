@@ -41,18 +41,28 @@
  
  ## Generative Adversarial Networks
 
-- [ ] [GAN]
-- [ ] [DCGAN]
-- [ ] [c-GAN]
-- [ ] [W-GAN]
-- [ ] [Pix2Pix GAN]
-- [ ] [Cyclic GAN]
-- [ ] [ProGAN]
-- [ ] [SRGAN]
-- [ ] [ESRGAN]
+- [ ] [GAN](https://arxiv.org/abs/1406.2661)
+- [ ] [DCGAN](https://arxiv.org/abs/1511.06434)
+- [ ] [c-GAN](https://arxiv.org/abs/1411.1784)
+- [ ] [W-GAN](https://arxiv.org/abs/1701.07875)
+- [ ] [Pix2Pix GAN](https://arxiv.org/abs/1611.07004)
+- [ ] [Cyclic GAN](https://arxiv.org/abs/1703.10593)
+- [ ] [ProGAN](https://arxiv.org/abs/1710.10196)
+- [ ] [SRGAN](https://arxiv.org/abs/1609.04802)
+- [ ] [ESRGAN](https://arxiv.org/abs/1809.00219)
+
+## Diffusion Models
+
+- [ ] [CLIP](https://arxiv.org/abs/2103.00020)
+- [ ] [PixelCNN](https://arxiv.org/abs/1606.05328)
+- [ ] [PixelCNN++](https://arxiv.org/abs/1701.05517)
+- [ ] [Real NVP](https://arxiv.org/abs/1605.08803)
+- [ ] [DDPM](https://arxiv.org/abs/2006.11239)
+- [ ] [SDE Model](https://arxiv.org/abs/2011.13456)
 
 ## Miscellaneous
 
+- [ ] [GradCAM](https://arxiv.org/abs/1610.02391)
 - [ ] [SPP](https://arxiv.org/abs/1406.4729)
 - [ ] [FPN](https://arxiv.org/abs/1612.03144)
 - [ ] [Sim-CLR](https://arxiv.org/abs/2002.05709)
