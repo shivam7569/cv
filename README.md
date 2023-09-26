@@ -8,7 +8,7 @@
 - [ ] [InceptionNet](https://arxiv.org/abs/1409.4842)
 - [ ] [ResNet](https://arxiv.org/abs/1512.03385)
 - [ ] [EfficientNet](https://arxiv.org/abs/1905.11946)
-### Attention based:
+- ### Attention based:
   * [Vision Transformers](https://arxiv.org/abs/2010.11929)
   * [Swin-Transformers](https://arxiv.org/abs/2103.14030)
   * [Dino](https://arxiv.org/abs/2104.14294)
