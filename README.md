@@ -32,6 +32,7 @@
 
 * [U-Net](https://arxiv.org/abs/1505.04597)
 * [DeepLab](https://arxiv.org/abs/1606.00915)
+* [DeepLabv3](https://arxiv.org/abs/1706.05587)
 * [Mask R-CNN](https://arxiv.org/abs/1703.06870)
 * ### Attention based:
   * [Segmenter](https://arxiv.org/abs/2105.05633)
