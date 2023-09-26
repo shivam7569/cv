@@ -10,11 +10,6 @@ __pycache__/
 .vscode
 .Python
 build/
-RCNN/data/
-RCNN/res/
-RCNN/models/__pycache__
-RCNN/models/checkpoints
-workshop/
 develop-eggs/
 dist/
 downloads/
