@@ -1,0 +1,4 @@
+LeNet:
+  TESTING: "some_test_value"
+LOGGING:
+  NAME: "LeNet"

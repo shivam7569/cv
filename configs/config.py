@@ -16,8 +16,6 @@ class CfgNode(_CfgNode):
         loaded_cfg = self.load_yaml_with_base(cfg_filename, allow_unsafe=allow_unsafe)
         loaded_cfg = type(self)(loaded_cfg)
 
-        logger = logging.getLogger(__name__)
-
         self.merge_from_other_cfg(loaded_cfg)
 
     def dump(self, *args, **kwargs):
