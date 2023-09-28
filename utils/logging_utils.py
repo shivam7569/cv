@@ -3,14 +3,18 @@ import logging
 from datetime import datetime
 import traceback
 from global_params import Global
+from utils.os_utils import check_dir
 
 def initialize_logger():
 
     log_filename = f"{Global.CFG.LOGGING.NAME}-{getCurrentDateTime()}.log"
 
+    Global.setLogFilename(log_filename)
+
     log_filepath = os.path.join(Global.CFG.LOGGING.PATH, Global.CFG.LOGGING.NAME)
-    if not os.path.exists(log_filepath):
-        os.mkdir(log_filepath)
+
+    check_dir(Global.CFG.LOGGING.PATH, create=True)
+    check_dir(log_filepath, create=True)
 
     log_filepath = os.path.join(log_filepath, log_filename)
 
@@ -89,3 +93,5 @@ def deleteOldLogs() -> None:
 
 def start_logger():
     customLogHandlers()
+
+    Global.LOGGER.info(f"Logger started, log file stored as: {Global.LOG_FILENAME}")
