@@ -7,6 +7,8 @@ from pycocotools.coco import COCO
 
 class CocoParser:
 
+    cfg = get_cfg()
+
     def __init__(self, phase):
 
         self.cfg = get_cfg()
@@ -32,6 +34,9 @@ class CocoParser:
     
     def getDetectionAnnotation(self, img_id):
         assert img_id in self.imgIds, Global.LOGGER.error(f"Image id {img_id} is invalid")
+
+        coco_id_to_correct_id = CocoParser.getCocoIdToCorrectId()
+
         annIds = self.coco.getAnnIds(imgIds=[img_id])
         anns = self.coco.loadAnns(annIds)
 
@@ -39,7 +44,7 @@ class CocoParser:
         for i in anns:
             x1, y1, w, h = [round(j) for j in i["bbox"]]
             annotations["bboxes"].append([x1, y1, x1+w, y1+h])
-            annotations["categories"].append(i["category_id"])
+            annotations["categories"].append(coco_id_to_correct_id[str(i["category_id"])])
 
         assert len(annotations["bboxes"]) == len(annotations["categories"])
 
@@ -47,6 +52,8 @@ class CocoParser:
     
     def getSegmentationMask(self, img_id):
         assert img_id in self.imgIds, Global.LOGGER.error(f"Image id {img_id} is invalid")
+
+        coco_id_to_correct_id = CocoParser.getCocoIdToCorrectId()
 
         image_info = self.coco.loadImgs(img_id)[0]
         height, width = image_info['height'], image_info['width']
@@ -56,7 +63,7 @@ class CocoParser:
         for annotation in annotations:
             category_id = annotation['category_id']
             mask = self.coco.annToMask(annotation)
-            class_mask[mask > 0] = category_id
+            class_mask[mask > 0] = coco_id_to_correct_id[str(category_id)]
 
         return class_mask
     
@@ -68,3 +75,26 @@ class CocoParser:
         }
 
         return img_info
+    
+    def generateCorrectIds(self):
+        correct_ids = {}
+        for idx, i in enumerate(self.catIds):
+            correct_ids[i] = idx
+        
+        with open(self.cfg.DATA.COCO_ID_TO_CORRECT_ID, "w") as f:
+            json.dump(correct_ids, f)
+
+    @classmethod
+    def getCocoIdToCorrectId(cls):
+        with open(cls.cfg.DATA.COCO_ID_TO_CORRECT_ID, "r") as f:
+            coco_id_to_correct_id = json.load(f)
+
+        return coco_id_to_correct_id
+
+    @classmethod
+    def getIdVsName(cls):
+        with open(cls.cfg.DATA.COCO_ID_TO_NAME, "r") as f:
+            id_vs_name = json.load(f)
+
+        return id_vs_name
+
