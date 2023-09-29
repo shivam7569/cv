@@ -7,8 +7,33 @@ random.seed(420)
 
 class ImagenetData:
 
+    cfg = get_cfg()
+
     def __init__(self):
         self.cfg = get_cfg()
+
+    def generateClassIdVsName(self):
+        self.class_id_vs_name = {}
+        with open(self.cfg.DATA.IMAGENET_CLASS_MAPPING, "r") as f:
+            for line in f.readlines():
+                class_id = line.strip().split(" ")[0]
+                class_name = line.strip().split(" ")[1].split(",")[0].strip(" ")
+                self.class_id_vs_name[class_id] = class_name
+
+        with open(self.cfg.DATA.IMAGENET_CLASS_VS_NAME_TXT, "w") as f:
+            for k, v in self.class_id_vs_name.items():
+                f.write(f"{k} {v}\n")
+
+    @classmethod
+    def getClassVsName(cls):
+        class_vs_name = {}
+        with open(cls.cfg.DATA.IMAGENET_CLASS_VS_NAME_TXT, "r") as f:
+            for line in f.readlines():
+                class_id = line.strip().split(" ")[0]
+                class_name = line.strip().split(" ")[1]
+                class_vs_name[class_id] = class_name
+
+        return class_vs_name
 
     def segregateData(self):
         self.getImageNetClasses()
@@ -73,7 +98,3 @@ class ImagenetData:
         class_id = [i.findall("name") for i in object_][0][0].text
 
         return (filename, class_id)
-
-            
-imageNetData = ImagenetData()
-imageNetData.segregateData()
