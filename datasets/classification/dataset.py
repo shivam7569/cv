@@ -1,10 +1,15 @@
 import os
+import random
 import cv2
 import numpy as np
+from requests import get
+from sympy import fu
 from torch.utils.data import Dataset
 from torchvision import transforms as T
 from global_params import Global
 from utils.file_utils import read_txt
+import src.pipeline_functions as PF
+from src.custom_transforms import *
 
 class ClassificationDataset(Dataset):
 
@@ -21,6 +26,7 @@ class ClassificationDataset(Dataset):
             Global.LOGGER.error("Invalid phase")
 
         self.img_and_class = read_txt(self.phase_text)
+        random.shuffle(self.img_and_class)
 
         if debug is not None:
             self.img_and_class = self.img_and_class[:debug]
@@ -33,16 +39,33 @@ class ClassificationDataset(Dataset):
         for transform_entry in transforms:
             transform_name = transform_entry["name"]
             transform_params = transform_entry["params"]
+            try:
+                transform_class = getattr(T, transform_name)
+                if transform_params is not None:
+                    transform = transform_class(**transform_params)
+                else:
+                    transform = transform_class()
 
-            transform_class = getattr(T, transform_name)
-            if transform_params is not None:
-                transform = transform_class(**transform_params)
-            else:
-                transform = transform_class()
-
-            transforms_list.append(transform)
+                transforms_list.append(transform)
+            except:
+                if transform_name in globals():
+                    transform_instnce = globals()[transform_name](**transform_params)
+                    transforms_list.append(transform_instnce)
 
         return transforms_list
+    
+    def executePipeline(self, img_path):
+        img_pipeline = Global.CFG.PIPELINES.TRAIN if self.phase == "train" else Global.CFG.PIPELINES.VAL
+        if img_pipeline is not None:
+            for function in img_pipeline:
+                if function["func"] == "readImage":
+                    img = getattr(PF, function["func"])(img_path, **function["params"])
+                elif function["func"] == "alexNetresize":
+                    img = getattr(PF, function["func"])(img)
+        else:
+            Global.LOGGER.error("Cannot proceed without data pipeline")
+
+        return img
 
     def __len__(self):
         return len(self.img_and_class)
@@ -60,8 +83,7 @@ class ClassificationDataset(Dataset):
         else:
             Global.LOGGER.error("Invalid phase")
 
-        img = cv2.imread(img_path, -1)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img = self.executePipeline(img_path)
 
         if self.transforms: img = self.transforms(img)
 

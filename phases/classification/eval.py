@@ -48,6 +48,7 @@ class Eval:
         self.metrics.aggregate_metrics()
         self.metrics.log_metrics(epoch=epoch, loss=round(loss, 3))
         self.epoch_metrics = self.metrics.metrics_aggregated
+        self.epoch_metrics["eval_loss"] = loss
 
         ClassificationMetrics.writeMetricsToCSV()
 

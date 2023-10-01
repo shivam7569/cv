@@ -44,3 +44,5 @@ class ModelConfigs:
     def addModelConfigs(cls, cfg, model_name: str):
         if model_name.lower() == "lenet":
             LeNetConfig(cfg)
+        elif model_name.lower() == "alexnet":
+            AlexNetConfig(cfg)

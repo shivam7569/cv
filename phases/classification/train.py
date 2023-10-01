@@ -68,7 +68,11 @@ class Train:
             Global.resetEpochMetrics()
 
             if self.lr_scheduler is not None:
-                self.lr_scheduler.step()
+                if self.lr_scheduler.__class__.__name__ == "ReduceLROnPlateau":
+                    self.lr_scheduler.step(self.evaluation.epoch_metrics["eval_loss"])
+                    if self.tb_writer is not None: 
+                        current_lr = self.optimizer.param_groups[0]['lr']
+                        self.tb_writer.write("scaler")(scalar_name="Learning Rate", scalar_value=current_lr, step=epoch)
 
     def train_for_one_epoch(self, train_loader, epoch):
 
