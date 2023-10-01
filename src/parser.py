@@ -9,10 +9,9 @@ def get_parser():
     )
 
     parser.add_argument(
-        "--config-file",
-        default="/media/drive6/hqh2kor/projects/Computer_Vision/configs/proces_configs/example_config.yml",
-        metavar="FILE",
-        help="path to LeNet process config file"
+        "--model-name",
+        required=True,
+        help="model to use"
     )
 
     return parser

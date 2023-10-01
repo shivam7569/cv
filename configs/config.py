@@ -2,6 +2,9 @@ import logging
 from fvcore.common.config import CfgNode as _CfgNode
 from iopath.common.file_io import PathManager as PathManagerBase
 
+from configs.model_CONFIGS import *
+from src.parser import get_parser
+
 PathManager = PathManagerBase()
 
 class CfgNode(_CfgNode):
@@ -26,3 +29,18 @@ def get_cfg() -> CfgNode:
     from configs.defaults import _C
 
     return _C.clone()
+
+def setup_config():
+    args = get_parser().parse_args()
+    cfg = get_cfg()
+    ModelConfigs.addModelConfigs(cfg, args.model_name)
+    cfg.freeze()
+
+    return cfg
+
+class ModelConfigs:
+
+    @classmethod
+    def addModelConfigs(cls, cfg, model_name: str):
+        if model_name.lower() == "lenet":
+            LeNetConfig(cfg)
