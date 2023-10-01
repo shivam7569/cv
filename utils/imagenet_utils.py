@@ -34,6 +34,17 @@ class ImagenetData:
                 class_vs_name[class_id] = class_name
 
         return class_vs_name
+    
+    @classmethod
+    def getIdVsName(cls):
+        id_vs_name = {}
+        with open(cls.cfg.DATA.IMAGENET_CLASS_VS_ID_TXT, "r") as f:
+            for line in f.readlines():
+                class_id, class_int = line.strip().split(" ")
+                class_name = cls.getClassVsName()[class_id]
+                id_vs_name[class_int] = class_name
+
+        return id_vs_name
 
     def segregateData(self):
         self.getImageNetClasses()
@@ -58,7 +69,8 @@ class ImagenetData:
                 )
 
         self.num_class_images = dict(sorted(self.num_class_images.items(), key=lambda x: x[1], reverse=True))
-        self.imagenet_classes = random.sample(list(self.num_class_images.keys())[:500], k=100)
+        # self.imagenet_classes = random.sample(list(self.num_class_images.keys())[:500], k=100)
+        self.imagenet_classes = list(self.num_class_images.keys())
         self.class_vs_id = {class_id: i for i, class_id in enumerate(self.imagenet_classes)}
 
     def generateImagesTextFiles(self):
@@ -98,3 +110,6 @@ class ImagenetData:
         class_id = [i.findall("name") for i in object_][0][0].text
 
         return (filename, class_id)
+
+imgNet = ImagenetData()
+imgNet.segregateData()
