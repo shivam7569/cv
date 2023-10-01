@@ -36,14 +36,9 @@ if __name__ == "__main__":
             dataset=train_dataset,
             **cfg.AlexNet.DATALOADER_TRAIN_PARAMS
         )
-        # data_loaders["val"] = DataLoader(
-        #     dataset=val_dataset,
-        #     **cfg.AlexNet.DATALOADER_VAL_PARAMS
-        # )
-
         data_loaders["val"] = DataLoader(
-            dataset=train_dataset,
-            **cfg.AlexNet.DATALOADER_TRAIN_PARAMS
+            dataset=val_dataset,
+            **cfg.AlexNet.DATALOADER_VAL_PARAMS
         )
 
         Global.LOGGER.info(f"Data loaders instantiated")
