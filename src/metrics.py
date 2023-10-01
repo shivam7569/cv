@@ -51,7 +51,6 @@ class ClassificationMetrics:
         total_gts_per_class[total_gts_per_class == 0] = 1
 
         normalized_confusion_matrix = self.confusion_matrix / total_gts_per_class
-        print(normalized_confusion_matrix)
     
     def accuracy(self):
         tp, _, _, _ = self._get_tp_fp_tn_fn()
