@@ -9,7 +9,6 @@ __pycache__/
 # Distribution / packaging
 tensorboard/
 checkpoints/
-datasets/classification/imagenet_txts/
 workshop/
 .vscode
 .Python
