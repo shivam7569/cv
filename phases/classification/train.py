@@ -64,6 +64,7 @@ class Train:
                     epoch=epoch,
                     chkp_name=checkpoint_name
                 )
+            self.checkpointer.save(None, "epoch_checkpoint.pth", overwrite=False)
 
             Global.resetEpochMetrics()
 
@@ -110,4 +111,4 @@ class Train:
         epoch_loss /= len(train_loader)
         Global.LOGGER.info(f"\nTraining loss for epoch {epoch+1}: {round(epoch_loss, 3)}")
             
-        return epoch_loss
+        return round(epoch_loss, 3)
