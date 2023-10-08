@@ -84,14 +84,14 @@ def AlexNetConfig(cfg):
         dict(name="RandomCrop", params=dict(size=(224, 224), pad_if_needed=False)),
         dict(name="RandomHorizontalFlip", params=dict(p=0.5)),
         dict(name="ToTensor", params=None),
-        dict(name="Normalize", params=dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
+        dict(name="Normalize", params=dict(mean=[0.485, 0.456, 0.406], std=[1.0, 1.0, 1.0]))
     ]
     cfg.AlexNet.TRANSFORMS.VAL = [
         dict(name="ToPILImage", params=None),
         dict(name="RandomCrop", params=dict(size=(224, 224), pad_if_needed=False)),
         dict(name="RandomHorizontalFlip", params=dict(p=0.5)),
         dict(name="ToTensor", params=None),
-        dict(name="Normalize", params=dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
+        dict(name="Normalize", params=dict(mean=[0.485, 0.456, 0.406], std=[1.0, 1.0, 1.0]))
     ]
 
     cfg.AlexNet.OPTIMIZER = CN()

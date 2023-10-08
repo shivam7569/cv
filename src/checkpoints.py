@@ -22,7 +22,10 @@ class Checkpoint:
             "scheduler_state_dict": self.scheduler.state_dict() if self.scheduler is not None else {},
             "epoch": epoch,
         }, chkpt_path)
-        Global.LOGGER.info(f"Checkpoint saved for epoch {epoch+1} at: {chkpt_path}")
+        if epoch is None:
+            Global.LOGGER.info(f"Checkpoint saved for epoch at: {chkpt_path}")
+        else:
+            Global.LOGGER.info(f"Checkpoint saved for epoch {epoch+1} at: {chkpt_path}")
 
         if overwrite:
             Global.LOGGER.info(f"Deleting old checkpoints")
