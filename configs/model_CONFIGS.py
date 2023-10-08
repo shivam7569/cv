@@ -66,14 +66,14 @@ def AlexNetConfig(cfg):
     cfg.AlexNet.DATALOADER_TRAIN_PARAMS = CN()
     cfg.AlexNet.DATALOADER_TRAIN_PARAMS.batch_size = 128
     cfg.AlexNet.DATALOADER_TRAIN_PARAMS.shuffle = True
-    cfg.AlexNet.DATALOADER_TRAIN_PARAMS.num_workers = 16
+    cfg.AlexNet.DATALOADER_TRAIN_PARAMS.num_workers = 4
     cfg.AlexNet.DATALOADER_TRAIN_PARAMS.pin_memory = True
     cfg.AlexNet.DATALOADER_TRAIN_PARAMS.drop_last = True
 
     cfg.AlexNet.DATALOADER_VAL_PARAMS = CN()
     cfg.AlexNet.DATALOADER_VAL_PARAMS.batch_size = 32
     cfg.AlexNet.DATALOADER_VAL_PARAMS.shuffle = True
-    cfg.AlexNet.DATALOADER_VAL_PARAMS.num_workers = 16
+    cfg.AlexNet.DATALOADER_VAL_PARAMS.num_workers = 4
     cfg.AlexNet.DATALOADER_VAL_PARAMS.pin_memory = True
     cfg.AlexNet.DATALOADER_VAL_PARAMS.drop_last = True
 
@@ -84,14 +84,14 @@ def AlexNetConfig(cfg):
         dict(name="RandomCrop", params=dict(size=(224, 224), pad_if_needed=False)),
         dict(name="RandomHorizontalFlip", params=dict(p=0.5)),
         dict(name="ToTensor", params=None),
-        dict(name="Normalize", params=dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
+        dict(name="Normalize", params=dict(mean=[0.485, 0.456, 0.406], std=[1.0, 1.0, 1.0]))
     ]
     cfg.AlexNet.TRANSFORMS.VAL = [
         dict(name="ToPILImage", params=None),
         dict(name="RandomCrop", params=dict(size=(224, 224), pad_if_needed=False)),
         dict(name="RandomHorizontalFlip", params=dict(p=0.5)),
         dict(name="ToTensor", params=None),
-        dict(name="Normalize", params=dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
+        dict(name="Normalize", params=dict(mean=[0.485, 0.456, 0.406], std=[1.0, 1.0, 1.0]))
     ]
 
     cfg.AlexNet.OPTIMIZER = CN()
