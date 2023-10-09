@@ -1,7 +1,7 @@
 import os
 import torch
 
-from global_params import Global
+from utils.global_params import Global
 from utils.os_utils import check_dir
 
 class Checkpoint:

@@ -1,10 +1,8 @@
 from collections import OrderedDict
 import csv
 import os
-import pandas as pd
 import numpy as np
-
-from global_params import Global
+from utils.global_params import Global
 from utils.os_utils import check_file
 
 class ClassificationMetrics:
@@ -50,7 +48,7 @@ class ClassificationMetrics:
         total_gts_per_class = self.confusion_matrix.sum(axis=1)[:, np.newaxis]
         total_gts_per_class[total_gts_per_class == 0] = 1
 
-        normalized_confusion_matrix = self.confusion_matrix / total_gts_per_class
+        self.normalized_confusion_matrix = self.confusion_matrix / total_gts_per_class
     
     def accuracy(self):
         tp, _, _, _ = self._get_tp_fp_tn_fn()

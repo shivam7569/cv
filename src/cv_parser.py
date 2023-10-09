@@ -1,6 +1,6 @@
 import argparse
 
-from global_params import Global
+from utils.global_params import Global
 
 
 def get_parser():

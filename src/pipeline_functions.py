@@ -1,11 +1,21 @@
 import cv2
+import numpy as np
 
 
 def readImage(img_path, uint8):
     img = cv2.imread(img_path, -1)
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+    if len(img.shape) == 2:
+        height, width = img.shape
+        rgb_image = np.zeros((height, width, 3), dtype=np.uint8)
+        rgb_image[:, :, 0] = img
+        rgb_image[:, :, 1] = img
+        rgb_image[:, :, 2] = img
+
+        img = rgb_image
     
-    if uint8: img = img.astype('uint8')
+    if uint8:
+        img = img.astype('uint8')
 
     return img
 

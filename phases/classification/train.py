@@ -3,7 +3,7 @@ import numpy as np
 import torch
 from tqdm import tqdm
 from src.checkpoints import Checkpoint
-from global_params import Global
+from utils.global_params import Global
 
 from phases.classification.eval import Eval
 
@@ -64,7 +64,8 @@ class Train:
                     epoch=epoch,
                     chkp_name=checkpoint_name
                 )
-            self.checkpointer.save(None, "epoch_checkpoint.pth", overwrite=False)
+            if Global.CFG.AlexNet.SAVE_EPOCH_CHECKPOINTS:
+                self.checkpointer.save(None, "epoch_checkpoint.pth", overwrite=False)
 
             Global.resetEpochMetrics()
 

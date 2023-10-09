@@ -4,7 +4,7 @@ import torch
 from backbones.LeNet.model import LeNet
 from configs.config import setup_config
 from datasets.classification.dataset import ClassificationDataset
-from global_params import Global
+from utils.global_params import Global
 from phases.classification.train import Train
 from src.tensorboard import TensorboardWriter
 from utils.logging_utils import deleteOldLogs, start_logger

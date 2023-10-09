@@ -3,7 +3,7 @@ from time import time
 import multiprocessing as mp
 from torch.utils.data import DataLoader
 
-from global_params import Global
+from utils.global_params import Global
 
 def findOptimalNumWorkers(dataset, phase, batch_size):
 

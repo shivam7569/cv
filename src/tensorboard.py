@@ -2,7 +2,7 @@ import os
 import pandas as pd
 from torch.utils.tensorboard import SummaryWriter
 
-from global_params import Global
+from utils.global_params import Global
 from utils.os_utils import check_dir
 
 class TensorboardWriter:

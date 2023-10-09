@@ -1,12 +1,8 @@
 import os
 import random
-import cv2
-import numpy as np
-from requests import get
-from sympy import fu
 from torch.utils.data import Dataset
 from torchvision import transforms as T
-from global_params import Global
+from utils.global_params import Global
 from utils.file_utils import read_txt
 import src.pipeline_functions as PF
 from src.custom_transforms import *

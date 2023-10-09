@@ -3,7 +3,7 @@ from fvcore.common.config import CfgNode as _CfgNode
 from iopath.common.file_io import PathManager as PathManagerBase
 
 from configs.model_CONFIGS import *
-from src.parser import get_parser
+from src.cv_parser import get_parser
 
 PathManager = PathManagerBase()
 

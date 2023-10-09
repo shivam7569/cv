@@ -3,7 +3,7 @@ import cv2
 from torch.utils.data import Dataset
 
 from datasets.coco_parser import CocoParser
-from global_params import Global
+from utils.global_params import Global
 
 class SegmentationDataset(Dataset):
 

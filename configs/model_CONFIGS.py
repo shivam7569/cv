@@ -48,6 +48,7 @@ def AlexNetConfig(cfg):
     from configs.config import CfgNode as CN
 
     cfg.AlexNet = CN()
+    cfg.AlexNet.SAVE_EPOCH_CHECKPOINTS = True
     cfg.LOGGING.NAME = "AlexNet"
     cfg.METRICS.NAME = "AlexNet"
     cfg.CHECKPOINT.BASENAME = "AlexNet"

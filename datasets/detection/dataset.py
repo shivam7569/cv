@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 from torch.utils.data import Dataset
 from datasets.coco_parser import CocoParser
-from global_params import Global
+from utils.global_params import Global
 
 class DetectionDataset(Dataset):
 
