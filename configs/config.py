@@ -45,3 +45,5 @@ class ModelConfigs:
             LeNetConfig(cfg)
         elif model_name.lower() == "alexnet":
             AlexNetConfig(cfg)
+        elif model_name.lower() == "vgg16":
+            VGG16Config(cfg)

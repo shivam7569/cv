@@ -27,7 +27,9 @@ class ClassificationDataset(Dataset):
         if debug is not None:
             self.img_and_class = self.img_and_class[:debug]
 
-        self.transforms = T.Compose(self.parseTransforms(transforms))
+        if transforms is not None:
+            self.transforms = T.Compose(self.parseTransforms(transforms))
+        else: self.transforms = transforms
 
     def parseTransforms(self, transforms):
         transforms_list = []
@@ -81,6 +83,6 @@ class ClassificationDataset(Dataset):
 
         img = self.executePipeline(img_path)
 
-        if self.transforms: img = self.transforms(img)
+        if self.transforms is not None: img = self.transforms(img)
 
         return img, int(_id)

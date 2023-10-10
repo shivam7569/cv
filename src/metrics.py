@@ -51,9 +51,9 @@ class ClassificationMetrics:
         self.normalized_confusion_matrix = self.confusion_matrix / total_gts_per_class
     
     def accuracy(self):
-        tp, _, _, _ = self._get_tp_fp_tn_fn()
+        tp, _, tn, _ = self._get_tp_fp_tn_fn()
         all_samples = np.sum(self.confusion_matrix)
-        acc = np.sum(tp) / (np.sum(all_samples) + self.eps)
+        acc = (np.sum(tp) + np.sum(tn)) / (np.sum(all_samples) + self.eps)
 
         return np.round(acc, decimals=3)
     
