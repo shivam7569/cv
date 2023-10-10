@@ -56,8 +56,8 @@ class ClassificationDataset(Dataset):
             for function in img_pipeline:
                 if function["func"] == "readImage":
                     img = getattr(PF, function["func"])(img_path, **function["params"])
-                elif function["func"] == "alexNetresize":
-                    img = getattr(PF, function["func"])(img)
+                else:
+                    img = getattr(PF, function["func"])(img, **function["params"])
         else:
             Global.LOGGER.error("Cannot proceed without data pipeline")
 

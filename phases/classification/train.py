@@ -64,7 +64,7 @@ class Train:
                     epoch=epoch,
                     chkp_name=checkpoint_name
                 )
-            if Global.CFG.AlexNet.SAVE_EPOCH_CHECKPOINTS:
+            if Global.CFG.CHECKPOINT.SAVE_EPOCH_CHECKPOINTS:
                 self.checkpointer.save(None, "epoch_checkpoint.pth", overwrite=False)
 
             Global.resetEpochMetrics()

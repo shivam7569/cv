@@ -9,12 +9,12 @@ class TensorboardWriter:
 
     def __init__(self):
         summary_path = os.path.join(Global.CFG.TENSORBOARD.PATH, Global.CFG.TENSORBOARD.BASENAME)
-        check_dir(summary_path, create=True)
+        check_dir(summary_path, create=True, forcedCreate=True)
 
         train_summary_path = os.path.join(summary_path, "train")
-        check_dir(train_summary_path, create=True)
+        check_dir(train_summary_path, create=True, forcedCreate=True)
         val_summary_path = os.path.join(summary_path, "val")
-        check_dir(val_summary_path, create=True)
+        check_dir(val_summary_path, create=True, forcedCreate=True)
 
         self.train_writer = SummaryWriter(
             log_dir=train_summary_path,
