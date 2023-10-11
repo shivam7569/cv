@@ -1,7 +1,7 @@
 import os
 import torch
 
-from global_params import Global
+from utils.global_params import Global
 from utils.os_utils import check_dir
 
 class Checkpoint:
@@ -12,7 +12,7 @@ class Checkpoint:
         self.scheduler = scheduler
 
         self.checkpoint_dir = os.path.join(Global.CFG.CHECKPOINT.PATH, Global.CFG.CHECKPOINT.BASENAME)
-        check_dir(self.checkpoint_dir, create=True)
+        check_dir(self.checkpoint_dir, create=True, forcedCreate=True)
 
     def save(self, epoch, chkp_name, overwrite=True):
         chkpt_path = os.path.join(self.checkpoint_dir, chkp_name) 

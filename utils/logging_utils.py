@@ -2,7 +2,7 @@ import os
 import logging
 from datetime import datetime
 import traceback
-from global_params import Global
+from utils.global_params import Global
 from utils.os_utils import check_dir
 
 def initialize_logger():
@@ -13,8 +13,8 @@ def initialize_logger():
 
     log_filepath = os.path.join(Global.CFG.LOGGING.PATH, Global.CFG.LOGGING.NAME)
 
-    check_dir(Global.CFG.LOGGING.PATH, create=True)
-    check_dir(log_filepath, create=True)
+    check_dir(Global.CFG.LOGGING.PATH, create=True, forcedCreate=False)
+    check_dir(log_filepath, create=True, forcedCreate=True)
 
     log_filepath = os.path.join(log_filepath, log_filename)
 

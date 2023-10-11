@@ -1,7 +1,7 @@
 import json
 import numpy as np
 from configs.config import get_cfg
-from global_params import Global
+from utils.global_params import Global
 
 from pycocotools.coco import COCO
 

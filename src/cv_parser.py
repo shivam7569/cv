@@ -1,6 +1,6 @@
 import argparse
 
-from global_params import Global
+from utils.global_params import Global
 
 
 def get_parser():
@@ -12,6 +12,12 @@ def get_parser():
         "--model-name",
         required=True,
         help="model to use"
+    )
+
+    parser.add_argument(
+        "--gpu-devices",
+        required=False,
+        help="gpu devices to use"
     )
 
     return parser

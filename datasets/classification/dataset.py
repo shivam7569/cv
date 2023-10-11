@@ -1,12 +1,8 @@
 import os
 import random
-import cv2
-import numpy as np
-from requests import get
-from sympy import fu
 from torch.utils.data import Dataset
 from torchvision import transforms as T
-from global_params import Global
+from utils.global_params import Global
 from utils.file_utils import read_txt
 import src.pipeline_functions as PF
 from src.custom_transforms import *
@@ -31,7 +27,9 @@ class ClassificationDataset(Dataset):
         if debug is not None:
             self.img_and_class = self.img_and_class[:debug]
 
-        self.transforms = T.Compose(self.parseTransforms(transforms))
+        if transforms is not None:
+            self.transforms = T.Compose(self.parseTransforms(transforms))
+        else: self.transforms = transforms
 
     def parseTransforms(self, transforms):
         transforms_list = []
@@ -60,8 +58,8 @@ class ClassificationDataset(Dataset):
             for function in img_pipeline:
                 if function["func"] == "readImage":
                     img = getattr(PF, function["func"])(img_path, **function["params"])
-                elif function["func"] == "alexNetresize":
-                    img = getattr(PF, function["func"])(img)
+                else:
+                    img = getattr(PF, function["func"])(img, **function["params"])
         else:
             Global.LOGGER.error("Cannot proceed without data pipeline")
 
@@ -85,6 +83,6 @@ class ClassificationDataset(Dataset):
 
         img = self.executePipeline(img_path)
 
-        if self.transforms: img = self.transforms(img)
+        if self.transforms is not None: img = self.transforms(img)
 
         return img, int(_id)
