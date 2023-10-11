@@ -3,6 +3,8 @@ from turtle import forward
 import torch
 import torch.nn as nn
 
+from src.gpu_devices import GPU_Support
+
 
 class VGG16(nn.Module):
 
@@ -78,9 +80,34 @@ class VGG16(nn.Module):
 
         self.classifier = nn.Sequential(self.classifier_layers)
 
+        self.feature_extractor_1 = self.feature_extractor[:10]
+        self.feature_extractor_2 = self.feature_extractor[10:]
+
+        if GPU_Support.support_gpu == 2:
+            self.feature_extractor_1.to("cuda:0")
+            self.feature_extractor_2.to("cuda:1")
+            self.classifier.to("cuda:1")
+        elif GPU_Support.support_gpu == 1:
+            self.feature_extractor.to("cuda:0")
+            self.classifier.to("cuda:0")
+
     def forward(self, x):
-        x = self.feature_extractor(x)
+
+        feature_extractor_1_device = next(self.feature_extractor_1.parameters()).device
+        x = x.cpu()
+        x = x.to(feature_extractor_1_device)
+        x = self.feature_extractor_1(x)
+
+        feature_extractor_2_device = next(self.feature_extractor_2.parameters()).device
+        x = x.cpu()
+        x = x.to(feature_extractor_2_device)
+        x = self.feature_extractor_2(x)
+
         x = torch.flatten(x, start_dim=1)
+
+        classifier_device = next(self.classifier.parameters()).device
+        x = x.cpu()
+        x = x.to(classifier_device)
         x = self.classifier(x)
 
         return x

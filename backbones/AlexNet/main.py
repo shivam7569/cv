@@ -11,11 +11,15 @@ from utils.logging_utils import deleteOldLogs, start_logger
 
 from torch.utils.data import DataLoader
 
+from utils.pytorch_utils import setup_gpu_devices
+
 if __name__ == "__main__":
     try:
         cfg = setup_config()
         Global.setConfiguration(cfg)
         start_logger()
+        setup_gpu_devices()
+        
         Global.LOGGER.info("Configurations and Logger have been initialized")
 
         Global.LOGGER.info(f"Instantiating {cfg.LOGGING.NAME} Architecture for classification on 1000 classes")
@@ -65,7 +69,6 @@ if __name__ == "__main__":
             model=model,
             optimizer=optimizer,
             data_loaders=data_loaders,
-            device=device,
             loss_function=loss_function,
             lr_scheduler=lr_scheduler,
             tb_writer=tb_writer,

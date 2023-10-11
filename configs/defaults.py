@@ -1,5 +1,9 @@
 import logging
+
+import torch
 from configs.config import CfgNode as CN
+
+torch.backends.cudnn.benchmark = True
 
 _C = CN()
 

@@ -2,6 +2,8 @@ from collections import OrderedDict
 import torch
 import torch.nn as nn
 
+from src.gpu_devices import GPU_Support
+
 class AlexNet(nn.Module):
     
     def __init__(self, num_classes, in_channels=3):
@@ -45,6 +47,10 @@ class AlexNet(nn.Module):
         )
 
         self.classifier = nn.Sequential(self.classifier_layers)
+
+        if GPU_Support.support_gpu:
+            self.feature_extractor.to("cuda:0")
+            self.classifier.to("cuda:0")
 
     def forward(self, x):
         x = self.feature_extractor(x)

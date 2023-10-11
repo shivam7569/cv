@@ -14,4 +14,10 @@ def get_parser():
         help="model to use"
     )
 
+    parser.add_argument(
+        "--gpu-devices",
+        required=False,
+        help="gpu devices to use"
+    )
+
     return parser

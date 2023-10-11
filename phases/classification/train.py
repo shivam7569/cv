@@ -2,6 +2,7 @@ from matplotlib.pyplot import sca
 import numpy as np
 import torch
 from tqdm import tqdm
+from src.gpu_devices import GPU_Support
 from src.checkpoints import Checkpoint
 from utils.global_params import Global
 
@@ -14,19 +15,17 @@ class Train:
             model,
             optimizer,
             data_loaders,
-            device,
             loss_function,
             lr_scheduler=None,
             tb_writer=None,
             epochs=100,
     ):
         
-        self.model = model.to(device)
+        self.model = model
         self.optimizer = optimizer
         self.lr_scheduler = lr_scheduler
         self.loss_function = loss_function
         self.epochs = epochs
-        self.device = device
         self.tb_writer = tb_writer
 
         self.train_loader = data_loaders["train"]
@@ -35,7 +34,6 @@ class Train:
         self.evaluation = Eval(
             model=model,
             data_loader=data_loaders["val"],
-            device=device,
             loss_function=loss_function,
             tb_writer=tb_writer
         )
@@ -59,7 +57,7 @@ class Train:
             if self.evaluation.epoch_metrics["f1_score"] > f1_score:
                 f1_score = self.evaluation.epoch_metrics["f1_score"]
                 checkpoint_name = Global.CFG.CHECKPOINT.BASENAME + f"_epoch_{epoch+1}_f1_{f1_score}.pth"
-                Global.LOGGER.info(f"Saving checkpoint for epoch {epoch+1}")
+                Global.LOGGER.info(f"Saving metric checkpoint for epoch {epoch+1}")
                 self.checkpointer.save(
                     epoch=epoch,
                     chkp_name=checkpoint_name
@@ -72,21 +70,24 @@ class Train:
             if self.lr_scheduler is not None:
                 if self.lr_scheduler.__class__.__name__ == "ReduceLROnPlateau":
                     self.lr_scheduler.step(self.evaluation.epoch_metrics["eval_loss"])
-                    if self.tb_writer is not None: 
-                        current_lr = self.optimizer.param_groups[0]['lr']
-                        self.tb_writer.write("scaler")(scalar_name="Learning Rate", scalar_value=current_lr, step=epoch)
+            if self.tb_writer is not None: 
+                current_lr = self.optimizer.param_groups[0]['lr']
+                self.tb_writer.write("scaler")(scalar_name="Learning Rate", scalar_value=current_lr, step=epoch)
 
     def train_for_one_epoch(self, train_loader, epoch):
 
         self.model.train()
-        data_iterator = tqdm(train_loader, desc=f"Training: Epoch {epoch+1}", unit="batches")
+        data_iterator = tqdm(train_loader, desc=f"Training: Epoch {epoch+1}", unit="batch")
         
         epoch_loss = 0
         for batch in data_iterator:
             img_batch, lbl_batch = batch
+
+            if GPU_Support.support_gpu:
+                last_gpu_id = f"cuda:{GPU_Support.support_gpu - 1}"
         
-            img_batch = img_batch.to(self.device)
-            lbl_batch = lbl_batch.to(self.device)
+                img_batch = img_batch.to(last_gpu_id)
+                lbl_batch = lbl_batch.to(last_gpu_id)
 
             if self.tb_writer is not None: self.tb_writer.write("graph")(model=self.model, input_to_model=img_batch)
 
@@ -106,6 +107,11 @@ class Train:
             self.optimizer.step()
 
             epoch_loss += loss.item()
+
+            if self.lr_scheduler is not None:
+                if self.lr_scheduler.__class__.__name__ == "CyclicLR":
+                    self.lr_scheduler.step()
+
 
             data_iterator.set_postfix(loss=loss.item(), refresh=True)
 

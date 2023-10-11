@@ -2,6 +2,8 @@ from tqdm import tqdm
 from time import time
 import multiprocessing as mp
 from torch.utils.data import DataLoader
+from src.cv_parser import get_parser
+from src.gpu_devices import GPU_Support
 
 from utils.global_params import Global
 
@@ -31,3 +33,7 @@ def findOptimalNumWorkers(dataset, phase, batch_size):
 
     optimal_num_workers = dict(sorted(num_workers_time.items(), key=lambda x: x[1], reverse=False))
     return list(optimal_num_workers.keys())[0]
+
+def setup_gpu_devices():
+    args = get_parser().parse_args()
+    GPU_Support.set_gpu_devices(args.gpu_devices)

@@ -1,5 +1,6 @@
 from tqdm import tqdm
 import torch
+from src.gpu_devices import GPU_Support
 
 from src.metrics import ClassificationMetrics
 
@@ -9,14 +10,12 @@ class Eval:
             self,
             model,
             data_loader,
-            device,
             loss_function,
             tb_writer=None,
             num_classes=1000
     ):
-        self.model = model.to(device)
+        self.model = model
         self.data_loader = data_loader
-        self.device = device
         self.loss_function = loss_function
         self.tb_writer = tb_writer
 
@@ -26,12 +25,16 @@ class Eval:
         self.model.eval()
         if self.tb_writer is not None: self.tb_writer.setWriter("val")
 
-        data_iterator = tqdm(self.data_loader, desc=f"Evaluating", unit="batches")
+        data_iterator = tqdm(self.data_loader, desc=f"Evaluating", unit="batch")
         loss = 0
         for batch in data_iterator:
             img_batch, lbl_batch = batch
-            img_batch = img_batch.to(self.device)
-            lbl_batch = lbl_batch.to(self.device)
+
+            if GPU_Support.support_gpu:
+                last_gpu_id = f"cuda:{GPU_Support.support_gpu - 1}"
+
+                img_batch = img_batch.to(last_gpu_id)
+                lbl_batch = lbl_batch.to(last_gpu_id)
 
             with torch.no_grad():
                 output = self.model(img_batch)
