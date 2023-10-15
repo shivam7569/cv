@@ -1,10 +1,9 @@
-from matplotlib.pyplot import sca
 import numpy as np
-import torch
 from tqdm import tqdm
 from src.gpu_devices import GPU_Support
 from src.checkpoints import Checkpoint
 from utils.global_params import Global
+import src.losses as custom_loss_fns
 
 from phases.classification.eval import Eval
 
@@ -19,6 +18,8 @@ class Train:
             lr_scheduler=None,
             tb_writer=None,
             epochs=100,
+            phase_dependent=False,
+            custom_loss=None
     ):
         
         self.model = model
@@ -27,6 +28,8 @@ class Train:
         self.loss_function = loss_function
         self.epochs = epochs
         self.tb_writer = tb_writer
+        self.phase_dependent = phase_dependent
+        self.custom_loss = custom_loss
 
         self.train_loader = data_loaders["train"]
         self.val_loader = data_loaders["val"]
@@ -41,6 +44,8 @@ class Train:
         self.checkpointer = Checkpoint(
             model, optimizer, lr_scheduler
         )
+
+        self.graph_written = False
 
     def start(self):
         f1_score = np.NINF
@@ -70,6 +75,9 @@ class Train:
             if self.lr_scheduler is not None:
                 if self.lr_scheduler.__class__.__name__ == "ReduceLROnPlateau":
                     self.lr_scheduler.step(self.evaluation.epoch_metrics["eval_loss"])
+                if self.lr_scheduler.__class__.__name__ == "MultiStepLR":
+                    self.lr_scheduler.step()
+
             if self.tb_writer is not None: 
                 current_lr = self.optimizer.param_groups[0]['lr']
                 self.tb_writer.write("scaler")(scalar_name="Learning Rate", scalar_value=current_lr, step=epoch)
@@ -89,10 +97,20 @@ class Train:
                 img_batch = img_batch.to(last_gpu_id)
                 lbl_batch = lbl_batch.to(last_gpu_id)
 
-            if self.tb_writer is not None: self.tb_writer.write("graph")(model=self.model, input_to_model=img_batch)
+            if self.tb_writer is not None and not self.graph_written: 
+                self.tb_writer.write("graph")(model=self.model, input_to_model=img_batch)
+                self.graph_written = True
 
-            output = self.model(img_batch)
-            loss = self.loss_function(output, lbl_batch)
+            if self.phase_dependent:
+                output = self.model(img_batch, phase="training")
+            else:
+                output = self.model(img_batch)
+
+            if self.custom_loss:
+                loss_fn = getattr(custom_loss_fns, self.custom_loss)
+                loss = loss_fn(output, lbl_batch, primitive_loss_fn=self.loss_function)
+            else:
+                loss = self.loss_function(output, lbl_batch)
 
             if Global.CFG.REGULARIZATION.MODE in ["L1", "L2"]:
                 if Global.CFG.REGULARIZATION.MODE == "L1":

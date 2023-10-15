@@ -5,8 +5,10 @@
 - [x] [LeNet](http://vision.stanford.edu/cs598_spring07/papers/Lecun98.pdf)
 - [x] [AlexNet](https://proceedings.neurips.cc/paper_files/paper/2012/file/c399862d3b9d6b76c8436e924a68c45b-Paper.pdf)
 - [x] [VGG](https://arxiv.org/abs/1409.1556)
-- [ ] [InceptionNet](https://arxiv.org/abs/1409.4842)
+- [x] [Inception](https://arxiv.org/abs/1409.4842)
+- [ ] [Inception-v2/v3](https://arxiv.org/pdf/1512.00567.pdf)
 - [ ] [ResNet](https://arxiv.org/abs/1512.03385)
+- [ ] [DenseNet](https://arxiv.org/pdf/1608.06993.pdf)
 - [ ] [EfficientNet](https://arxiv.org/abs/1905.11946)
 - [ ] [ConvNeXt](https://arxiv.org/abs/2201.03545)
 - ### Attention based:
