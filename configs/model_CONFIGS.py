@@ -203,3 +203,82 @@ def VGG16Config(cfg):
     cfg.REGULARIZATION = CN()
     cfg.REGULARIZATION.MODE = ''
     cfg.REGULARIZATION.STRENGTH = 0
+
+def InceptionConfig(cfg):
+    from configs.config import CfgNode as CN
+
+    cfg.Inception = CN()
+
+    cfg.CHECKPOINT.SAVE_EPOCH_CHECKPOINTS = True
+    cfg.LOGGING.NAME = "Inception"
+    cfg.METRICS.NAME = "Inception"
+    cfg.CHECKPOINT.BASENAME = "Inception"
+    cfg.TENSORBOARD.BASENAME = "Inception"
+
+    cfg.PIPELINES = CN()
+    cfg.PIPELINES.TRAIN = [
+        dict(func="readImage", params=dict(uint8=True)),
+        dict(func="inceptionv1resize", params=dict(aspect_ratio_min=3/4, aspect_ratio_max=4/3)),
+    ]
+    cfg.PIPELINES.VAL = [
+        dict(func="readImage", params=dict(uint8=True)),
+        dict(func="inceptionv1resize", params=dict(aspect_ratio_min=3/4, aspect_ratio_max=4/3)),
+    ]
+
+    cfg.Inception.DATALOADER_TRAIN_PARAMS = CN()
+    cfg.Inception.DATALOADER_TRAIN_PARAMS.batch_size = 256
+    cfg.Inception.DATALOADER_TRAIN_PARAMS.shuffle = True
+    cfg.Inception.DATALOADER_TRAIN_PARAMS.num_workers = 8
+    cfg.Inception.DATALOADER_TRAIN_PARAMS.pin_memory = True
+    cfg.Inception.DATALOADER_TRAIN_PARAMS.drop_last = True
+
+    cfg.Inception.DATALOADER_VAL_PARAMS = CN()
+    cfg.Inception.DATALOADER_VAL_PARAMS.batch_size = 128
+    cfg.Inception.DATALOADER_VAL_PARAMS.shuffle = True
+    cfg.Inception.DATALOADER_VAL_PARAMS.num_workers = 8
+    cfg.Inception.DATALOADER_VAL_PARAMS.pin_memory = True
+    cfg.Inception.DATALOADER_VAL_PARAMS.drop_last = True
+
+    cfg.Inception.TRANSFORMS = CN()
+    cfg.Inception.TRANSFORMS.TRAIN = [
+        dict(name="ToPILImage", params=None),
+        dict(name="ColorJitter", params=dict(brightness=[0, 1], contrast=[0, 1], saturation=[0, 1], hue=0.3)),
+        dict(name="RandomCrop", params=dict(size=(224, 224), pad_if_needed=False)),
+        dict(name="RandomHorizontalFlip", params=dict(p=0.5)),
+        dict(name="ToTensor", params=None),
+        dict(name="Normalize", params=dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
+    ]
+    cfg.Inception.TRANSFORMS.VAL = [
+        dict(name="ToPILImage", params=None),
+        dict(name="RandomCrop", params=dict(size=(224, 224), pad_if_needed=False)),
+        dict(name="RandomHorizontalFlip", params=dict(p=0.5)),
+        dict(name="ToTensor", params=None),
+        dict(name="Normalize", params=dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
+    ]
+
+    cfg.Inception.OPTIMIZER = CN()
+    cfg.Inception.OPTIMIZER.NAME = "SGD"
+    cfg.Inception.OPTIMIZER.PARAMS = CN()
+    cfg.Inception.OPTIMIZER.PARAMS.lr = 0.01
+    cfg.Inception.OPTIMIZER.PARAMS.momentum = 0.9
+    cfg.Inception.OPTIMIZER.PARAMS.weight_decay = 0.0005
+
+    cfg.Inception.LR_SCHEDULER = CN()
+    cfg.Inception.LR_SCHEDULER.NAME = "MultiStepLR"
+    cfg.Inception.LR_SCHEDULER.PARAMS = CN()
+    cfg.Inception.LR_SCHEDULER.PARAMS.milestones = list(range(0, 450, 8))
+    cfg.Inception.LR_SCHEDULER.PARAMS.gamma = 0.96
+    cfg.Inception.LR_SCHEDULER.PARAMS.verbose = False
+
+    cfg.Inception.LOSS = CN()
+    cfg.Inception.LOSS.NAME = "CrossEntropyLoss"
+    cfg.Inception.LOSS.PARAMS = CN()
+    cfg.Inception.LOSS.PARAMS.weight = None
+    cfg.Inception.LOSS.PARAMS.size_average = None
+    cfg.Inception.LOSS.PARAMS.ignore_index = -100
+    cfg.Inception.LOSS.PARAMS.reduce = None
+    cfg.Inception.LOSS.PARAMS.reduction = "mean"
+
+    cfg.REGULARIZATION = CN()
+    cfg.REGULARIZATION.MODE = ''
+    cfg.REGULARIZATION.STRENGTH = 0

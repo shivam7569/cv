@@ -47,3 +47,5 @@ class ModelConfigs:
             AlexNetConfig(cfg)
         elif model_name.lower() == "vgg16":
             VGG16Config(cfg)
+        elif model_name.lower() == "inception":
+            InceptionConfig(cfg)
