@@ -1,7 +1,7 @@
 import traceback
 
 import torch
-from backbones.InceptionNet.model import Inception
+from backbones import Inception
 from configs.config import setup_config
 from datasets.classification.dataset import ClassificationDataset
 from utils.global_params import Global

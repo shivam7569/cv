@@ -1,7 +1,7 @@
 import traceback
 
 import torch
-from backbones.VGG16.model import VGG16
+from backbones import VGG16
 from configs.config import setup_config
 from datasets.classification.dataset import ClassificationDataset
 from utils.global_params import Global

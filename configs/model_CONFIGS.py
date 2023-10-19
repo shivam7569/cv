@@ -57,11 +57,11 @@ def AlexNetConfig(cfg):
     cfg.PIPELINES = CN()
     cfg.PIPELINES.TRAIN = [
         dict(func="readImage", params=dict(uint8=True)),
-        dict(func="alexNetresize", params=dict()),
+        dict(func="alexNetresize", params=dict())
     ]
     cfg.PIPELINES.VAL = [
         dict(func="readImage", params=dict(uint8=True)),
-        dict(func="alexNetresize", params=dict()),
+        dict(func="alexNetresize", params=dict())
     ]
 
     cfg.AlexNet.DATALOADER_TRAIN_PARAMS = CN()
@@ -89,8 +89,7 @@ def AlexNetConfig(cfg):
     ]
     cfg.AlexNet.TRANSFORMS.VAL = [
         dict(name="ToPILImage", params=None),
-        dict(name="RandomCrop", params=dict(size=(224, 224), pad_if_needed=False)),
-        dict(name="RandomHorizontalFlip", params=dict(p=0.5)),
+        dict(name="CenterCrop", params=dict(size=(224, 224))),
         dict(name="ToTensor", params=None),
         dict(name="Normalize", params=dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
     ]
@@ -103,13 +102,11 @@ def AlexNetConfig(cfg):
     cfg.AlexNet.OPTIMIZER.PARAMS.weight_decay = 0.0005
 
     cfg.AlexNet.LR_SCHEDULER = CN()
-    cfg.AlexNet.LR_SCHEDULER.NAME = "CyclicLR"
+    cfg.AlexNet.LR_SCHEDULER.NAME = "StepLR"
     cfg.AlexNet.LR_SCHEDULER.PARAMS = CN()
-    cfg.AlexNet.LR_SCHEDULER.PARAMS.base_lr = 0.0001
-    cfg.AlexNet.LR_SCHEDULER.PARAMS.max_lr = 0.01
-    cfg.AlexNet.LR_SCHEDULER.PARAMS.step_size_up = 50045 # 5 * len(train_loader)
-    cfg.AlexNet.LR_SCHEDULER.PARAMS.step_size_down = 100090 # 10 * len(train_loader)
-    cfg.AlexNet.LR_SCHEDULER.PARAMS.mode = "triangular2"
+    cfg.AlexNet.LR_SCHEDULER.PARAMS.step_size = 30
+    cfg.AlexNet.LR_SCHEDULER.PARAMS.gamma = 0.1
+    cfg.AlexNet.LR_SCHEDULER.PARAMS.verbose = False
 
     cfg.AlexNet.LOSS = CN()
     cfg.AlexNet.LOSS.NAME = "CrossEntropyLoss"
@@ -137,24 +134,24 @@ def VGG16Config(cfg):
     cfg.PIPELINES = CN()
     cfg.PIPELINES.TRAIN = [
         dict(func="readImage", params=dict(uint8=True)),
-        dict(func="vgg16resize", params=dict(s_min=256, s_max=512)),
+        dict(func="vgg16resize", params=dict(s_min=256, s_max=512))
     ]
     cfg.PIPELINES.VAL = [
         dict(func="readImage", params=dict(uint8=True)),
-        dict(func="vgg16resize", params=dict(s_min=384, s_max=384)),
+        dict(func="resizeWithAspectRatio", params=dict(size=256))
     ]
 
     cfg.VGG16.DATALOADER_TRAIN_PARAMS = CN()
-    cfg.VGG16.DATALOADER_TRAIN_PARAMS.batch_size = 128
+    cfg.VGG16.DATALOADER_TRAIN_PARAMS.batch_size = 32
     cfg.VGG16.DATALOADER_TRAIN_PARAMS.shuffle = True
-    cfg.VGG16.DATALOADER_TRAIN_PARAMS.num_workers = 16
+    cfg.VGG16.DATALOADER_TRAIN_PARAMS.num_workers = 8
     cfg.VGG16.DATALOADER_TRAIN_PARAMS.pin_memory = True
     cfg.VGG16.DATALOADER_TRAIN_PARAMS.drop_last = True
 
     cfg.VGG16.DATALOADER_VAL_PARAMS = CN()
-    cfg.VGG16.DATALOADER_VAL_PARAMS.batch_size = 64
+    cfg.VGG16.DATALOADER_VAL_PARAMS.batch_size = 32
     cfg.VGG16.DATALOADER_VAL_PARAMS.shuffle = True
-    cfg.VGG16.DATALOADER_VAL_PARAMS.num_workers = 16
+    cfg.VGG16.DATALOADER_VAL_PARAMS.num_workers = 8
     cfg.VGG16.DATALOADER_VAL_PARAMS.pin_memory = True
     cfg.VGG16.DATALOADER_VAL_PARAMS.drop_last = True
 
@@ -169,8 +166,7 @@ def VGG16Config(cfg):
     ]
     cfg.VGG16.TRANSFORMS.VAL = [
         dict(name="ToPILImage", params=None),
-        dict(name="RandomCrop", params=dict(size=(224, 224), pad_if_needed=False)),
-        dict(name="RandomHorizontalFlip", params=dict(p=0.5)),
+        dict(name="CenterCrop", params=dict(size=(224, 224))),
         dict(name="ToTensor", params=None),
         dict(name="Normalize", params=dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
     ]
@@ -183,13 +179,11 @@ def VGG16Config(cfg):
     cfg.VGG16.OPTIMIZER.PARAMS.weight_decay = 0.0005
 
     cfg.VGG16.LR_SCHEDULER = CN()
-    cfg.VGG16.LR_SCHEDULER.NAME = "CyclicLR"
+    cfg.VGG16.LR_SCHEDULER.NAME = "StepLR"
     cfg.VGG16.LR_SCHEDULER.PARAMS = CN()
-    cfg.VGG16.LR_SCHEDULER.PARAMS.base_lr = 0.0001
-    cfg.VGG16.LR_SCHEDULER.PARAMS.max_lr = 0.01
-    cfg.VGG16.LR_SCHEDULER.PARAMS.step_size_up = 50045 # 5 * len(train_loader)
-    cfg.VGG16.LR_SCHEDULER.PARAMS.step_size_down = 100090 # 10 * len(train_loader)
-    cfg.VGG16.LR_SCHEDULER.PARAMS.mode = "triangular2"
+    cfg.VGG16.LR_SCHEDULER.PARAMS.step_size = 30
+    cfg.VGG16.LR_SCHEDULER.PARAMS.gamma = 0.1
+    cfg.VGG16.LR_SCHEDULER.PARAMS.verbose = False
 
     cfg.VGG16.LOSS = CN()
     cfg.VGG16.LOSS.NAME = "CrossEntropyLoss"
@@ -218,17 +212,17 @@ def InceptionConfig(cfg):
     cfg.PIPELINES = CN()
     cfg.PIPELINES.TRAIN = [
         dict(func="readImage", params=dict(uint8=True)),
-        dict(func="inceptionv1resize", params=dict(aspect_ratio_min=3/4, aspect_ratio_max=4/3)),
+        dict(func="inceptionv1resize", params=dict(aspect_ratio_min=3/4, aspect_ratio_max=4/3))
     ]
     cfg.PIPELINES.VAL = [
         dict(func="readImage", params=dict(uint8=True)),
-        dict(func="inceptionv1resize", params=dict(aspect_ratio_min=3/4, aspect_ratio_max=4/3)),
+        dict(func="resizeWithAspectRatio", params=dict(size=256))
     ]
 
     cfg.Inception.DATALOADER_TRAIN_PARAMS = CN()
-    cfg.Inception.DATALOADER_TRAIN_PARAMS.batch_size = 256
+    cfg.Inception.DATALOADER_TRAIN_PARAMS.batch_size = 128
     cfg.Inception.DATALOADER_TRAIN_PARAMS.shuffle = True
-    cfg.Inception.DATALOADER_TRAIN_PARAMS.num_workers = 8
+    cfg.Inception.DATALOADER_TRAIN_PARAMS.num_workers = 16
     cfg.Inception.DATALOADER_TRAIN_PARAMS.pin_memory = True
     cfg.Inception.DATALOADER_TRAIN_PARAMS.drop_last = True
 
@@ -250,8 +244,7 @@ def InceptionConfig(cfg):
     ]
     cfg.Inception.TRANSFORMS.VAL = [
         dict(name="ToPILImage", params=None),
-        dict(name="RandomCrop", params=dict(size=(224, 224), pad_if_needed=False)),
-        dict(name="RandomHorizontalFlip", params=dict(p=0.5)),
+        dict(name="CenterCrop", params=dict(size=(224, 224))),
         dict(name="ToTensor", params=None),
         dict(name="Normalize", params=dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
     ]
@@ -278,6 +271,84 @@ def InceptionConfig(cfg):
     cfg.Inception.LOSS.PARAMS.ignore_index = -100
     cfg.Inception.LOSS.PARAMS.reduce = None
     cfg.Inception.LOSS.PARAMS.reduction = "mean"
+
+    cfg.REGULARIZATION = CN()
+    cfg.REGULARIZATION.MODE = ''
+    cfg.REGULARIZATION.STRENGTH = 0
+
+def DenseNetConfig(cfg):
+    from configs.config import CfgNode as CN
+
+    cfg.DenseNet = CN()
+
+    cfg.CHECKPOINT.SAVE_EPOCH_CHECKPOINTS = True
+    cfg.LOGGING.NAME = "DenseNet"
+    cfg.METRICS.NAME = "DenseNet"
+    cfg.CHECKPOINT.BASENAME = "DenseNet"
+    cfg.TENSORBOARD.BASENAME = "DenseNet"
+
+    cfg.PIPELINES = CN()
+    cfg.PIPELINES.TRAIN = [
+        dict(func="readImage", params=dict(uint8=True))
+    ]
+    cfg.PIPELINES.VAL = [
+        dict(func="readImage", params=dict(uint8=True)),
+        dict(func="resizeWithAspectRatio", params=dict(size=256))
+    ]
+
+    cfg.DenseNet.DATALOADER_TRAIN_PARAMS = CN()
+    cfg.DenseNet.DATALOADER_TRAIN_PARAMS.batch_size = 64
+    cfg.DenseNet.DATALOADER_TRAIN_PARAMS.shuffle = True
+    cfg.DenseNet.DATALOADER_TRAIN_PARAMS.num_workers = 8
+    cfg.DenseNet.DATALOADER_TRAIN_PARAMS.pin_memory = True
+    cfg.DenseNet.DATALOADER_TRAIN_PARAMS.drop_last = True
+
+    cfg.DenseNet.DATALOADER_VAL_PARAMS = CN()
+    cfg.DenseNet.DATALOADER_VAL_PARAMS.batch_size = 128
+    cfg.DenseNet.DATALOADER_VAL_PARAMS.shuffle = True
+    cfg.DenseNet.DATALOADER_VAL_PARAMS.num_workers = 8
+    cfg.DenseNet.DATALOADER_VAL_PARAMS.pin_memory = True
+    cfg.DenseNet.DATALOADER_VAL_PARAMS.drop_last = True
+
+    cfg.DenseNet.TRANSFORMS = CN()
+    cfg.DenseNet.TRANSFORMS.TRAIN = [
+        dict(name="FancyPCA", params=dict(alpha_std=0.1)),
+        dict(name="ToPILImage", params=None),
+        dict(name="RandomResizedCrop", params=dict(size=224)),
+        dict(name="ColorJitter", params=dict(brightness=0.4, contrast=0.4, saturation=0.4)),
+        dict(name="RandomHorizontalFlip", params=dict(p=0.5)),
+        dict(name="ToTensor", params=None),
+        dict(name="Normalize", params=dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
+    ]
+    cfg.DenseNet.TRANSFORMS.VAL = [
+        dict(name="ToPILImage", params=None),
+        dict(name="CenterCrop", params=dict(size=(224, 224))),
+        dict(name="ToTensor", params=None),
+        dict(name="Normalize", params=dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
+    ]
+
+    cfg.DenseNet.OPTIMIZER = CN()
+    cfg.DenseNet.OPTIMIZER.NAME = "SGD"
+    cfg.DenseNet.OPTIMIZER.PARAMS = CN()
+    cfg.DenseNet.OPTIMIZER.PARAMS.lr = 0.1
+    cfg.DenseNet.OPTIMIZER.PARAMS.momentum = 0.9
+    cfg.DenseNet.OPTIMIZER.PARAMS.weight_decay = 1e-4
+
+    cfg.DenseNet.LR_SCHEDULER = CN()
+    cfg.DenseNet.LR_SCHEDULER.NAME = "StepLR"
+    cfg.DenseNet.LR_SCHEDULER.PARAMS = CN()
+    cfg.DenseNet.LR_SCHEDULER.PARAMS.step_size = 30
+    cfg.DenseNet.LR_SCHEDULER.PARAMS.gamma = 0.1
+    cfg.DenseNet.LR_SCHEDULER.PARAMS.verbose = False
+
+    cfg.DenseNet.LOSS = CN()
+    cfg.DenseNet.LOSS.NAME = "CrossEntropyLoss"
+    cfg.DenseNet.LOSS.PARAMS = CN()
+    cfg.DenseNet.LOSS.PARAMS.weight = None
+    cfg.DenseNet.LOSS.PARAMS.size_average = None
+    cfg.DenseNet.LOSS.PARAMS.ignore_index = -100
+    cfg.DenseNet.LOSS.PARAMS.reduce = None
+    cfg.DenseNet.LOSS.PARAMS.reduction = "mean"
 
     cfg.REGULARIZATION = CN()
     cfg.REGULARIZATION.MODE = ''

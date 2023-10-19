@@ -91,24 +91,22 @@ class VGG16(nn.Module):
             self.feature_extractor.to("cuda:0")
             self.classifier.to("cuda:0")
 
+    @staticmethod
+    def get_layer_out(layer, input_):
+        if GPU_Support.support_gpu > 1:
+            layer_device = next(layer.parameters()).device
+            input_ = input_.cpu().to(layer_device)
+            out = layer(input_)
+        else:
+            out = layer(input_)
+        return out
+
     def forward(self, x):
 
-        feature_extractor_1_device = next(self.feature_extractor_1.parameters()).device
-        x = x.cpu()
-        x = x.to(feature_extractor_1_device)
-        x = self.feature_extractor_1(x)
-
-        feature_extractor_2_device = next(self.feature_extractor_2.parameters()).device
-        x = x.cpu()
-        x = x.to(feature_extractor_2_device)
-        x = self.feature_extractor_2(x)
-
+        x = VGG16.get_layer_out(self.feature_extractor_1, x)
+        x = VGG16.get_layer_out(self.feature_extractor_2, x)
         x = torch.flatten(x, start_dim=1)
-
-        classifier_device = next(self.classifier.parameters()).device
-        x = x.cpu()
-        x = x.to(classifier_device)
-        x = self.classifier(x)
-
+        x = VGG16.get_layer_out(self.classifier, x)
+        
         return x
     
