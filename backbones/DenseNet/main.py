@@ -1,7 +1,7 @@
 import traceback
 
 import torch
-from backbones import AlexNet
+from backbones import DenseNet
 from configs.config import setup_config
 from datasets.classification.dataset import ClassificationDataset
 from utils.global_params import Global
@@ -19,44 +19,51 @@ if __name__ == "__main__":
         Global.setConfiguration(cfg)
         start_logger()
         setup_gpu_devices()
-        
+
         Global.LOGGER.info("Configurations and Logger have been initialized")
 
         Global.LOGGER.info(f"Instantiating {cfg.LOGGING.NAME} Architecture for classification on 1000 classes")
-        model = AlexNet(num_classes=1000)
+        model = DenseNet(num_classes=1000)
         Global.LOGGER.info(f"{cfg.LOGGING.NAME} Architecture instantiated")
 
-        Global.LOGGER.info(f"Instantiating Optimizer: {cfg.AlexNet.OPTIMIZER.NAME}")
-        optimizer = getattr(torch.optim, cfg.AlexNet.OPTIMIZER.NAME)(model.parameters(), **cfg.AlexNet.OPTIMIZER.PARAMS)
+        Global.LOGGER.info(f"Instantiating Optimizer: {cfg.DenseNet.OPTIMIZER.NAME}")
+        optimizer = getattr(torch.optim, cfg.DenseNet.OPTIMIZER.NAME)(model.parameters(), **cfg.DenseNet.OPTIMIZER.PARAMS)
         Global.LOGGER.info(f"Optimizer instantiated")
 
-        train_dataset = ClassificationDataset("train", transforms=cfg.AlexNet.TRANSFORMS.TRAIN, debug=None)
-        val_dataset = ClassificationDataset("val", transforms=cfg.AlexNet.TRANSFORMS.VAL, debug=None)
+        train_dataset = ClassificationDataset("train", transforms=cfg.DenseNet.TRANSFORMS.TRAIN, debug=None)
+        val_dataset = ClassificationDataset("val", transforms=cfg.DenseNet.TRANSFORMS.VAL, debug=None)
 
         Global.LOGGER.info(f"Intantiating data loaders for training and validation")
         data_loaders = {}
 
         data_loaders["train"] = DataLoader(
             dataset=train_dataset,
-            **cfg.AlexNet.DATALOADER_TRAIN_PARAMS
+            **cfg.DenseNet.DATALOADER_TRAIN_PARAMS
         )
         data_loaders["val"] = DataLoader(
             dataset=val_dataset,
-            **cfg.AlexNet.DATALOADER_VAL_PARAMS
+            **cfg.DenseNet.DATALOADER_VAL_PARAMS
         )
 
         Global.LOGGER.info(f"Data loaders instantiated")
 
-        Global.LOGGER.info(f"Instantiating Learning Rate Scheduler: {cfg.AlexNet.LR_SCHEDULER.NAME}")
-        lr_scheduler = getattr(
-            torch.optim.lr_scheduler, cfg.AlexNet.LR_SCHEDULER.NAME
-            )(optimizer, **cfg.AlexNet.LR_SCHEDULER.PARAMS)
+        Global.LOGGER.info(f"Instantiating Learning Rate Scheduler: {cfg.DenseNet.LR_SCHEDULER.NAME}")
+
+        if cfg.DenseNet.LR_SCHEDULER.NAME == "LambdaLR":
+            lr_lambda = lambda epoch: 0.96 * epoch
+            lr_scheduler = getattr(
+                torch.optim.lr_scheduler, cfg.DenseNet.LR_SCHEDULER.NAME
+                )(optimizer, lr_lambda=lr_lambda, **cfg.DenseNet.LR_SCHEDULER.PARAMS)
+        else: 
+            lr_scheduler = getattr(
+                torch.optim.lr_scheduler, cfg.DenseNet.LR_SCHEDULER.NAME
+                )(optimizer, **cfg.DenseNet.LR_SCHEDULER.PARAMS)
         Global.LOGGER.info(f"Learning Rate Scheduler instantiated")
 
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
-        Global.LOGGER.info(f"Instantiating Loss Function: {cfg.AlexNet.LOSS.NAME}")
-        loss_function = getattr(torch.nn, cfg.AlexNet.LOSS.NAME)(**cfg.AlexNet.LOSS.PARAMS)
+        Global.LOGGER.info(f"Instantiating Loss Function: {cfg.DenseNet.LOSS.NAME}")
+        loss_function = getattr(torch.nn, cfg.DenseNet.LOSS.NAME)(**cfg.DenseNet.LOSS.PARAMS)
         Global.LOGGER.info(f"Loss Function instantiated")
 
         Global.LOGGER.info(f"Initializing Tensorboard writer")

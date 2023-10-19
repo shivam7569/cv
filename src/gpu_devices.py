@@ -6,7 +6,7 @@ from utils.global_params import Global
 
 class GPU_Support:
 
-    support_gpu = 1
+    support_gpu = 0
 
     @staticmethod
     def set_gpu_devices(gpu_devices=-1):

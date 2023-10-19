@@ -23,6 +23,28 @@ def readImage(img_path, uint8):
 
     return img
 
+def resizeWithAspectRatio(img, size):
+    # aspect_ratio = h/w
+    img_h, img_w = img.shape[:2]
+    aspect_ratio = img_h / img_w
+
+    if img_h < img_w:
+
+        if img_h == size: return img
+
+        new_h = size
+        new_w = int(new_h / aspect_ratio)
+    else:
+
+        if img_w == size: return img
+        
+        new_w = size
+        new_h = int(new_w * aspect_ratio)
+    
+    img = cv2.resize(img, (new_w, new_h))
+
+    return img
+
 def alexNetresize(img):
 
     # aspect_ratio = h/w

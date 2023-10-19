@@ -75,7 +75,7 @@ class Train:
             if self.lr_scheduler is not None:
                 if self.lr_scheduler.__class__.__name__ == "ReduceLROnPlateau":
                     self.lr_scheduler.step(self.evaluation.epoch_metrics["eval_loss"])
-                if self.lr_scheduler.__class__.__name__ == "MultiStepLR":
+                if self.lr_scheduler.__class__.__name__ in ["MultiStepLR", "StepLR"]:
                     self.lr_scheduler.step()
 
             if self.tb_writer is not None: 
@@ -97,7 +97,7 @@ class Train:
                 img_batch = img_batch.to(last_gpu_id)
                 lbl_batch = lbl_batch.to(last_gpu_id)
 
-            if self.tb_writer is not None and not self.graph_written: 
+            if self.tb_writer is not None and not self.graph_written:
                 self.tb_writer.write("graph")(model=self.model, input_to_model=img_batch)
                 self.graph_written = True
 

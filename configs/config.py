@@ -49,3 +49,5 @@ class ModelConfigs:
             VGG16Config(cfg)
         elif model_name.lower() == "inception":
             InceptionConfig(cfg)
+        elif model_name.lower() == "densenet":
+            DenseNetConfig(cfg)
