@@ -2,6 +2,7 @@ from collections import OrderedDict
 import csv
 import os
 import numpy as np
+from sklearn.metrics import accuracy_score
 from utils.global_params import Global
 from utils.os_utils import check_file
 
@@ -15,15 +16,23 @@ class ClassificationMetrics:
         self.confusion_matrix = np.zeros((self.num_classes, self.num_classes), dtype=np.longlong)
         self.metrics_aggregated = OrderedDict()
 
+        self.epoch_labels = []
+        self.epoch_preds = []
+
     def update(self, lbls, pred):
         batch_confusion_matrix = np.zeros((self.num_classes, self.num_classes), dtype=np.longlong)
-        for pr,gt  in zip(pred, lbls):
+        for pr, gt in zip(pred, lbls):
             batch_confusion_matrix[gt, pr] += 1
         self.confusion_matrix += batch_confusion_matrix
+
+        self.epoch_labels.extend(lbls)
+        self.epoch_preds.extend(pred)
 
     def reset(self):
         self.confusion_matrix = np.zeros((self.num_classes, self.num_classes), dtype=np.longlong)
         self.metrics_aggregated = OrderedDict()
+        self.epoch_labels = []
+        self.epoch_preds = []
 
     def _get_tp_fp_tn_fn(self):
         
@@ -51,8 +60,7 @@ class ClassificationMetrics:
         self.normalized_confusion_matrix = self.confusion_matrix / total_gts_per_class
     
     def accuracy(self):
-        tp, fp, tn, fn = self._get_tp_fp_tn_fn()
-        acc = (tp + tn) / (tp + fp + tn + fn)
+        acc = accuracy_score(self.epoch_labels, self.epoch_preds)
 
         return np.round(acc, decimals=3)
     

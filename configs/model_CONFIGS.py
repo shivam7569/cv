@@ -72,9 +72,9 @@ def AlexNetConfig(cfg):
     cfg.AlexNet.DATALOADER_TRAIN_PARAMS.drop_last = True
 
     cfg.AlexNet.DATALOADER_VAL_PARAMS = CN()
-    cfg.AlexNet.DATALOADER_VAL_PARAMS.batch_size = 32
+    cfg.AlexNet.DATALOADER_VAL_PARAMS.batch_size = 128
     cfg.AlexNet.DATALOADER_VAL_PARAMS.shuffle = True
-    cfg.AlexNet.DATALOADER_VAL_PARAMS.num_workers = 16
+    cfg.AlexNet.DATALOADER_VAL_PARAMS.num_workers = 8
     cfg.AlexNet.DATALOADER_VAL_PARAMS.pin_memory = True
     cfg.AlexNet.DATALOADER_VAL_PARAMS.drop_last = True
 
