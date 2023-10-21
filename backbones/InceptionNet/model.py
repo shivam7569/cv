@@ -3,6 +3,10 @@ import torch.nn as nn
 
 from src.gpu_devices import GPU_Support
 
+"""
+The code has nested classes, which I later realised is not a good practice
+"""
+
 class Inception(nn.Module):
 
     class InceptioModule(nn.Module):
