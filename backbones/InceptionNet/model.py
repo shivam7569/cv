@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import torch.nn as nn
 
@@ -74,10 +75,21 @@ class Inception(nn.Module):
                 in_channels=in_channels, out_channels=out_channels,
                 kernel_size=kernel_size, stride=stride, padding=padding
             )
+            self.bn = nn.BatchNorm2d(num_features=out_channels)
             self.relu = nn.ReLU()
+
+            self.initializeConv()
+
+        def initializeConv(self):
+            nn.init.xavier_normal_(self.conv.weight)
+            nn.init.constant_(self.conv.bias, val=0.0)
+
+            nn.init.constant_(self.bn.weight, 1)
+            nn.init.constant_(self.bn.bias, 0)
 
         def forward(self, x):
             x = self.conv(x)
+            x = self.bn(x)
             x = self.relu(x)
 
             return x

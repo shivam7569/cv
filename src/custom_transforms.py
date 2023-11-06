@@ -2,10 +2,15 @@ import numpy as np
 
 class FancyPCA:
 
-    def __init__(self, alpha_std=0.1):
+    def __init__(self, alpha_std=0.1, p=0.5):
         self.alpha_std = alpha_std
+        self.p = p
 
     def __call__(self, img):
+
+        if self.p < np.random.random():
+            return img
+
         orig_img = img.astype(float).copy()
         img = img / 255.0
 

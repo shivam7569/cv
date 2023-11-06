@@ -103,3 +103,26 @@ def inceptionv1resize(img, aspect_ratio_min, aspect_ratio_max):
     img = cv2.resize(img, (new_w, new_h), interpolation=interpolation_method)
 
     return img
+
+def inceptionv2resize(img, aspect_ratio_min, aspect_ratio_max):
+
+    aspect_ratio = random.uniform(aspect_ratio_min, aspect_ratio_max)
+
+    # aspect_ratio = w/h
+    img_h, img_w = img.shape[:2]
+
+    if img_h < img_w:
+        new_h = 340
+        new_w = int(new_h * aspect_ratio)
+        if new_w < 299: new_w = 299
+    else:
+        new_w = 340
+        new_h = int(new_w / aspect_ratio)
+        if new_h < 299: new_h = 299
+
+    interpolation_methods = [cv2.INTER_LINEAR, cv2.INTER_AREA, cv2.INTER_NEAREST, cv2.INTER_CUBIC]
+    interpolation_method = random.choice(interpolation_methods)
+
+    img = cv2.resize(img, (new_w, new_h), interpolation=interpolation_method)
+
+    return img

@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 from tqdm import tqdm
 from src.gpu_devices import GPU_Support
 from src.checkpoints import Checkpoint
@@ -19,7 +20,8 @@ class Train:
             tb_writer=None,
             epochs=100,
             phase_dependent=False,
-            custom_loss=None
+            custom_loss=None,
+            gradient_clipping=None
     ):
         
         self.model = model
@@ -30,6 +32,7 @@ class Train:
         self.tb_writer = tb_writer
         self.phase_dependent = phase_dependent
         self.custom_loss = custom_loss
+        self.gradient_clipping = gradient_clipping
 
         self.train_loader = data_loaders["train"]
         self.val_loader = data_loaders["val"]
@@ -77,6 +80,9 @@ class Train:
                     self.lr_scheduler.step(self.evaluation.epoch_metrics["eval_loss"])
                 if self.lr_scheduler.__class__.__name__ in ["MultiStepLR", "StepLR"]:
                     self.lr_scheduler.step()
+                if self.lr_scheduler.__class__.__name__ == "ExponentialLR":
+                    if (epoch + 1) % 2 == 0:
+                        self.lr_scheduler.step()
 
             if self.tb_writer is not None: 
                 current_lr = self.optimizer.param_groups[0]['lr']
@@ -122,6 +128,10 @@ class Train:
 
             self.optimizer.zero_grad()
             loss.backward()
+
+            if self.gradient_clipping is not None:
+                torch.nn.utils.clip_grad.clip_grad_value_(self.model.parameters(), clip_value=self.gradient_clipping)
+
             self.optimizer.step()
 
             epoch_loss += loss.item()
@@ -136,4 +146,4 @@ class Train:
         epoch_loss /= len(train_loader)
         Global.LOGGER.info(f"\nTraining loss for epoch {epoch+1}: {round(epoch_loss, 3)}")
             
-        return round(epoch_loss, 3)
+        return epoch_loss

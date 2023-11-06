@@ -8,7 +8,6 @@ from src.gpu_devices import GPU_Support
 """
 The code has nested classes, which I later realised is not a good practice
 """
-# TODO: Make this variant agnostic
 
 class DenseNet(nn.Module):
 
