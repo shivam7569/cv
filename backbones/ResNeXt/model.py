@@ -4,16 +4,18 @@ import torch.nn as nn
 
 from src.gpu_devices import GPU_Support
 
-
 class ResidualGroup(nn.ModuleList):
-    def __init__(self, num_blocks, in_channels, channels_1x1_in, channels_3x3, channels_1x1_out, bold=True):
+    def __init__(self, num_blocks, in_channels, channels_1x1_in,
+                channels_3x3, channels_1x1_out, bold=True, cardinality=32):
+        
         super(ResidualGroup, self).__init__()
 
         downsample = True
         for _ in range(num_blocks):
             block = ResidualBlock(
-                in_channels=in_channels, channels_1x1_in=channels_1x1_in, channels_3x3=channels_3x3,
-                channels_1x1_out=channels_1x1_out, bold=bold, downsample=downsample
+                in_channels=in_channels, channels_1x1_in=channels_1x1_in,
+                channels_3x3=channels_3x3, channels_1x1_out=channels_1x1_out,
+                bold=bold, cardinality=cardinality, downsample=downsample
             )
             in_channels = channels_1x1_out
             if not bold: bold = True
@@ -28,31 +30,35 @@ class ResidualGroup(nn.ModuleList):
     
 class ResidualBlock(nn.Module):
     def __init__(self, in_channels, channels_1x1_in, channels_3x3,
-                channels_1x1_out, bold=True, downsample=True):
+                channels_1x1_out, bold=True, cardinality=32, downsample=True):
         
         super(ResidualBlock, self).__init__()
 
         downsample_conv_stride = 1 if bold else 2
+
         self.block = nn.Sequential(
             ConvBlock(
                 in_channels=in_channels, out_channels=channels_1x1_in,
-                kernel_size=1, stride=1, padding=0, activation=True
+                kernel_size=1, stride=1, padding=0,
+                groups=1, activation=True
             ),
             ConvBlock(
                 in_channels=channels_1x1_in, out_channels=channels_3x3,
-                kernel_size=3, stride=downsample_conv_stride, padding=1, activation=True
+                kernel_size=3, stride=downsample_conv_stride, padding=1,
+                groups=cardinality, activation=True
             ),
             ConvBlock(
                 in_channels=channels_3x3, out_channels=channels_1x1_out,
-                kernel_size=1, stride=1, padding=0, activation=False
+                kernel_size=1, stride=1, padding=0,
+                groups=1, activation=False
             )
         )
 
         if downsample:
-            downsample_stride = 1 if bold else 2
+            identity_downsample_stride = 1 if bold else 2
             self.identity_downsample = ConvBlock(
                 in_channels=in_channels, out_channels=channels_1x1_out,
-                kernel_size=1, stride=downsample_stride, padding=0, activation=False
+                kernel_size=1, stride=identity_downsample_stride, padding=0, activation=False
             )
             self.initializeConv(kernel_size=1, channels=channels_1x1_out)
         else:
@@ -68,7 +74,7 @@ class ResidualBlock(nn.Module):
 
     def forward(self, x):
         block_out = self.block(x)
-        if self.identity_downsample is not None:    
+        if self.identity_downsample is not None:
             x = self.identity_downsample(x)
         out = torch.add(x, block_out)
         out = nn.ReLU(inplace=True)(out)
@@ -76,12 +82,12 @@ class ResidualBlock(nn.Module):
         return out
     
 class ConvBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, stride, padding, activation=True):
+    def __init__(self, in_channels, out_channels, kernel_size, stride, padding, groups, activation=True):
         super(ConvBlock, self).__init__()
 
         self.conv = nn.Conv2d(
             in_channels=in_channels, out_channels=out_channels,
-            kernel_size=kernel_size, stride=stride, padding=padding
+            kernel_size=kernel_size, stride=stride, padding=padding, groups=groups
         )
         self.bn = nn.BatchNorm2d(num_features=out_channels)
         self.relu = nn.ReLU(inplace=True) if activation else None
@@ -103,10 +109,10 @@ class ConvBlock(nn.Module):
 
         return x
 
-class ResNet(nn.Module):
+class ResNeXt(nn.Module):
 
     def __init__(self, num_classes, in_channels=3):
-        super(ResNet, self).__init__()
+        super(ResNeXt, self).__init__()
 
         self.init_features = nn.Sequential(
             nn.Conv2d(
@@ -119,20 +125,20 @@ class ResNet(nn.Module):
         )
 
         self.res_group_1 = ResidualGroup(
-            num_blocks=3, in_channels=64, channels_1x1_in=64,
-            channels_3x3=64, channels_1x1_out=256, bold=True
+            num_blocks=3, in_channels=64, channels_1x1_in=128,
+            channels_3x3=128, channels_1x1_out=256, bold=True, cardinality=32
         )
         self.res_group_2 = ResidualGroup(
-            num_blocks=4, in_channels=256, channels_1x1_in=128,
-            channels_3x3=128, channels_1x1_out=512, bold=False
+            num_blocks=4, in_channels=256, channels_1x1_in=256,
+            channels_3x3=256, channels_1x1_out=512, bold=False, cardinality=32
         )
         self.res_group_3 = ResidualGroup(
-            num_blocks=6, in_channels=512, channels_1x1_in=256,
-            channels_3x3=256, channels_1x1_out=1024, bold=False
+            num_blocks=6, in_channels=512, channels_1x1_in=512,
+            channels_3x3=512, channels_1x1_out=1024, bold=False, cardinality=32
         )
         self.res_group_4 = ResidualGroup(
-            num_blocks=3, in_channels=1024, channels_1x1_in=512,
-            channels_3x3=512, channels_1x1_out=2048, bold=False
+            num_blocks=3, in_channels=1024, channels_1x1_in=1024,
+            channels_3x3=1024, channels_1x1_out=2048, bold=False, cardinality=32
         )
 
         self.classifier = nn.Sequential(
@@ -183,4 +189,3 @@ class ResNet(nn.Module):
         x = self.classifier(x)
 
         return x
-    

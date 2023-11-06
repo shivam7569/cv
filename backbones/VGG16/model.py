@@ -1,5 +1,6 @@
 from collections import OrderedDict
 from turtle import forward
+import numpy as np
 import torch
 import torch.nn as nn
 
@@ -80,8 +81,28 @@ class VGG16(nn.Module):
 
         self.classifier = nn.Sequential(self.classifier_layers)
 
+        self.initialize()
+
         self.feature_extractor_1 = self.feature_extractor[:10]
         self.feature_extractor_2 = self.feature_extractor[10:]
+
+        self.getLayerToCuda()
+
+    def vgg_init(self, convLayer):
+
+        init_n = (convLayer.kernel_size[0] ** 2) * convLayer.out_channels
+        init_mean = 0.0
+        init_std = np.sqrt(2 / init_n)
+
+        nn.init.normal_(convLayer.weight, mean=init_mean, std=init_std)
+        nn.init.constant_(convLayer.bias, val=0.0)
+
+    def initialize(self):
+        for module in self.feature_extractor.modules():
+            if isinstance(module, nn.Conv2d):
+                self.vgg_init(module)
+
+    def getLayerToCuda(self):
 
         if GPU_Support.support_gpu == 2:
             self.feature_extractor_1.to("cuda:0")
