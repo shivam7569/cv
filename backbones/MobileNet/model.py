@@ -135,7 +135,7 @@ class ConvBlock(nn.Module):
         self.bn = nn.BatchNorm2d(num_features=out_channels)
         self.relu = nn.ReLU(inplace=True)
 
-        # self.initializeConv(kernel_size=kernel_size, channels=out_channels)
+        self.initializeConv(kernel_size=kernel_size, channels=out_channels)
 
     def initializeConv(self, kernel_size, channels):
         init_n = (kernel_size ** 2) * channels

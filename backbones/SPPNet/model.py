@@ -1,14 +1,17 @@
 from collections import OrderedDict
+import math
 import torch
 import torch.nn as nn
 
 from src.gpu_devices import GPU_Support
 
-class AlexNet(nn.Module):
+class SPPNet(nn.Module):
     
-    def __init__(self, num_classes, in_channels=3, toCuda=False):
+    def __init__(self, num_classes, in_channels=3, levels=[3, 2, 1], toCuda=True):
         
-        super(AlexNet, self).__init__()
+        super(SPPNet, self).__init__()
+
+        self.levels = levels
 
         self.feature_extractor_layers = OrderedDict(
             [
@@ -27,8 +30,7 @@ class AlexNet(nn.Module):
                 ("relu4", nn.ReLU(inplace=True)),
 
                 ("conv5", nn.Conv2d(in_channels=384, out_channels=256, kernel_size=3, padding=1)),
-                ("relu5", nn.ReLU(inplace=True)),
-                ("pool5", nn.MaxPool2d(kernel_size=3, stride=2)),
+                ("relu5", nn.ReLU(inplace=True))
             ]
         )
 
@@ -37,7 +39,7 @@ class AlexNet(nn.Module):
         self.classifier_layers = OrderedDict(
             [
                 ("dropout1", nn.Dropout(p=0.5)),
-                ("fc1", nn.Linear(256*5*5, 4096)),
+                ("fc1", nn.Linear(256*2*7, 4096)),
                 ("relu_fc1", nn.ReLU(inplace=True)),
                 ("dropout2", nn.Dropout(p=0.5)),
                 ("fc2", nn.Linear(4096, 4096)),
@@ -52,10 +54,28 @@ class AlexNet(nn.Module):
             if GPU_Support.support_gpu:
                 self.feature_extractor.to("cuda:0")
                 self.classifier.to("cuda:0")
+    
+    def _spp_pyramid(self, x):
+        a = x.shape[-1]
+        spp_layer_outs = [torch.flatten(self._spp_level(a=a, n=i)(x), start_dim=1) for i in self.levels]
+        spp_out = torch.cat(spp_layer_outs, dim=1)
+
+        return spp_out
+
+    def _spp_level(self, a, n):
+        window_size = math.ceil(a/n)
+        stride = math.floor(a/n)
+
+        max_pool = nn.MaxPool2d(kernel_size=window_size, stride=stride)
+
+        if GPU_Support.support_gpu:
+            max_pool.to("cuda:0")
+
+        return max_pool
 
     def forward(self, x):
         x = self.feature_extractor(x)
-        x = torch.flatten(x, start_dim=1)
-        x = self.classifier(x)
+        spp_out = self._spp_pyramid(x)
+        logits = self.classifier(spp_out)
 
-        return x
+        return logits

@@ -7,3 +7,6 @@ from backbones.InceptionNet_v2.model import Inceptionv2
 from backbones.InceptionNet_v3.model import Inceptionv3
 from backbones.ResNeXt.model import ResNeXt
 from backbones.MobileNet.model import MobileNet
+from backbones.MobileNet_v2.model import MobileNetv2
+from backbones.SENet.model import SENet
+from backbones.SPPNet.model import SPPNet
