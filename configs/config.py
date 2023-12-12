@@ -61,3 +61,13 @@ class ModelConfigs:
             ResNeXtConfig(cfg)
         elif model_name.lower() == "mobilenet":
             MobileNetConfig(cfg)
+        elif model_name.lower() == "mobilenetv2":
+            MobileNetv2Config(cfg)
+        elif model_name.lower() == "senet":
+            SENetConfig(cfg)
+        elif model_name.lower() == "rcnn":
+            RCNNConfig(cfg)
+        elif model_name.lower() == "sppnet":
+            SPPNetConfig(cfg)
+        elif model_name.lower() == "fast_rcnn":
+            Fast_RCNNConfig(cfg)

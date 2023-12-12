@@ -9,7 +9,7 @@ from src.gpu_devices import GPU_Support
 
 class VGG16(nn.Module):
 
-    def __init__(self, num_classes, in_channels=3):
+    def __init__(self, num_classes, in_channels=3, toCuda=True):
         super(VGG16, self).__init__()
 
         self.feature_extractor_layers = OrderedDict(
@@ -86,7 +86,7 @@ class VGG16(nn.Module):
         self.feature_extractor_1 = self.feature_extractor[:10]
         self.feature_extractor_2 = self.feature_extractor[10:]
 
-        self.getLayerToCuda()
+        if toCuda: self.getLayerToCuda()
 
     def vgg_init(self, convLayer):
 

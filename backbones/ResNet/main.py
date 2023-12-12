@@ -54,6 +54,11 @@ if __name__ == "__main__":
             lr_scheduler = getattr(
                 torch.optim.lr_scheduler, cfg.ResNet.LR_SCHEDULER.NAME
                 )(optimizer, lr_lambda=lr_lambda, **cfg.ResNet.LR_SCHEDULER.PARAMS)
+        elif cfg.ResNet.LR_SCHEDULER.NAME == "MultiplicativeLR":
+            lr_lambda = lambda epoch: cfg.ResNet.LR_SCHEDULER.FACTOR
+            lr_scheduler = getattr(
+                torch.optim.lr_scheduler, cfg.ResNet.LR_SCHEDULER.NAME
+            )(optimizer, lr_lambda=lr_lambda, **cfg.ResNet.LR_SCHEDULER.PARAMS)
         else: 
             lr_scheduler = getattr(
                 torch.optim.lr_scheduler, cfg.ResNet.LR_SCHEDULER.NAME

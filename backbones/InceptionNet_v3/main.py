@@ -78,6 +78,7 @@ if __name__ == "__main__":
             data_loaders=data_loaders,
             loss_function=loss_function,
             lr_scheduler=lr_scheduler,
+            lr_scheduler_step=2,
             tb_writer=tb_writer,
             epochs=1000,
             phase_dependent=True,
