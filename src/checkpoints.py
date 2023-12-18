@@ -12,7 +12,7 @@ class Checkpoint:
         self.scheduler = scheduler
 
         self.checkpoint_dir = os.path.join(Global.CFG.CHECKPOINT.PATH, Global.CFG.CHECKPOINT.BASENAME)
-        check_dir(self.checkpoint_dir, create=True, forcedCreate=True)
+        check_dir(self.checkpoint_dir, create=True, forcedCreate=True, tree=Global.CFG.CHECKPOINT.TREE)
 
     def save(self, epoch, chkp_name, overwrite=True):
         chkpt_path = os.path.join(self.checkpoint_dir, chkp_name) 
@@ -32,4 +32,9 @@ class Checkpoint:
             chkpts = [i for i in os.listdir(self.checkpoint_dir) if i != chkp_name]
             for chkpt in chkpts:
                 os.remove(os.path.join(self.checkpoint_dir, chkpt))
+
+    @staticmethod
+    def load(model, checkpoint_filepath):
+        checkpoint = torch.load(checkpoint_filepath)
+        model.load_state_dict(checkpoint['model_state_dict'])
         

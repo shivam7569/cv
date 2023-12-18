@@ -63,3 +63,4 @@ class Eval:
             self.tb_writer.write("scaler")(scalar_name="Eval F1 Score", scalar_value=self.epoch_metrics["f1_score"], step=epoch)
 
         self.metrics.reset()
+        if self.tb_writer is not None: self.tb_writer.setWriter("train")

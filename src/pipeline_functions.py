@@ -126,3 +126,43 @@ def inceptionv2resize(img, aspect_ratio_min, aspect_ratio_max):
     img = cv2.resize(img, (new_w, new_h), interpolation=interpolation_method)
 
     return img
+
+def extractROI(img, roi_bbox, dilated=0):
+
+    x1, y1, x2, y2 = roi_bbox
+
+    dilated_x1 = max(x1 - dilated, 0)
+    dilated_y1 = max(y1 - dilated, 0)
+    dilated_x2 = min(x2 + dilated, img.shape[1])
+    dilated_y2 = min(y2 + dilated, img.shape[0])
+
+    roi = img[dilated_y1: dilated_y2, dilated_x1: dilated_x2]
+
+    return roi
+
+def rcnn_warpROI(roi, size):
+    scale_x = size[0] / roi.shape[1]
+    scale_y = size[1] / roi.shape[0]
+
+    affine_matrix = np.array([[scale_x, 0, 0], [0, scale_y, 0]], dtype=np.float32)
+
+    warped_roi = cv2.warpAffine(roi, affine_matrix, size)
+
+    return warped_roi
+
+def fast_rcnn_resize(img, min_size, max_size):
+    img = resizeWithAspectRatio(img=img, size=min_size)
+    img_h, img_w = img.shape[:2]
+
+    aspect_ratio = img_h / img_w
+
+    if img_h > max_size:
+        new_h = max_size
+        new_w = int(new_h / aspect_ratio)
+        img = cv2.resize(img, (new_w, new_h))
+    elif img_w > max_size:
+        new_w = max_size
+        new_h = int(new_w * aspect_ratio)
+        img = cv2.resize(img, (new_w, new_h))
+
+    return img

@@ -10,3 +10,4 @@ from backbones.MobileNet.model import MobileNet
 from backbones.MobileNet_v2.model import MobileNetv2
 from backbones.SENet.model import SENet
 from backbones.SPPNet.model import SPPNet
+from backbones.attention.ViT.model import ViT

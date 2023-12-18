@@ -1,3 +1,4 @@
+import cv2
 import numpy as np
 
 class FancyPCA:
@@ -40,3 +41,21 @@ class FancyPCA:
         orig_img = orig_img.astype(np.uint8)
 
         return orig_img
+
+class DetectionHorizontalFlip:
+
+    def __init__(self, p=0.5):
+        self.p = p
+
+    def __call__(self, data):
+        img, bboxes, anns = data
+        _, img_w = img.shape[:2]
+
+        if self.p < np.random.random():
+            return img, bboxes, anns
+
+        img = cv2.flip(img, flipCode=1)
+        bboxes[:, [0, 2]] = img_w - bboxes[:, [2, 0]]
+        anns[:, [0, 2]] = img_w - anns[:, [2, 0]]
+
+        return img, bboxes, anns

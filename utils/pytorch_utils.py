@@ -1,3 +1,4 @@
+import torch
 from tqdm import tqdm
 from time import time
 import multiprocessing as mp
@@ -37,3 +38,6 @@ def findOptimalNumWorkers(dataset, phase, batch_size):
 def setup_gpu_devices():
     args = get_parser().parse_args()
     GPU_Support.set_gpu_devices(args.gpu_devices)
+
+def numpy2tensor(array):
+    return torch.from_numpy(array)

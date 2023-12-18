@@ -40,3 +40,6 @@ _C.CHECKPOINT.PATH = "/media/drive6/hqh2kor/projects/cv/checkpoints/"
 
 _C.TENSORBOARD = CN()
 _C.TENSORBOARD.PATH = "/media/drive6/hqh2kor/projects/cv/tensorboard/"
+
+_C.PROFILER = CN()
+_C.PROFILER.PATH = "/media/drive6/hqh2kor/projects/cv/profiler/"
