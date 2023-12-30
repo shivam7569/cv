@@ -462,16 +462,10 @@ class Train:
             lr_scheduler=lr_scheduler,
             tb_writer=tb_writer,
             lr_tb_write_per_epoch=True,
-            gradient_clipping=cfg.TRAIN.PARAMS.gradient_clipping,
-            epochs=cfg.TRAIN.PARAMS.epochs if cfg.DEBUG is None else 100,
-            data_mixup=Global.CFG.TRAIN.PARAMS.MixUp,
-            data_cutmix=Global.CFG.TRAIN.PARAMS.CutMix,
-            profiling=cfg.PROFILING,
-            async_parallel=True,
             async_parallel_rank=rank,
-            gradient_accumulation=cfg.TRAIN.PARAMS.gradient_accumulation,
-            gradient_accumulation_batch_size=cfg.TRAIN.PARAMS.gradient_accumulation_batch_size,
-            exponential_moving_average=cfg.TRAIN.PARAMS.exponential_moving_average
+            async_parallel=True,
+            profiling=cfg.PROFILING,
+            **cfg.TRAIN.PARAMS
         )
 
         train.start()
