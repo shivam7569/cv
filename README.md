@@ -18,9 +18,9 @@
 - [ ] [NAS-Net](https://arxiv.org/abs/1707.07012)
 - [ ] [EfficientNet](https://arxiv.org/abs/1905.11946)
 - [x] [SeNet](https://arxiv.org/abs/1709.01507)
-- [ ] [ConvNeXt](https://arxiv.org/abs/2201.03545)
+- [x] [ConvNeXt](https://arxiv.org/abs/2201.03545)
 - ### Attention based:
-  - [ ] [Vision Transformers](https://arxiv.org/abs/2010.11929)
+  - [x] [Vision Transformers](https://arxiv.org/abs/2010.11929)
   - [ ] [DeiT](https://arxiv.org/abs/2012.12877.pdf)
   - [ ] [Tokens to Tokens ViT](https://arxiv.org/abs/2101.11986.pdf)
   - [ ] [Bottleneck Transformers](https://arxiv.org/abs/2101.11605.pdf)

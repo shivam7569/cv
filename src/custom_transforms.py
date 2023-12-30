@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import torch
 
 class FancyPCA:
 
@@ -59,3 +60,55 @@ class DetectionHorizontalFlip:
         anns[:, [0, 2]] = img_w - anns[:, [2, 0]]
 
         return img, bboxes, anns
+
+def mixup_data(data, targets, alpha, use_cuda=True):
+
+    if use_cuda:
+        indices = torch.randperm(data.size(0)).to(data.device)
+    else:
+        indices = torch.randperm(data.size(0))
+
+    shuffled_data = data[indices]
+    shuffled_targets = targets[indices]
+
+    lam = np.random.beta(alpha, alpha)
+    new_data = data * lam + shuffled_data * (1 - lam)
+    
+    return new_data, targets, shuffled_targets, lam
+
+def cutmix_data(data, targets, alpha, use_cuda=True):
+
+    if use_cuda:
+        indices = torch.randperm(data.size(0)).to(data.device)
+    else:
+        indices = torch.randperm(data.size(0))
+
+    shuffled_data = data[indices]
+    shuffled_targets = targets[indices]
+
+    lam = np.random.beta(alpha, alpha)
+    bbx1, bby1, bbx2, bby2 = rand_bbox(data.size(), lam)
+
+    new_data = data.clone()
+    new_data[:, :, bby1:bby2, bbx1:bbx2] = shuffled_data[:, :, bby1:bby2, bbx1:bbx2]
+
+    lam = 1 - ((bbx2 - bbx1) * (bby2 - bby1) / (data.size(-1) * data.size(-2)))
+    
+    return new_data, targets, shuffled_targets, lam
+
+def rand_bbox(size, lam):
+    W = size[2]
+    H = size[3]
+    cut_rat = np.sqrt(1. - lam)
+    cut_w = (W * cut_rat).astype(int)
+    cut_h = (H * cut_rat).astype(int)
+
+    cx = np.random.randint(W)
+    cy = np.random.randint(H)
+
+    bbx1 = np.clip(cx - cut_w // 2, 0, W)
+    bby1 = np.clip(cy - cut_h // 2, 0, H)
+    bbx2 = np.clip(cx + cut_w // 2, 0, W)
+    bby2 = np.clip(cy + cut_h // 2, 0, H)
+
+    return bbx1, bby1, bbx2, bby2

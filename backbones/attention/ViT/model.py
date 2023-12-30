@@ -20,6 +20,8 @@ class ViT(nn.Module):
             encoder_dropout=None,
             encoder_attention_dropout=None,
             patchify_technique="linear",
+            stochastic_depth=False,
+            stochastic_depth_mp=None,
             in_channels=3
         ):
         
@@ -37,18 +39,20 @@ class ViT(nn.Module):
         self.linear_projection = nn.Linear(in_features=self.embed_size, out_features=d_model)
 
         self.class_token = nn.Parameter(
-            torch.rand((1, 1, d_model), device="cuda:0"), requires_grad=True
+            torch.rand((1, 1, d_model)), requires_grad=True
         )
 
         self.position_embeddings = nn.Parameter(
-            torch.normal(mean=0.0, std=0.02, size=(1, 1, d_model), device="cuda:0"), requires_grad=True
+            torch.normal(mean=0.0, std=0.02, size=(1, 1, d_model)), requires_grad=True
         )
 
         self.dropout = nn.Dropout(p=dropout)
 
         self.encoder = ViTEncoder(
             embed_dim=d_model, d_ff=encoder_mlp_d, num_heads=encoder_num_heads,
-            num_blocks=num_encoder_blocks, encoder_dropout=encoder_dropout, attention_dropout=encoder_attention_dropout
+            num_blocks=num_encoder_blocks, encoder_dropout=encoder_dropout, 
+            attention_dropout=encoder_attention_dropout, stodepth=stochastic_depth, 
+            stodepth_mp=stochastic_depth_mp
         )
 
         self.classifier = nn.Sequential(
@@ -58,10 +62,13 @@ class ViT(nn.Module):
             nn.Linear(in_features=classifier_mlp_d, out_features=num_classes)
         )
 
-        self.linear_projection.to("cuda:0")
-        self.encoder.to("cuda:0")
-        self.classifier.to("cuda:0")
-        self.dropout.to("cuda:0")
+    def to(self, device):
+        self.linear_projection.to(f"cuda:{device}")
+        self.encoder.to(f"cuda:{device}")
+        self.classifier.to(f"cuda:{device}")
+        self.dropout.to(f"cuda:{device}")
+        self.class_token = nn.Parameter(self.class_token.to(f"cuda:{device}"))
+        self.position_embeddings = nn.Parameter(self.position_embeddings.to(f"cuda:{device}"))
 
     @staticmethod
     def _assertions(image_size, patch_size, patchify_technique):

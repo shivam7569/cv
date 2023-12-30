@@ -2,7 +2,7 @@ import logging
 import traceback
 
 import torch
-from backbones import ViT
+from backbones import ConvNeXt
 from configs.config import setup_config
 from datasets.classification.dataset import ClassificationDataset
 from src.gpu_devices import GPU_Support
@@ -23,7 +23,7 @@ if __name__ == "__main__":
             prepare_log_dir(cfg)
             setup_gpu_devices(log=False)
             world_size = torch.cuda.device_count()
-            mp.spawn(Train.async_train, args=("ViT", world_size), nprocs=world_size, join=True)
+            mp.spawn(Train.async_train, args=("ConvNeXt", world_size), nprocs=world_size, join=True)
         else:
             Global.setConfiguration(cfg)
             start_logger()
@@ -38,47 +38,47 @@ if __name__ == "__main__":
             Global.LOGGER.info("Configurations and Logger have been initialized")
 
             Global.LOGGER.info(f"Instantiating {cfg.LOGGING.NAME} Architecture for classification on 1000 classes")
-            model = ViT(**Global.CFG.ViT.PARAMS)
+            model = ConvNeXt(**Global.CFG.ConvNeXt.PARAMS)
             if GPU_Support.support_gpu:
                 last_gpu_id = f"cuda:{GPU_Support.support_gpu - 1}"
                 model.to(last_gpu_id)
             Global.LOGGER.info(f"{cfg.LOGGING.NAME} Architecture instantiated")
 
-            Global.LOGGER.info(f"Instantiating Optimizer: {cfg.ViT.OPTIMIZER.NAME}")
-            optimizer = getattr(torch.optim, cfg.ViT.OPTIMIZER.NAME)(model.parameters(), **cfg.ViT.OPTIMIZER.PARAMS)
+            Global.LOGGER.info(f"Instantiating Optimizer: {cfg.ConvNeXt.OPTIMIZER.NAME}")
+            optimizer = getattr(torch.optim, cfg.ConvNeXt.OPTIMIZER.NAME)(model.parameters(), **cfg.ConvNeXt.OPTIMIZER.PARAMS)
             Global.LOGGER.info(f"Optimizer instantiated")
 
-            train_dataset = ClassificationDataset("train", transforms=cfg.ViT.TRANSFORMS.TRAIN, debug=Global.CFG.DEBUG)
-            val_dataset = ClassificationDataset("val", transforms=cfg.ViT.TRANSFORMS.VAL, debug=Global.CFG.DEBUG // 2)
+            train_dataset = ClassificationDataset("train", transforms=cfg.ConvNeXt.TRANSFORMS.TRAIN, debug=Global.CFG.DEBUG)
+            val_dataset = ClassificationDataset("val", transforms=cfg.ConvNeXt.TRANSFORMS.VAL, debug=Global.CFG.DEBUG // 2)
 
             Global.LOGGER.info(f"Intantiating data loaders for training and validation")
             data_loaders = {}
 
             data_loaders["train"] = DataLoader(
                 dataset=train_dataset, collate_fn=train_dataset.collate_fn,
-                **cfg.ViT.DATALOADER_TRAIN_PARAMS
+                **cfg.ConvNeXt.DATALOADER_TRAIN_PARAMS
             )
             data_loaders["val"] = DataLoader(
                 dataset=val_dataset, collate_fn=val_dataset.collate_fn,
-                **cfg.ViT.DATALOADER_VAL_PARAMS
+                **cfg.ConvNeXt.DATALOADER_VAL_PARAMS
             )
 
             Global.LOGGER.info(f"Data loaders instantiated")
 
-            Global.LOGGER.info(f"Instantiating Learning Rate Scheduler: {cfg.ViT.LR_SCHEDULER.NAME}")
+            Global.LOGGER.info(f"Instantiating Learning Rate Scheduler: {cfg.ConvNeXt.LR_SCHEDULER.NAME}")
 
             lr_scheduler = Train.get_lr_scheduler(
-                scheduler_name=cfg.ViT.LR_SCHEDULER.NAME,
+                scheduler_name=cfg.ConvNeXt.LR_SCHEDULER.NAME,
                 optimizer=optimizer,
-                scheduler_params=cfg.ViT.LR_SCHEDULER.PARAMS
+                scheduler_params=cfg.ConvNeXt.LR_SCHEDULER.PARAMS
             )
 
             Global.LOGGER.info(f"Learning Rate Scheduler instantiated")
 
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             
-            Global.LOGGER.info(f"Instantiating Loss Function: {cfg.ViT.LOSS.NAME}")
-            loss_function = getattr(torch.nn, cfg.ViT.LOSS.NAME)(**cfg.ViT.LOSS.PARAMS)
+            Global.LOGGER.info(f"Instantiating Loss Function: {cfg.ConvNeXt.LOSS.NAME}")
+            loss_function = getattr(torch.nn, cfg.ConvNeXt.LOSS.NAME)(**cfg.ConvNeXt.LOSS.PARAMS)
             Global.LOGGER.info(f"Loss Function instantiated")
 
             Global.LOGGER.info(f"Initializing Tensorboard writer")
@@ -94,7 +94,7 @@ if __name__ == "__main__":
                 loss_function=loss_function,
                 lr_scheduler=lr_scheduler,
                 tb_writer=tb_writer,
-                gradient_clipping=Global.CFG.ViT.UTILITIES.GRADIENT_CLIPPING,
+                gradient_clipping=Global.CFG.ConvNeXt.UTILITIES.GRADIENT_CLIPPING,
                 epochs=100 if Global.CFG.DEBUG is None else 10,
                 profiling=Global.CFG.PROFILING
             )

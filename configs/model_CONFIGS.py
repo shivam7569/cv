@@ -14,3 +14,4 @@ from configs.model_configs.SPPNet import SPPNetConfig
 from configs.model_configs.RCNN import RCNNConfig
 from configs.model_configs.FastRCNN import Fast_RCNNConfig
 from configs.model_configs.ViT import ViTConfig
+from configs.model_configs.ConvNeXt import ConvNeXtConfig

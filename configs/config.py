@@ -73,3 +73,5 @@ class ModelConfigs:
             Fast_RCNNConfig(cfg)
         elif model_name.lower() == "vit":
             ViTConfig(cfg)
+        elif model_name.lower() == "convnext":
+            ConvNeXtConfig(cfg)
