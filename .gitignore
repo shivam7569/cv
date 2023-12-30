@@ -10,9 +10,12 @@ TODO.md
 
 # Distribution / packaging
 tensorboard/
+profiler/
+detection/RCNN/data/
 checkpoints/
 workshop/
 .vscode
+.history
 .Python
 build/
 develop-eggs/

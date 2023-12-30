@@ -1,15 +1,21 @@
 import os
 import shutil
 
-def check_dir(path, create=True, forcedCreate=False):
+def check_dir(path, create=True, forcedCreate=False, tree=False):
 
     exists = os.path.exists(path) and os.path.isdir(path)
 
     if not exists and create:
-        os.mkdir(path)
+        if tree:
+            os.makedirs(path, exist_ok=True)
+        else:
+            os.mkdir(path)
     if exists and forcedCreate:
         shutil.rmtree(path)
-        os.mkdir(path)
+        if tree:
+            os.makedirs(path, exist_ok=True)
+        else:
+            os.mkdir(path)
 
     return exists
 

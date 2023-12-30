@@ -1,5 +1,6 @@
 import os
 import random
+import torch
 from torch.utils.data import Dataset
 from torchvision import transforms as T
 from utils.global_params import Global
@@ -89,6 +90,32 @@ class ClassificationDataset(Dataset):
 
         return img
 
+    def collate_fn(self, batch):
+
+        try:
+            if Global.CFG.COLLATE_FN.PROCESS == "RandomSize":
+                sizes = Global.CFG.COLLATE_FN.SIZES
+                batch_sample_spatial_size = random.choice(sizes)
+
+                for trnsfrm in self.transforms.transforms:
+                    if isinstance(trnsfrm, T.RandomCrop):
+                        trnsfrm.size = (batch_sample_spatial_size, batch_sample_spatial_size)
+        except:
+            pass
+
+        if self.transforms is not None:
+            processed_batch = [(self.transforms(b[0]), b[1]) for b in batch]
+        else:
+            processed_batch = batch
+
+        images = [pb[0] for pb in processed_batch]
+        labels = [pb[1] for pb in processed_batch]
+
+        stacked_images = torch.stack(images, dim=0)
+        stacked_labels = torch.tensor(labels)
+
+        return (stacked_images, stacked_labels)
+
     def __len__(self):
         return len(self.img_and_class)
     
@@ -106,7 +133,5 @@ class ClassificationDataset(Dataset):
             Global.LOGGER.error("Invalid phase")
 
         img = self.executePipeline(img_path)
-
-        if self.transforms is not None: img = self.transforms(img)
 
         return img, int(_id)

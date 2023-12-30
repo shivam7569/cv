@@ -9,8 +9,8 @@ class GPU_Support:
     support_gpu = 0
 
     @staticmethod
-    def set_gpu_devices(gpu_devices=-1):
-        Global.LOGGER.info(f"Setting up GPU device(s)")
+    def set_gpu_devices(gpu_devices=-1, log=True):
+        if log: Global.LOGGER.info(f"Setting up GPU device(s)")
         
         if not isinstance(gpu_devices, (int, str)):
             raise TypeError(f"Invalid type for gpu_devices: {type(gpu_devices)}")
@@ -20,7 +20,7 @@ class GPU_Support:
         elif isinstance(gpu_devices, str):
             os.environ["CUDA_VISIBLE_DEVICES"] = gpu_devices
         elif gpu_devices == -1:
-            Global.LOGGER.info(f"No GPU devices specified, training on CPU")
+            if log: Global.LOGGER.info(f"No GPU devices specified, training on CPU")
         else:
             raise ValueError(f"Incompatible entry for gpu devices")
         

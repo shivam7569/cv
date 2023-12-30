@@ -71,3 +71,7 @@ class ModelConfigs:
             SPPNetConfig(cfg)
         elif model_name.lower() == "fast_rcnn":
             Fast_RCNNConfig(cfg)
+        elif model_name.lower() == "vit":
+            ViTConfig(cfg)
+        elif model_name.lower() == "convnext":
+            ConvNeXtConfig(cfg)
