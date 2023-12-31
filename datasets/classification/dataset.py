@@ -10,7 +10,7 @@ from src.custom_transforms import *
 
 class ClassificationDataset(Dataset):
 
-    def __init__(self, phase, transforms=None, debug=None, log=True):
+    def __init__(self, phase, transforms=None, debug=None, log=True, ddp=False):
 
         if log: Global.LOGGER.info(f"Parsing imagenet classification data for {phase}")
 
@@ -31,6 +31,10 @@ class ClassificationDataset(Dataset):
         if transforms is not None:
             self.transforms = T.Compose(self.parseTransforms(transforms))
         else: self.transforms = transforms
+
+        self.ddp = ddp
+        if ddp:
+            self.cfg = Global.CFG
 
     def parseTransforms(self, transforms):
         transforms_list = []
@@ -120,6 +124,10 @@ class ClassificationDataset(Dataset):
         return len(self.img_and_class)
     
     def __getitem__(self, index):
+
+        if self.ddp:
+            Global.CFG = self.cfg
+
         img_name, _id = self.img_and_class[index].split(" ")
         
         if self.phase == "train":

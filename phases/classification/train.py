@@ -197,6 +197,7 @@ class Train:
             if Global.CFG.REGULARIZATION.MODE in ["L1", "L2"]:
                 loss = self._regularize(loss=loss)
 
+            self.optimizer.zero_grad()
             loss.backward()
 
             self._optimizer_step(batch_idx=idx, len_loader=len(train_loader))
@@ -225,11 +226,9 @@ class Train:
     def _optimizer_step(self, batch_idx, len_loader):
         if self.gradient_accumulation:
             if (batch_idx % self.accumulation_iter == 0) or (batch_idx + 1 == len_loader):
-                self.optimizer.zero_grad()
                 self._gradient_clipping()
                 self.optimizer.step()
         else:
-            self.optimizer.zero_grad()
             self._gradient_clipping()
             self.optimizer.step()
 

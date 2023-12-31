@@ -2,12 +2,26 @@ def AlexNetConfig(cfg):
 
     from configs.config import CfgNode as CN
 
+    cfg.ASYNC_TRAINING = True
+    cfg.DEBUG = None
+    cfg.PROFILING = False
+
     cfg.AlexNet = CN()
     cfg.CHECKPOINT.SAVE_EPOCH_CHECKPOINTS = True
     cfg.LOGGING.NAME = "AlexNet"
     cfg.METRICS.NAME = "AlexNet"
     cfg.CHECKPOINT.BASENAME = "AlexNet"
     cfg.TENSORBOARD.BASENAME = "AlexNet"
+    cfg.CHECKPOINT.TREE = False
+
+    cfg.AlexNet.PARAMS = CN()
+    cfg.AlexNet.PARAMS.num_classes = 1000
+    cfg.AlexNet.PARAMS.in_channels = 3
+    cfg.AlexNet.PARAMS.toCuda = False if cfg.ASYNC_TRAINING else True
+
+    cfg.TRAIN = CN()
+    cfg.TRAIN.PARAMS = CN()
+    cfg.TRAIN.PARAMS.epochs = 100
 
     cfg.PIPELINES = CN()
     cfg.PIPELINES.TRAIN = [
