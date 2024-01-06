@@ -177,21 +177,6 @@ class Train:
                 self.tb_writer.write("graph")(model=tb_model, input_to_model=img_batch)
                 self.graph_written = True
 
-            if self.data_mixup is not None:
-                mixup_prob = [i[1] for i in self.data_mixup if i[0] == "prob"][0]
-                mixup_alpha = [i[1] for i in self.data_mixup if i[0] == "alpha"][0]
-                mixup_flag = torch.rand(1) < mixup_prob
-                if mixup_flag:
-                    img_batch, targets_a, targets_b, lam = mixup_data(img_batch, lbl_batch, mixup_alpha, use_cuda=True)
-            else: mixup_flag = False
-            if self.data_cutmix is not None and not mixup_flag:
-                cutmix_prob = [i[1] for i in self.data_cutmix if i[0] == "prob"][0]
-                cutmix_alpha = [i[1] for i in self.data_cutmix if i[0] == "alpha"][0]
-                cutmix_flag = torch.rand(1) < cutmix_prob
-                if cutmix_flag:
-                    img_batch, targets_a, targets_b, lam = cutmix_data(img_batch, lbl_batch, cutmix_alpha, use_cuda=True)
-            else: cutmix_flag = False
-
             if self.phase_dependent:
                 output = self.model(img_batch, phase="training")
             else:
