@@ -11,6 +11,7 @@
 - [x] [ResNet](https://arxiv.org/abs/1512.03385)
 - [x] [DenseNet](https://arxiv.org/abs/1608.06993.pdf)
 - [x] [ResNeXt](https://arxiv.org/abs/1611.05431)
+- [x] [ResNet-SB](https://arxiv.org/abs/2110.00476)
 - [x] [MobileNet](https://arxiv.org/abs/1704.04861)
 - [x] [MobileNetv2](https://arxiv.org/abs/1801.04381)
 - [ ] [MobileNetv3](https://arxiv.org/abs/1905.02244.pdf)
@@ -21,7 +22,8 @@
 - [x] [ConvNeXt](https://arxiv.org/abs/2201.03545)
 - ### Attention based:
   - [x] [Vision Transformers](https://arxiv.org/abs/2010.11929)
-  - [ ] [DeiT](https://arxiv.org/abs/2012.12877.pdf)
+  - [x] [DeiT](https://arxiv.org/abs/2012.12877.pdf)
+  - [x] [DeiT-III](https://arxiv.org/abs/2204.07118)
   - [ ] [Tokens to Tokens ViT](https://arxiv.org/abs/2101.11986.pdf)
   - [ ] [Bottleneck Transformers](https://arxiv.org/abs/2101.11605.pdf)
   - [ ] [Transformer in Transformer](https://arxiv.org/abs/2103.00112v3.pdf)

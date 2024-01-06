@@ -1,8 +1,5 @@
 import argparse
 
-from utils.global_params import Global
-
-
 def get_parser():
     parser = argparse.ArgumentParser(
         description="LeNet model processed"

@@ -116,7 +116,7 @@ class Inception(nn.Module):
 
             return x
     
-    def __init__(self, num_classes, in_channels=3):
+    def __init__(self, num_classes, in_channels=3, toCuda=False):
         super(Inception, self).__init__()
 
         self.inception = nn.Sequential(
@@ -198,6 +198,9 @@ class Inception(nn.Module):
             conv_in_channels=528, conv_out_channels=128, num_classes=num_classes
         )
 
+        if toCuda: self.toCudaGPU()
+
+    def toCudaGPU(self):
         if GPU_Support.support_gpu == 2:
             self.inception_block_1.to("cuda:0")
             self.inception_block_2.to("cuda:0")
@@ -213,30 +216,20 @@ class Inception(nn.Module):
             self.aux_classifier_1.to("cuda:0")
             self.aux_classifier_2.to("cuda:0")
 
-    @staticmethod
-    def get_layer_out(layer, input_):
-        if GPU_Support.support_gpu > 1:
-            layer_device = next(layer.parameters()).device
-            input_ = input_.cpu().to(layer_device)
-            out = layer(input_)
-        else:
-            out = layer(input_)
-        return out
-
     def forward(self, x, phase="validation"):
         if phase == "training":
-            inception_1_block_out = Inception.get_layer_out(layer=self.inception_block_1, input_=x)
-            inception_2_block_out = Inception.get_layer_out(layer=self.inception_block_2, input_=inception_1_block_out)
-            inception_out = Inception.get_layer_out(layer=self.inception_block_3, input_=inception_2_block_out)
+            inception_1_block_out = self.inception_block_1(x)
+            inception_2_block_out = self.inception_block_2(inception_1_block_out)
+            inception_out = self.inception_block_3(inception_2_block_out)
 
-            aux_classifier_1_out = Inception.get_layer_out(layer=self.aux_classifier_1, input_=inception_1_block_out)
-            aux_classifier_2_out = Inception.get_layer_out(layer=self.aux_classifier_2, input_=inception_2_block_out)
+            aux_classifier_1_out = self.aux_classifier_1(inception_1_block_out)
+            aux_classifier_2_out = self.aux_classifier_2(inception_2_block_out)
 
             return [aux_classifier_1_out, aux_classifier_2_out, inception_out]
     
         else:
-            inception_1_block_out = Inception.get_layer_out(layer=self.inception_block_1, input_=x)
-            inception_2_block_out = Inception.get_layer_out(layer=self.inception_block_2, input_=inception_1_block_out)
-            inception_out = Inception.get_layer_out(layer=self.inception_block_3, input_=inception_2_block_out)
+            inception_1_block_out = self.inception_block_1(x)
+            inception_2_block_out = self.inception_block_2(inception_1_block_out)
+            inception_out = self.inception_block_3(inception_2_block_out)
 
             return inception_out

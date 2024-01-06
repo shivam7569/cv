@@ -205,27 +205,17 @@ class DenseNet(nn.Module):
 
                 nn.init.normal_(weight, mean=init_mean, std=init_std)
                 nn.init.constant_(bias, val=0.0)
-
-    @staticmethod
-    def get_layer_out(layer, input_):
-        if GPU_Support.support_gpu > 1:
-            layer_device = next(layer.parameters()).device
-            input_ = input_.cpu().to(layer_device)
-            out = layer(input_)
-        else:
-            out = layer(input_)
-        return out
         
     def forward(self, x):
 
-        x = DenseNet.get_layer_out(self.init_features, x)
-        x = DenseNet.get_layer_out(self.dense_block_1, x)
-        x = DenseNet.get_layer_out(self.transition_layer_1, x)
-        x = DenseNet.get_layer_out(self.dense_block_2, x)
-        x = DenseNet.get_layer_out(self.transition_layer_2, x)
-        x = DenseNet.get_layer_out(self.dense_block_3, x)
-        x = DenseNet.get_layer_out(self.transition_layer_3, x)
-        x = DenseNet.get_layer_out(self.dense_block_4, x)
-        x = DenseNet.get_layer_out(self.classifier, x)
+        x = self.init_features(x)
+        x = self.dense_block_1(x)
+        x = self.transition_layer_1(x)
+        x = self.dense_block_2(x)
+        x = self.transition_layer_2(x)
+        x = self.dense_block_3(x)
+        x = self.transition_layer_3(x)
+        x = self.dense_block_4(x)
+        x = self.classifier(x)
 
         return x

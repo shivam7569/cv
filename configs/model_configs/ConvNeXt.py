@@ -33,17 +33,23 @@ def ConvNeXtConfig(cfg):
 
     cfg.TRAIN = CN()
     cfg.TRAIN.PARAMS = CN()
-    cfg.TRAIN.PARAMS.epochs = 500
-    cfg.TRAIN.PARAMS.gradient_accumulation = False
+    cfg.TRAIN.PARAMS.epochs = 600
+    cfg.TRAIN.PARAMS.gradient_accumulation = True
     cfg.TRAIN.PARAMS.gradient_accumulation_batch_size = 4096
     cfg.TRAIN.PARAMS.gradient_clipping = None
     cfg.TRAIN.PARAMS.exponential_moving_average = 0.999
-    cfg.TRAIN.PARAMS.MixUp = [
-        ("alpha", 0.8), ("prob", 0.5)
-    ]
-    cfg.TRAIN.PARAMS.CutMix = [
-        ("alpha", 1.0), ("prob", 0.5)
-    ]
+
+    cfg.DATA_MIXING.enabled = True
+    cfg.DATA_MIXING.mixup_alpha = 0.8
+    cfg.DATA_MIXING.cutmix_alpha = 1.0
+    cfg.DATA_MIXING.cutmix_minmax = None
+    cfg.DATA_MIXING.prob = 0.5
+    cfg.DATA_MIXING.switch_prob = 0.5
+    cfg.DATA_MIXING.mode = "batch"
+    cfg.DATA_MIXING.correct_lam = True
+    cfg.DATA_MIXING.label_smoothing = 0.0
+    cfg.DATA_MIXING.one_hot_targets = False
+    cfg.DATA_MIXING.num_classes = 1000
 
     cfg.PIPELINES = CN()
     cfg.PIPELINES.TRAIN = [
@@ -55,7 +61,7 @@ def ConvNeXtConfig(cfg):
     ]
 
     cfg.ConvNeXt.DATALOADER_TRAIN_PARAMS = CN()
-    cfg.ConvNeXt.DATALOADER_TRAIN_PARAMS.batch_size = 64
+    cfg.ConvNeXt.DATALOADER_TRAIN_PARAMS.batch_size = 32
     cfg.ConvNeXt.DATALOADER_TRAIN_PARAMS.shuffle = True
     cfg.ConvNeXt.DATALOADER_TRAIN_PARAMS.num_workers = 8
     cfg.ConvNeXt.DATALOADER_TRAIN_PARAMS.pin_memory = True
@@ -74,9 +80,10 @@ def ConvNeXtConfig(cfg):
         dict(name="ToPILImage", params=None),
         dict(name="RandomResizedCrop", params=dict(size=(224, 224))),
         dict(name="RandomHorizontalFlip", params=dict(p=0.5)),
-        dict(name="RandAugment", params=dict(num_ops=2, magnitude=9)),
+        dict(name="RandomAugmentation", params=dict(m=9, n=2, mstd=0.5)),
         dict(name="ToTensor", params=None),
-        dict(name="Normalize", params=dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
+        dict(name="Normalize", params=dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])),
+        dict(name="RandomCutOut", params=dict(probability=0.25, mode="pixel", device="cpu")) # to be used after normalization when mode is pixel, as it will avoid changing the image statistics
     ]
 
     cfg.ConvNeXt.TRANSFORMS.VAL = [
@@ -90,15 +97,15 @@ def ConvNeXtConfig(cfg):
     cfg.ConvNeXt.OPTIMIZER = CN()
     cfg.ConvNeXt.OPTIMIZER.NAME = "AdamW"
     cfg.ConvNeXt.OPTIMIZER.PARAMS = CN()
-    cfg.ConvNeXt.OPTIMIZER.PARAMS.lr = 4e-3 * math.sqrt(cfg.ConvNeXt.DATALOADER_TRAIN_PARAMS.batch_size/4096)
+    cfg.ConvNeXt.OPTIMIZER.PARAMS.lr = 4e-3 * cfg.num_gpus
     cfg.ConvNeXt.OPTIMIZER.PARAMS.betas = (0.9, 0.999)
     cfg.ConvNeXt.OPTIMIZER.PARAMS.weight_decay = 0.05
 
     cfg.ConvNeXt.LR_SCHEDULER = CN()
     cfg.ConvNeXt.LR_SCHEDULER.NAME = "WarmUpCosineLRScheduler"
     cfg.ConvNeXt.LR_SCHEDULER.PARAMS = CN()
-    cfg.ConvNeXt.LR_SCHEDULER.PARAMS.lr_initial = 1e-6
-    cfg.ConvNeXt.LR_SCHEDULER.PARAMS.lr_final = 4e-3 * math.sqrt(cfg.ConvNeXt.DATALOADER_TRAIN_PARAMS.batch_size/4096)
+    cfg.ConvNeXt.LR_SCHEDULER.PARAMS.lr_initial = 0.0
+    cfg.ConvNeXt.LR_SCHEDULER.PARAMS.lr_final = cfg.ConvNeXt.OPTIMIZER.PARAMS.lr
     cfg.ConvNeXt.LR_SCHEDULER.PARAMS.warmup_epochs = 20
     cfg.ConvNeXt.LR_SCHEDULER.PARAMS.warmup_method = "linear"
     cfg.ConvNeXt.LR_SCHEDULER.PARAMS.after_scheduler = CN()
@@ -106,7 +113,7 @@ def ConvNeXtConfig(cfg):
     cfg.ConvNeXt.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS = CN()
     cfg.ConvNeXt.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_0 = 15
     cfg.ConvNeXt.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_mult = 2
-    cfg.ConvNeXt.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.eta_min = 1e-6
+    cfg.ConvNeXt.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.eta_min = 0.0
     cfg.ConvNeXt.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.last_epoch = -1
     
     cfg.ConvNeXt.LOSS = CN()

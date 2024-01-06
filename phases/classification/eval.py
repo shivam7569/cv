@@ -1,7 +1,7 @@
 from tqdm import tqdm
 import torch
 from src.gpu_devices import GPU_Support
-
+import torch.nn.functional as F
 from src.metrics import ClassificationMetrics
 
 class Eval:
@@ -51,9 +51,8 @@ class Eval:
                 loss += batch_loss
 
                 data_iterator.set_postfix(loss=batch_loss, refresh=True)
+                predicted_classes = torch.argmax(F.softmax(output, dim=1), dim=1)
 
-                predicted_classes = torch.argmax(output, dim=1)
-                
                 self.metrics.update(lbl_batch.cpu().numpy(), predicted_classes.cpu().numpy())
 
         loss /= len(self.data_loader)

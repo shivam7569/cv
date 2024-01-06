@@ -12,3 +12,5 @@ from backbones.SENet.model import SENet
 from backbones.SPPNet.model import SPPNet
 from backbones.attention.ViT.model import ViT
 from backbones.ConvNeXt.model import ConvNeXt
+from backbones.attention.DeiT.model import DeiT
+from backbones.ResNetSB.model import ResNetSB

@@ -6,7 +6,7 @@ from src.gpu_devices import GPU_Support
 
 class AlexNet(nn.Module):
     
-    def __init__(self, num_classes, in_channels=3, toCuda=False):
+    def __init__(self, num_classes, in_channels=3, toCuda=True):
         
         super(AlexNet, self).__init__()
 

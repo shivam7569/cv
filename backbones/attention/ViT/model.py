@@ -1,8 +1,10 @@
 import torch
 import torch.nn as nn
 from backbones.attention import ViTEncoder
+from backbones.attention.transformers.vit_encoder import EncoderBlock
 
 from utils.global_params import Global
+from utils.pytorch_utils import DropPath
 
 class ViT(nn.Module):
 
@@ -22,6 +24,7 @@ class ViT(nn.Module):
             patchify_technique="linear",
             stochastic_depth=False,
             stochastic_depth_mp=None,
+            layer_scale=None,
             in_channels=3
         ):
         
@@ -52,8 +55,9 @@ class ViT(nn.Module):
             embed_dim=d_model, d_ff=encoder_mlp_d, num_heads=encoder_num_heads,
             num_blocks=num_encoder_blocks, encoder_dropout=encoder_dropout, 
             attention_dropout=encoder_attention_dropout, stodepth=stochastic_depth, 
-            stodepth_mp=stochastic_depth_mp
+            stodepth_mp=stochastic_depth_mp, layer_scale=layer_scale
         )
+        self.stochastic_depth_mp = stochastic_depth_mp
 
         self.classifier = nn.Sequential(
             nn.Linear(in_features=d_model, out_features=classifier_mlp_d),
@@ -61,14 +65,6 @@ class ViT(nn.Module):
             nn.Dropout(p=dropout),
             nn.Linear(in_features=classifier_mlp_d, out_features=num_classes)
         )
-
-    def to(self, device):
-        self.linear_projection.to(f"cuda:{device}")
-        self.encoder.to(f"cuda:{device}")
-        self.classifier.to(f"cuda:{device}")
-        self.dropout.to(f"cuda:{device}")
-        self.class_token = nn.Parameter(self.class_token.to(f"cuda:{device}"))
-        self.position_embeddings = nn.Parameter(self.position_embeddings.to(f"cuda:{device}"))
 
     @staticmethod
     def _assertions(image_size, patch_size, patchify_technique):
@@ -93,6 +89,12 @@ class ViT(nn.Module):
 
         return conv_projection
 
+    def updateStochasticDepthRate(self, k=0.05):
+        for module_name, encoder_module in self.encoder.named_modules():
+            if isinstance(encoder_module, DropPath):
+                encoder_number = int(module_name.split(".")[1])
+                encoder_module.drop_prob = encoder_module.drop_prob + encoder_number * (k / (len(self.encoder.encoder) - 1))
+
     def forward(self, x):
         x = self.patchify(x)
         x = self.linear_projection(x)
@@ -102,7 +104,32 @@ class ViT(nn.Module):
         x = self.dropout(x)
 
         x = self.encoder(x)
-        x = self.classifier(x)
 
-        return x[:, 0, :]
+        class_token = x[:, 0, :]
+
+        x = self.classifier(class_token)
+
+        return x
     
+# x = torch.rand(1, 3, 192, 192)
+# v = ViT(
+#     1000,
+#     768,
+#     192,
+#     16,
+#     3072,
+#     2048,
+#     12,
+#     12,
+#     0.0,
+#     0.0,
+#     None,
+#     "linear",
+#     True,
+#     0.1,
+#     1e-4,
+#     3
+# )
+# v.updateStochasticDepthRate()
+# print()
+# v.updateStochasticDepthRate()

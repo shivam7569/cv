@@ -2,12 +2,12 @@ import torch
 import torch.nn as nn
 
 from backbones.attention import MultiHeadSelfAttention
-from utils.pytorch_utils import DropPath
+from utils.pytorch_utils import DropPath, LayerScale
 
 class ViTEncoder(nn.Module):
 
     def __init__(self, embed_dim, d_ff, num_heads, num_blocks, encoder_dropout=None, attention_dropout=None,
-                ln_order="pre", stodepth=False, stodepth_mp=None):
+                ln_order="pre", stodepth=False, stodepth_mp=None, layer_scale=None):
         super(ViTEncoder, self).__init__()
 
         if stodepth:
@@ -20,7 +20,7 @@ class ViTEncoder(nn.Module):
                 EncoderBlock(
                     embed_dim=embed_dim, d_ff=d_ff, num_heads=num_heads,
                     encoder_dropout=encoder_dropout, attention_dropout=attention_dropout,
-                    ln_order=ln_order, stodepth_prob=drop_probs[i] 
+                    ln_order=ln_order, stodepth_prob=drop_probs[i], layer_scale=layer_scale
                 ) for i in range(num_blocks)
             ]
         )
@@ -36,7 +36,7 @@ class ViTEncoder(nn.Module):
 
 class EncoderBlock(nn.Module):
 
-    def __init__(self, embed_dim, d_ff, num_heads, encoder_dropout, attention_dropout, ln_order="post", stodepth_prob=0.0):
+    def __init__(self, embed_dim, d_ff, num_heads, encoder_dropout, attention_dropout, ln_order="post", stodepth_prob=0.0, layer_scale=None):
         super(EncoderBlock, self).__init__()
 
         self.ln_1 = nn.LayerNorm(normalized_shape=embed_dim)
@@ -50,9 +50,16 @@ class EncoderBlock(nn.Module):
         )
 
         self.ln_order = ln_order
-        self.dropPath = DropPath(
+        self.dropPath_1 = DropPath(
             drop_prob=stodepth_prob
-        )
+        ) if stodepth_prob > 0.0 else nn.Identity()
+
+        self.dropPath_2 = DropPath(
+            drop_prob=stodepth_prob
+        ) if stodepth_prob > 0.0 else nn.Identity()
+
+        self.ls1 = LayerScale(num_channels=embed_dim, init_value=layer_scale, type_="msa") if layer_scale is not None else nn.Identity()
+        self.ls2 = LayerScale(num_channels=embed_dim, init_value=layer_scale, type_="msa") if layer_scale is not None else nn.Identity()
 
     def forward_post_ln(self, x):
 
@@ -72,13 +79,13 @@ class EncoderBlock(nn.Module):
 
         ln_1_out = self.ln_1(x)
         msa_out = self.msa(q=ln_1_out, k=ln_1_out, v=ln_1_out, mask=None)
-        msa_out = self.dropPath(msa_out)
+        msa_out = self.dropPath_1(self.ls1(msa_out))
 
         msa_residual = x + msa_out
 
         ln_2_out = self.ln_2(msa_residual)
         mlp_out = self.mlp(ln_2_out)
-        mlp_out = self.dropPath(mlp_out)
+        mlp_out = self.dropPath_2(self.ls2(mlp_out))
 
         mlp_residual = msa_residual + mlp_out
 

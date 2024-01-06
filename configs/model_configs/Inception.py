@@ -1,7 +1,20 @@
 def InceptionConfig(cfg):
     from configs.config import CfgNode as CN
 
+    cfg.ASYNC_TRAINING = True
+    cfg.DEBUG = None
+    cfg.PROFILING = False
+
+    cfg.TRAIN = CN()
+    cfg.TRAIN.PARAMS = CN()
+    cfg.TRAIN.PARAMS.epochs = 150
+    cfg.TRAIN.PARAMS.phase_dependent = True
+
     cfg.Inception = CN()
+
+    cfg.Inception.PARAMS = CN()
+    cfg.Inception.PARAMS.num_classes = 1000
+    cfg.Inception.PARAMS.in_channels = 3
 
     cfg.CHECKPOINT.SAVE_EPOCH_CHECKPOINTS = True
     cfg.LOGGING.NAME = "Inception"
@@ -68,13 +81,14 @@ def InceptionConfig(cfg):
     cfg.Inception.LR_SCHEDULER.PARAMS.verbose = False
 
     cfg.Inception.LOSS = CN()
-    cfg.Inception.LOSS.NAME = "CrossEntropyLoss"
+    cfg.Inception.LOSS.NAME = "InceptionLoss"
     cfg.Inception.LOSS.PARAMS = CN()
-    cfg.Inception.LOSS.PARAMS.weight = None
-    cfg.Inception.LOSS.PARAMS.size_average = None
-    cfg.Inception.LOSS.PARAMS.ignore_index = -100
-    cfg.Inception.LOSS.PARAMS.reduce = None
-    cfg.Inception.LOSS.PARAMS.reduction = "mean"
+    cfg.Inception.LOSS.PARAMS.ce_loss_params = CN()
+    cfg.Inception.LOSS.PARAMS.ce_loss_params.weight = None
+    cfg.Inception.LOSS.PARAMS.ce_loss_params.size_average = None
+    cfg.Inception.LOSS.PARAMS.ce_loss_params.ignore_index = -100
+    cfg.Inception.LOSS.PARAMS.ce_loss_params.reduce = None
+    cfg.Inception.LOSS.PARAMS.ce_loss_params.reduction = "mean"
 
     cfg.REGULARIZATION = CN()
     cfg.REGULARIZATION.MODE = ''
