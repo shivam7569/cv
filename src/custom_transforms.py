@@ -116,20 +116,6 @@ def rand_bbox(size, lam):
     bby2 = np.clip(cy + cut_h // 2, 0, H)
 
     return bbx1, bby1, bbx2, bby2
-class RepeatedAugmentation:
-    def __init__(self, transformations, repeats=2, p=0.5):
-        self.transformations = transformations
-        self.repeats = repeats
-        self.p = p
-
-    def __call__(self, img):
-
-        if random.random() < self.p:
-            for _ in range(self.repeats):
-                transform = random.choice(self.transformations)
-                img = transform(img)
-        
-        return img
 
 class Identity:
 
