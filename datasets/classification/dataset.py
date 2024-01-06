@@ -84,14 +84,7 @@ class ClassificationDataset(Dataset):
                     transforms_list.append(transform)
                 except:
                     if transform_name in globals():
-                        if transform_name == "RepeatedAugmentation":
-                            transform_instnce = globals()[transform_name](
-                                transformations=ClassificationDataset.parseTransforms(transform_params["transformations"]),
-                                repeats=transform_params["repeats"],
-                                p=transform_params["p"]
-                            )
-                        else:
-                            transform_instnce = globals()[transform_name](**transform_params)
+                        transform_instnce = globals()[transform_name](**transform_params)
                         transforms_list.append(transform_instnce)
 
         return transforms_list
