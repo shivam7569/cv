@@ -10,6 +10,7 @@ TODO.md
 
 # Distribution / packaging
 tensorboard/
+resources/
 profiler/
 detection/RCNN/data/
 checkpoints/

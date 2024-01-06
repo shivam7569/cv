@@ -12,11 +12,12 @@ from src.tensorboard import TensorboardWriter
 from utils.global_params import Global
 import src.losses as custom_loss_fns
 from src import custom_lrs
+from src import optimizers
 
 from phases.classification.eval import Eval
 from utils.logging_utils import start_logger
 from utils.os_utils import check_dir
-from utils.pytorch_utils import EMA, async_parallel_setup
+from utils.pytorch_utils import EMA, RepeatAugSampler, async_parallel_setup
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data import DataLoader, DistributedSampler
 
@@ -42,14 +43,13 @@ class Train:
             phase_dependent=False,
             custom_loss=None,
             gradient_clipping=None,
-            data_mixup=None,
-            data_cutmix=None,
             profiling=None,
             async_parallel=False,
             async_parallel_rank=0,
             gradient_accumulation=False,
             gradient_accumulation_batch_size=None,
-            exponential_moving_average=None
+            exponential_moving_average=None,
+            updateStochasticDepthRate=None
     ):
         
         self.model = model
@@ -63,8 +63,7 @@ class Train:
         self.phase_dependent = phase_dependent
         self.custom_loss = custom_loss
         self.gradient_clipping = gradient_clipping
-        self.data_mixup = data_mixup
-        self.data_cutmix = data_cutmix
+        self.updateStochasticDepthRate = updateStochasticDepthRate
 
         self.train_loader = data_loaders["train"]
         self.val_loader = data_loaders["val"]
@@ -78,6 +77,7 @@ class Train:
 
         self.gradient_accumulation = gradient_accumulation
         if gradient_accumulation:
+            self.gradient_accumulation_batch_size = gradient_accumulation_batch_size
             assert gradient_accumulation_batch_size is not None and isinstance(gradient_accumulation_batch_size, int)
             self.accumulation_iter = gradient_accumulation_batch_size // self.train_loader.batch_size
 
@@ -98,10 +98,12 @@ class Train:
                 async_parallel_rank=async_parallel_rank
             )
             self.checkpointer = Checkpoint(
-                model, optimizer, lr_scheduler
+                model if not async_parallel else model.module, optimizer, lr_scheduler
             )
         
         self.graph_written = False
+
+        self.log_train_setting()
 
     def start(self):
         if not self.async_parallel_rank: f1_score = np.NINF
@@ -140,6 +142,10 @@ class Train:
                     current_lr = self.optimizer.param_groups[0]['lr']
                     self.tb_writer.write("scaler")(scalar_name="Learning Rate", scalar_value=current_lr, step=epoch)
 
+            if self.updateStochasticDepthRate is not None:
+                if epoch % self.updateStochasticDepthRate[0]["step_epochs"] == 0 and epoch > 0:
+                    self.model.module.updateStochasticDepthRate(self.updateStochasticDepthRate[0]["k"])
+
     def train_for_one_epoch(self, train_loader, epoch):
 
         self.model.train()
@@ -155,49 +161,42 @@ class Train:
                     last_gpu_id = f"cuda:{GPU_Support.support_gpu - 1}"
             
                     img_batch = img_batch.to(last_gpu_id)
-                    lbl_batch = lbl_batch.to(last_gpu_id)
+                    if isinstance(lbl_batch, list):
+                        lbl_batch = [i.to(last_gpu_id) if isinstance(i, torch.Tensor) else i for i in lbl_batch]
+                    else:
+                        lbl_batch = lbl_batch.to(last_gpu_id)
             else:
                 img_batch = img_batch.to(self.async_parallel_rank, non_blocking=True)
-                lbl_batch = lbl_batch.to(self.async_parallel_rank, non_blocking=True)
+                if isinstance(lbl_batch, list):
+                    lbl_batch = [i.to(self.async_parallel_rank, non_blocking=True) if isinstance(i, torch.Tensor) else i for i in lbl_batch]
+                else:
+                    lbl_batch = lbl_batch.to(self.async_parallel_rank, non_blocking=True)
 
             if self.tb_writer is not None and not self.graph_written:
                 tb_model = self.model if not self.async_parallel else self.model.module
                 self.tb_writer.write("graph")(model=tb_model, input_to_model=img_batch)
                 self.graph_written = True
 
-            if self.data_mixup is not None:
-                mixup_prob = [i[1] for i in self.data_mixup if i[0] == "prob"][0]
-                mixup_alpha = [i[1] for i in self.data_mixup if i[0] == "alpha"][0]
-                mixup_flag = torch.rand(1) < mixup_prob
-                if mixup_flag:
-                    img_batch, targets_a, targets_b, lam = mixup_data(img_batch, lbl_batch, mixup_alpha, use_cuda=True)
-            else: mixup_flag = False
-            if self.data_cutmix is not None and not mixup_flag:
-                cutmix_prob = [i[1] for i in self.data_cutmix if i[0] == "prob"][0]
-                cutmix_alpha = [i[1] for i in self.data_cutmix if i[0] == "alpha"][0]
-                cutmix_flag = torch.rand(1) < cutmix_prob
-                if cutmix_flag:
-                    img_batch, targets_a, targets_b, lam = cutmix_data(img_batch, lbl_batch, cutmix_alpha, use_cuda=True)
-            else: cutmix_flag = False
-
             if self.phase_dependent:
                 output = self.model(img_batch, phase="training")
             else:
                 output = self.model(img_batch)
 
-            if self.custom_loss:
+            if self.custom_loss: # legacy
                 loss_fn = getattr(custom_loss_fns, self.custom_loss)
                 loss = loss_fn(output, lbl_batch, primitive_loss_fn=self.loss_function)
             else:
-                if mixup_flag or cutmix_flag:
-                    loss = lam * self.loss_function(output, targets_a) + (1 - lam) * self.loss_function(output, targets_b)
+                if isinstance(lbl_batch, list):
+                    loss = lbl_batch[2] * self.loss_function(output, lbl_batch[0]) + (1 - lbl_batch[2]) * self.loss_function(output, lbl_batch[1])
                 else:
-                    loss = self.loss_function(output, lbl_batch)
+                    if self.phase_dependent:
+                        loss = self.loss_function(output, lbl_batch, phase="training")
+                    else:
+                        loss = self.loss_function(output, lbl_batch)
 
             if Global.CFG.REGULARIZATION.MODE in ["L1", "L2"]:
                 loss = self._regularize(loss=loss)
 
-            self.optimizer.zero_grad()
             loss.backward()
 
             self._optimizer_step(batch_idx=idx, len_loader=len(train_loader))
@@ -228,9 +227,11 @@ class Train:
             if (batch_idx % self.accumulation_iter == 0) or (batch_idx + 1 == len_loader):
                 self._gradient_clipping()
                 self.optimizer.step()
+                self.optimizer.zero_grad()
         else:
             self._gradient_clipping()
             self.optimizer.step()
+            self.optimizer.zero_grad()
 
     def _gradient_clipping(self):
         if self.gradient_clipping is not None:
@@ -393,6 +394,15 @@ class Train:
 
         return epoch_loss
 
+    def log_train_setting(self):
+
+        if self.gradient_clipping is not None:
+            Global.LOGGER.info(f"Gradient clipping is enabled with type: {self.gradient_clipping[0]} and threshold: {self.gradient_clipping[1]}")
+        if self.gradient_accumulation:
+            Global.LOGGER.info(f"Gradient accumulation is enabled to approximate batch size of: {self.gradient_accumulation_batch_size}")
+        if self.exponential_moving_average is not None:
+            Global.LOGGER.info(f"Exponential moving average is enabled while inferencing with decay of: {self.exponential_moving_average}")
+
     @staticmethod
     def async_train(rank, backbone_name, world_size):
 
@@ -413,7 +423,10 @@ class Train:
         Global.LOGGER.info(f"{cfg.LOGGING.NAME} Architecture instantiated")
 
         Global.LOGGER.info(f"Instantiating Optimizer: {cfg[backbone_name].OPTIMIZER.NAME}")
-        optimizer = getattr(torch.optim, cfg[backbone_name].OPTIMIZER.NAME)(model.parameters(), **cfg[backbone_name].OPTIMIZER.PARAMS)
+        try:
+            optimizer = getattr(torch.optim, cfg[backbone_name].OPTIMIZER.NAME)(model.parameters(), **cfg[backbone_name].OPTIMIZER.PARAMS)
+        except:
+            optimizer = getattr(optimizers, cfg[backbone_name].OPTIMIZER.NAME)(model.parameters(), **cfg[backbone_name].OPTIMIZER.PARAMS)
         Global.LOGGER.info(f"Optimizer instantiated")
 
         train_dataset = ClassificationDataset("train", transforms=cfg[backbone_name].TRANSFORMS.TRAIN, ddp=True, debug=cfg.DEBUG)
@@ -423,9 +436,15 @@ class Train:
         data_loaders = {}
         cfg[backbone_name].DATALOADER_TRAIN_PARAMS.pop("shuffle")
         cfg[backbone_name].DATALOADER_VAL_PARAMS.pop("shuffle")
-        train_sampler = DistributedSampler(
-            dataset=train_dataset, num_replicas=world_size, rank=rank
-        )
+
+        if cfg.REPEAT_AUGMENTATIONS:
+            train_sampler = RepeatAugSampler(
+                dataset=train_dataset, num_replicas=world_size, rank=rank
+            )
+        else:
+            train_sampler = DistributedSampler(
+                dataset=train_dataset, num_replicas=world_size, rank=rank
+            )
         data_loaders["train"] = DataLoader(
             dataset=train_dataset, collate_fn=train_dataset.collate_fn,
             sampler=train_sampler, **cfg[backbone_name].DATALOADER_TRAIN_PARAMS
@@ -445,7 +464,10 @@ class Train:
         Global.LOGGER.info(f"Learning Rate Scheduler instantiated")
 
         Global.LOGGER.info(f"Instantiating Loss Function: {cfg[backbone_name].LOSS.NAME}")
-        loss_function = getattr(torch.nn, cfg[backbone_name].LOSS.NAME)(**cfg[backbone_name].LOSS.PARAMS)
+        try:
+            loss_function = getattr(torch.nn, cfg[backbone_name].LOSS.NAME)(**cfg[backbone_name].LOSS.PARAMS)
+        except:
+            loss_function = getattr(custom_loss_fns, cfg[backbone_name].LOSS.NAME)(**cfg[backbone_name].LOSS.PARAMS)
         Global.LOGGER.info(f"Loss Function instantiated")
 
         tb_writer = TensorboardWriter() if rank == 0 else None

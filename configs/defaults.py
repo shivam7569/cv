@@ -1,4 +1,5 @@
 import logging
+import os
 
 import torch
 from configs.config import CfgNode as CN
@@ -36,6 +37,7 @@ _C.METRICS.PATH = "/media/drive6/hqh2kor/projects/cv/metrics/"
 _C.METRICS.COLUMNS = ["epoch", "train_loss", "eval_loss", "eval_accuracy", "eval_precision", "eval_recall", "eval_f1_score"]
 
 _C.CHECKPOINT = CN()
+_C.CHECKPOINT.TREE = False
 _C.CHECKPOINT.PATH = "/media/drive6/hqh2kor/projects/cv/checkpoints/"
 
 _C.TENSORBOARD = CN()
@@ -43,3 +45,14 @@ _C.TENSORBOARD.PATH = "/media/drive6/hqh2kor/projects/cv/tensorboard/"
 
 _C.PROFILER = CN()
 _C.PROFILER.PATH = "/media/drive6/hqh2kor/projects/cv/profiler/"
+
+_C.PATHS = CN()
+_C.PATHS.BACKBONES = "/media/drive6/hqh2kor/projects/cv/backbones/"
+
+_C.DATA_MIXING = CN()
+_C.DATA_MIXING.enabled = False
+_C.DATA_MIXING.one_hot_targets = False
+
+_C.REPEAT_AUGMENTATIONS = False
+
+os.environ["TORCH_HOME"] = "/media/drive6/hqh2kor/projects/cv/checkpoints/pytorch_hub/"

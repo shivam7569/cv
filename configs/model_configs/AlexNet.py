@@ -66,7 +66,7 @@ def AlexNetConfig(cfg):
     cfg.AlexNet.OPTIMIZER = CN()
     cfg.AlexNet.OPTIMIZER.NAME = "SGD"
     cfg.AlexNet.OPTIMIZER.PARAMS = CN()
-    cfg.AlexNet.OPTIMIZER.PARAMS.lr = 0.01
+    cfg.AlexNet.OPTIMIZER.PARAMS.lr = 0.01 * 3
     cfg.AlexNet.OPTIMIZER.PARAMS.momentum = 0.9
     cfg.AlexNet.OPTIMIZER.PARAMS.weight_decay = 0.0005
 

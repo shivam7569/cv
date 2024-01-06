@@ -82,7 +82,9 @@ if __name__ == "__main__":
                 loss_function=loss_function,
                 lr_scheduler=lr_scheduler,
                 tb_writer=tb_writer,
-                epochs=1000
+                lr_tb_write_per_epoch=True,
+                profiling=cfg.PROFILING,
+                **cfg.TRAIN.PARAMS
             )
             train.start()
 

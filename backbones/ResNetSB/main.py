@@ -1,7 +1,7 @@
 import traceback
 
 import torch
-from backbones import Inception
+from backbones import ResNetSB
 from configs.config import setup_config
 from datasets.classification.dataset import ClassificationDataset
 from utils.global_params import Global
@@ -32,47 +32,47 @@ if __name__ == "__main__":
             Global.LOGGER.info("Configurations and Logger have been initialized")
 
             Global.LOGGER.info(f"Instantiating {cfg.LOGGING.NAME} Architecture for classification on 1000 classes")
-            model = Inception(num_classes=1000)
+            model = ResNetSB(num_classes=1000)
             Global.LOGGER.info(f"{cfg.LOGGING.NAME} Architecture instantiated")
 
-            Global.LOGGER.info(f"Instantiating Optimizer: {cfg.Inception.OPTIMIZER.NAME}")
-            optimizer = getattr(torch.optim, cfg.Inception.OPTIMIZER.NAME)(model.parameters(), **cfg.Inception.OPTIMIZER.PARAMS)
+            Global.LOGGER.info(f"Instantiating Optimizer: {cfg.ResNetSB.OPTIMIZER.NAME}")
+            optimizer = getattr(torch.optim, cfg.ResNetSB.OPTIMIZER.NAME)(model.parameters(), **cfg.ResNetSB.OPTIMIZER.PARAMS)
             Global.LOGGER.info(f"Optimizer instantiated")
 
-            train_dataset = ClassificationDataset("train", transforms=cfg.Inception.TRANSFORMS.TRAIN, debug=None)
-            val_dataset = ClassificationDataset("val", transforms=cfg.Inception.TRANSFORMS.VAL, debug=None)
+            train_dataset = ClassificationDataset("train", transforms=cfg.ResNetSB.TRANSFORMS.TRAIN, debug=None)
+            val_dataset = ClassificationDataset("val", transforms=cfg.ResNetSB.TRANSFORMS.VAL, debug=None)
 
             Global.LOGGER.info(f"Intantiating data loaders for training and validation")
             data_loaders = {}
 
             data_loaders["train"] = DataLoader(
                 dataset=train_dataset,
-                **cfg.Inception.DATALOADER_TRAIN_PARAMS
+                **cfg.ResNetSB.DATALOADER_TRAIN_PARAMS
             )
             data_loaders["val"] = DataLoader(
                 dataset=val_dataset,
-                **cfg.Inception.DATALOADER_VAL_PARAMS
+                **cfg.ResNetSB.DATALOADER_VAL_PARAMS
             )
 
             Global.LOGGER.info(f"Data loaders instantiated")
 
-            Global.LOGGER.info(f"Instantiating Learning Rate Scheduler: {cfg.Inception.LR_SCHEDULER.NAME}")
+            Global.LOGGER.info(f"Instantiating Learning Rate Scheduler: {cfg.ResNetSB.LR_SCHEDULER.NAME}")
 
-            if cfg.Inception.LR_SCHEDULER.NAME == "LambdaLR":
+            if cfg.ResNetSB.LR_SCHEDULER.NAME == "LambdaLR":
                 lr_lambda = lambda epoch: 0.96 * epoch
                 lr_scheduler = getattr(
-                    torch.optim.lr_scheduler, cfg.Inception.LR_SCHEDULER.NAME
-                    )(optimizer, lr_lambda=lr_lambda, **cfg.Inception.LR_SCHEDULER.PARAMS)
+                    torch.optim.lr_scheduler, cfg.ResNetSB.LR_SCHEDULER.NAME
+                    )(optimizer, lr_lambda=lr_lambda, **cfg.ResNetSB.LR_SCHEDULER.PARAMS)
             else: 
                 lr_scheduler = getattr(
-                    torch.optim.lr_scheduler, cfg.Inception.LR_SCHEDULER.NAME
-                    )(optimizer, **cfg.Inception.LR_SCHEDULER.PARAMS)
+                    torch.optim.lr_scheduler, cfg.ResNetSB.LR_SCHEDULER.NAME
+                    )(optimizer, **cfg.ResNetSB.LR_SCHEDULER.PARAMS)
             Global.LOGGER.info(f"Learning Rate Scheduler instantiated")
 
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             
-            Global.LOGGER.info(f"Instantiating Loss Function: {cfg.Inception.LOSS.NAME}")
-            loss_function = getattr(torch.nn, cfg.Inception.LOSS.NAME)(**cfg.Inception.LOSS.PARAMS)
+            Global.LOGGER.info(f"Instantiating Loss Function: {cfg.ResNetSB.LOSS.NAME}")
+            loss_function = getattr(torch.nn, cfg.ResNetSB.LOSS.NAME)(**cfg.ResNetSB.LOSS.PARAMS)
             Global.LOGGER.info(f"Loss Function instantiated")
 
             Global.LOGGER.info(f"Initializing Tensorboard writer")
@@ -89,8 +89,7 @@ if __name__ == "__main__":
                 lr_scheduler=lr_scheduler,
                 tb_writer=tb_writer,
                 epochs=1000,
-                phase_dependent=True,
-                custom_loss="inception_loss"
+                phase_dependent=True
             )
             train.start()
 

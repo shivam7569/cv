@@ -5,16 +5,16 @@ from utils.pytorch_utils import ConvLayerNorm, DropPath, LayerScale
 
 class ConvNeXtParams:
 
-    NUM_CLASSES: int = None
-    IN_CHANNELS: int = None
-    STEM_OUT_CHANNELS: int = None
-    STEM_KERNEL_SIZE: int = None
-    STEM_KERNEL_STRIDE: int = None
-    NUM_BLOCKS: list[int] = None
-    EXPANSION_RATE: int = None
-    DEPTHWISE_CONV_KERNEL_SIZE: int = None
-    LAYER_SCLAE: float = None
-    STOCHASTIC_DEPTH_MP: float = None
+    NUM_CLASSES: int = 1000
+    IN_CHANNELS: int = 3
+    STEM_OUT_CHANNELS: int = 96
+    STEM_KERNEL_SIZE: int = 4
+    STEM_KERNEL_STRIDE: int = 4
+    NUM_BLOCKS: list[int] = [3, 3, 9, 3]
+    EXPANSION_RATE: int = 4
+    DEPTHWISE_CONV_KERNEL_SIZE: int = 7
+    LAYER_SCALE: float = 1e-6
+    STOCHASTIC_DEPTH_MP: float = 0.1
 
     @classmethod
     def setParams(cls, **kwargs):
@@ -34,7 +34,7 @@ class ConvNeXt(nn.Module):
     def __init__(self, **kwargs):
         super(ConvNeXt, self).__init__()
 
-        ConvNeXtParams.setParams(**kwargs)
+        if len(kwargs): ConvNeXtParams.setParams(**kwargs)
 
         if ConvNeXtParams.STOCHASTIC_DEPTH_MP is not None:
             drop_probs = [ConvNeXtParams.STOCHASTIC_DEPTH_MP / (sum(ConvNeXtParams.NUM_BLOCKS) - 1) * i for i in range(sum(ConvNeXtParams.NUM_BLOCKS))]
@@ -135,7 +135,7 @@ class ConvNeXtBlock(nn.Module):
         self.layer_scale = LayerScale(
             num_channels=in_channels,
             init_value=ConvNeXtParams.LAYER_SCALE
-        ) if ConvNeXtParams.LAYER_SCLAE is not None else None
+        ) if ConvNeXtParams.LAYER_SCALE is not None else None
 
         self.dropPath = DropPath(drop_prob=drop_prob)
 

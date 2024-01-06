@@ -1,16 +1,18 @@
 import os
 import random
 import torch
+from torchvision.utils import make_grid
 from torch.utils.data import Dataset
 from torchvision import transforms as T
 from utils.global_params import Global
 from utils.file_utils import read_txt
 import src.pipeline_functions as PF
 from src.custom_transforms import *
+from utils.transforms_utils import Augments
 
 class ClassificationDataset(Dataset):
 
-    def __init__(self, phase, transforms=None, debug=None, log=True, ddp=False):
+    def __init__(self, phase, transforms=None, debug=None, log=True, ddp=False, standalone=False):
 
         if log: Global.LOGGER.info(f"Parsing imagenet classification data for {phase}")
 
@@ -28,14 +30,20 @@ class ClassificationDataset(Dataset):
         if debug is not None:
             self.img_and_class = self.img_and_class[:debug]
 
-        if transforms is not None:
-            self.transforms = T.Compose(self.parseTransforms(transforms))
-        else: self.transforms = transforms
+
+        self.transforms = transforms
+        if not standalone:
+            if transforms is not None:
+                self.transforms = T.Compose(self.parseTransforms(transforms))
 
         self.ddp = ddp
         if ddp:
             self.cfg = Global.CFG
 
+        if Global.CFG.DATA_MIXING.enabled and self.phase == "train":
+            self.data_mixing = MixUp(**{k: v for k, v in Global.CFG.DATA_MIXING.items() if k != "enabled"})
+
+    @classmethod
     def parseTransforms(self, transforms):
         transforms_list = []
 
@@ -76,7 +84,14 @@ class ClassificationDataset(Dataset):
                     transforms_list.append(transform)
                 except:
                     if transform_name in globals():
-                        transform_instnce = globals()[transform_name](**transform_params)
+                        if transform_name == "RepeatedAugmentation":
+                            transform_instnce = globals()[transform_name](
+                                transformations=ClassificationDataset.parseTransforms(transform_params["transformations"]),
+                                repeats=transform_params["repeats"],
+                                p=transform_params["p"]
+                            )
+                        else:
+                            transform_instnce = globals()[transform_name](**transform_params)
                         transforms_list.append(transform_instnce)
 
         return transforms_list
@@ -118,7 +133,18 @@ class ClassificationDataset(Dataset):
         stacked_images = torch.stack(images, dim=0)
         stacked_labels = torch.tensor(labels)
 
+        if self.phase == "train" and Global.CFG.DATA_MIXING.enabled:
+            stacked_images, stacked_labels = self.data_mixing(x=stacked_images, target=stacked_labels)
+        if self.phase == "val" and Global.CFG.DATA_MIXING.one_hot_targets:
+            stacked_labels = Augments.one_hot(stacked_labels, 1000, on_value=1.0, off_value=0.0)
+
         return (stacked_images, stacked_labels)
+
+    @staticmethod
+    def _vizualizeBatch(batch):
+        out = make_grid(batch)
+        img = T.ToPILImage()(out)
+        img.save("workshop/Batch.png")
 
     def __len__(self):
         return len(self.img_and_class)

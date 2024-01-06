@@ -1,7 +1,7 @@
 from fvcore.common.config import CfgNode as _CfgNode
 from iopath.common.file_io import PathManager as PathManagerBase
 
-from configs.model_CONFIGS import *
+from configs import *
 from src.cv_parser import get_parser
 
 PathManager = PathManagerBase()
@@ -29,9 +29,13 @@ def get_cfg() -> CfgNode:
 
     return _C.clone()
 
-def setup_config():
+def setup_config(default=False):
     args = get_parser().parse_args()
     cfg = get_cfg()
+    cfg.num_gpus = len(args.gpu_devices.split(","))
+
+    if default: return cfg
+
     ModelConfigs.addModelConfigs(cfg, args.model_name)
     cfg.freeze()
 
@@ -75,3 +79,7 @@ class ModelConfigs:
             ViTConfig(cfg)
         elif model_name.lower() == "convnext":
             ConvNeXtConfig(cfg)
+        elif model_name.lower() == "deit":
+            DeiTConfig(cfg)
+        elif model_name.lower() == "resnetsb":
+            ResNetSBConfig(cfg)

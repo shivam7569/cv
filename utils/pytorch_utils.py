@@ -1,6 +1,8 @@
 from collections import OrderedDict
 from copy import deepcopy
+import math
 import os
+import random
 import torch
 from tqdm import tqdm
 from time import time
@@ -50,7 +52,7 @@ def numpy2tensor(array):
 
 def async_parallel_setup(rank, world_size):
     os.environ["MASTER_ADDR"] = "localhost"
-    os.environ["MASTER_PORT"] = "12368"
+    os.environ["MASTER_PORT"] = "12361"
     os.environ["WORLD_SIZE"] = str(world_size)
     os.environ["RANK"] = str(rank)
 
@@ -82,12 +84,17 @@ class DropPath(nn.Module):
         return x * random_tensor
 
 class LayerScale(nn.Module):
-    def __init__(self, num_channels, init_value):
+    def __init__(self, num_channels, init_value, type_="conv"):
         super(LayerScale, self).__init__()
 
-        self.scale = nn.Parameter(
-            init_value * torch.ones((1, num_channels, 1, 1))
-        )
+        if type_ == "conv":
+            self.scale = nn.Parameter(
+                init_value * torch.ones((1, num_channels, 1, 1))
+            )
+        elif type_ == "msa":
+            self.scale = nn.Parameter(
+                init_value * torch.ones((1, 1, num_channels))
+            )
 
     def forward(self, x):
         return x * self.scale
@@ -142,3 +149,68 @@ class EMA(nn.Module):
 
     def forward(self, x):
         return self.shadow(x)
+
+class RepeatAugSampler(torch.utils.data.Sampler):
+
+    def __init__(
+            self,
+            dataset,
+            num_replicas=None,
+            rank=None,
+            shuffle=True,
+            num_repeats=3,
+            selected_round=256,
+            selected_ratio=0,
+    ):
+        if num_replicas is None:
+            if not dist.is_available():
+                raise RuntimeError("Requires distributed package to be available")
+            num_replicas = dist.get_world_size()
+        if rank is None:
+            if not dist.is_available():
+                raise RuntimeError("Requires distributed package to be available")
+            rank = dist.get_rank()
+        self.dataset = dataset
+        self.num_replicas = num_replicas
+        self.rank = rank
+        self.shuffle = shuffle
+        self.num_repeats = num_repeats
+        self.epoch = 0
+        self.num_samples = int(math.ceil(len(self.dataset) * num_repeats / self.num_replicas))
+        self.total_size = self.num_samples * self.num_replicas
+        selected_ratio = selected_ratio or num_replicas  # ratio to reduce selected samples by, num_replicas if 0
+        if selected_round:
+            self.num_selected_samples = int(math.floor(
+                 len(self.dataset) // selected_round * selected_round / selected_ratio))
+        else:
+            self.num_selected_samples = int(math.ceil(len(self.dataset) / selected_ratio))
+
+    def __iter__(self):
+        g = torch.Generator()
+        g.manual_seed(self.epoch)
+        if self.shuffle:
+            indices = torch.randperm(len(self.dataset), generator=g)
+        else:
+            indices = torch.arange(start=0, end=len(self.dataset))
+
+        if isinstance(self.num_repeats, float) and not self.num_repeats.is_integer():
+            repeat_size = math.ceil(self.num_repeats * len(self.dataset))
+            indices = indices[torch.tensor([int(i // self.num_repeats) for i in range(repeat_size)])]
+        else:
+            indices = torch.repeat_interleave(indices, repeats=int(self.num_repeats), dim=0)
+        indices = indices.tolist()
+        padding_size = self.total_size - len(indices)
+        if padding_size > 0:
+            indices += indices[:padding_size]
+        assert len(indices) == self.total_size
+
+        indices = indices[self.rank:self.total_size:self.num_replicas]
+        assert len(indices) == self.num_samples
+
+        return iter(indices[:self.num_selected_samples])
+
+    def __len__(self):
+        return self.num_selected_samples
+
+    def set_epoch(self, epoch):
+        self.epoch = epoch
