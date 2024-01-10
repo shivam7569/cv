@@ -30,11 +30,13 @@ def get_cfg() -> CfgNode:
     return _C.clone()
 
 def setup_config(default=False):
-    args = get_parser().parse_args()
-    cfg = get_cfg()
-    cfg.num_gpus = len(args.gpu_devices.split(","))
 
+    cfg = get_cfg()
+    
     if default: return cfg
+
+    args = get_parser().parse_args()
+    cfg.num_gpus = len(args.gpu_devices.split(","))
 
     ModelConfigs.addModelConfigs(cfg, args.model_name)
     cfg.freeze()

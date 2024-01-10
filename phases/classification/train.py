@@ -44,6 +44,7 @@ class Train:
             custom_loss=None,
             gradient_clipping=None,
             profiling=None,
+            resume_epoch=0,
             async_parallel=False,
             async_parallel_rank=0,
             gradient_accumulation=False,
@@ -63,6 +64,7 @@ class Train:
         self.phase_dependent = phase_dependent
         self.custom_loss = custom_loss
         self.gradient_clipping = gradient_clipping
+        self.resume_epoch = resume_epoch
         self.updateStochasticDepthRate = updateStochasticDepthRate
 
         self.train_loader = data_loaders["train"]
@@ -102,12 +104,13 @@ class Train:
             )
         
         self.graph_written = False
+        self.sample_batch_log = False
 
         self.log_train_setting()
 
     def start(self):
         if not self.async_parallel_rank: f1_score = np.NINF
-        for epoch in range(self.epochs):
+        for epoch in range(self.resume_epoch, self.epochs):
 
             if self.async_parallel:
                 self.train_loader.sampler.set_epoch(epoch)
@@ -155,6 +158,10 @@ class Train:
         if not self.async_parallel_rank: epoch_loss = 0
         for idx, batch in enumerate(data_iterator):
             img_batch, lbl_batch = batch
+
+            if (self.tb_writer is not None) and (not self.sample_batch_log) and (epoch == 0):
+                self.tb_writer.write("image")(image=ClassificationDataset._vizualizeBatch(batch=batch), epoch=epoch+1)
+                self.sample_batch_log = True
 
             if not self.async_parallel:
                 if GPU_Support.support_gpu:
@@ -415,8 +422,21 @@ class Train:
         if Global.CFG.DEBUG is not None:
             Global.LOGGER.info(f"Running in debug mode")
 
+        if Global.CFG.RESUME_TRAINING:
+            checkpoint_path = [os.path.join(Global.CFG.CHECKPOINT.PATH, backbone_name, i) for i in os.listdir(os.path.join(Global.CFG.CHECKPOINT.PATH, backbone_name)) if backbone_name in i][0]
+            Global.LOGGER.info(f"Resuming training process from checkpoint: {checkpoint_path}")
+            checkpoint = torch.load(checkpoint_path)
+
         Global.LOGGER.info(f"Instantiating {cfg.LOGGING.NAME} Architecture for classification on 1000 classes")
         model = getattr(backbones, backbone_name)(**cfg[backbone_name].PARAMS)
+
+        if Global.CFG.RESUME_TRAINING:
+            Global.LOGGER.info(f"Loading state of model from checkpoint")
+            model.load_state_dict(
+                state_dict=checkpoint["model_state_dict"],
+                strict=True
+            )
+
         model.to(device=rank)
 
         model = DDP(model, device_ids=[rank])
@@ -428,6 +448,12 @@ class Train:
         except:
             optimizer = getattr(optimizers, cfg[backbone_name].OPTIMIZER.NAME)(model.parameters(), **cfg[backbone_name].OPTIMIZER.PARAMS)
         Global.LOGGER.info(f"Optimizer instantiated")
+
+        if Global.CFG.RESUME_TRAINING:
+            Global.LOGGER.info(f"Loading state of optimizer from checkpoint")
+            optimizer.load_state_dict(
+                state_dict=checkpoint["optimizer_state_dict"]
+            )
 
         train_dataset = ClassificationDataset("train", transforms=cfg[backbone_name].TRANSFORMS.TRAIN, ddp=True, debug=cfg.DEBUG)
         val_dataset = ClassificationDataset("val", transforms=cfg[backbone_name].TRANSFORMS.VAL, ddp=True, debug=cfg.DEBUG)
@@ -463,6 +489,12 @@ class Train:
         )
         Global.LOGGER.info(f"Learning Rate Scheduler instantiated")
 
+        if Global.CFG.RESUME_TRAINING:
+            Global.LOGGER.info(f"Loading state of lr scheduler from checkpoint")
+            lr_scheduler.load_state_dict(
+                state_dict=checkpoint["scheduler_state_dict"],
+            )
+
         Global.LOGGER.info(f"Instantiating Loss Function: {cfg[backbone_name].LOSS.NAME}")
         try:
             loss_function = getattr(torch.nn, cfg[backbone_name].LOSS.NAME)(**cfg[backbone_name].LOSS.PARAMS)
@@ -486,6 +518,7 @@ class Train:
             async_parallel_rank=rank,
             async_parallel=True,
             profiling=cfg.PROFILING,
+            resume_epoch=0 if not Global.CFG.RESUME_TRAINING else checkpoint["epoch"] + 1,
             **cfg.TRAIN.PARAMS
         )
 

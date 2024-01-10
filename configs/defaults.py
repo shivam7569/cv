@@ -55,4 +55,6 @@ _C.DATA_MIXING.one_hot_targets = False
 
 _C.REPEAT_AUGMENTATIONS = False
 
+_C.RESUME_TRAINING = False
+
 os.environ["TORCH_HOME"] = "/media/drive6/hqh2kor/projects/cv/checkpoints/pytorch_hub/"

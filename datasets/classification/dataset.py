@@ -8,9 +8,27 @@ from utils.global_params import Global
 from utils.file_utils import read_txt
 import src.pipeline_functions as PF
 from src.custom_transforms import *
+from utils.imagenet_utils import ImagenetData
 from utils.transforms_utils import Augments
 
+from torchvision.transforms.functional import pil_to_tensor
+
+from PIL import ImageDraw, ImageFont
+
 class ClassificationDataset(Dataset):
+
+    INVERSE_TRANSFORM = T.Compose(
+        [
+            T.Normalize(
+                mean=[0.0, 0.0, 0.0],
+                std=[1/0.229, 1/0.224, 1/0.225]
+            ),
+            T.Normalize(
+                mean=[-0.485, -0.456, -0.406],
+                std=[1., 1., 1.]
+            )
+        ]
+    )
 
     def __init__(self, phase, transforms=None, debug=None, log=True, ddp=False, standalone=False):
 
@@ -123,7 +141,7 @@ class ClassificationDataset(Dataset):
             pass
 
         if self.transforms is not None:
-            processed_batch = [(self.transforms(b[0]), b[1]) for b in batch]
+            processed_batch = [(self.transforms(b[0][:, :, ::-1]), b[1]) for b in batch]
         else:
             processed_batch = batch
 
@@ -141,10 +159,31 @@ class ClassificationDataset(Dataset):
         return (stacked_images, stacked_labels)
 
     @staticmethod
-    def _vizualizeBatch(batch):
-        out = make_grid(batch)
-        img = T.ToPILImage()(out)
-        img.save("workshop/Batch.png")
+    def _vizualizeBatch(batch, k=16):
+
+        imagenet_id_vs_name = ImagenetData.getIdVsName()
+
+        images, labels = batch
+
+        k = min(k, images.size(0))
+
+        images, labels = images[:k], labels[:k].tolist()
+        class_names = [imagenet_id_vs_name[str(i)] for i in labels]
+
+        images = ClassificationDataset.INVERSE_TRANSFORM(images)
+        out = make_grid(images, nrow=4, padding=2)
+        canvas = T.ToPILImage()(out)
+
+        draw = ImageDraw.Draw(canvas)
+        font = ImageFont.truetype("utils/_files/Aileron-Black.otf", 25)
+
+        for i in range(4):
+            for j in range(4):
+                draw.text((228 * i + 50, 228 * (j + 1) - 50), class_names[i+j*4], (0, 102, 204), font=font)
+
+        canvas = pil_to_tensor(canvas)
+
+        return canvas
 
     def __len__(self):
         return len(self.img_and_class)

@@ -127,13 +127,16 @@ class ClassificationMetrics:
     def writeMetricsToCSV(cls):
         csv_path = os.path.join(Global.CFG.METRICS.PATH, Global.CFG.METRICS.NAME + ".csv")
 
-        if not ClassificationMetrics.instantiate_csv:
-            check_file(csv_path, remove=True)
-            csv_columns = Global.CFG.METRICS.COLUMNS
-            with open(csv_path, mode='w', newline='') as file:
-                csv_writer = csv.writer(file)
-                csv_writer.writerow(csv_columns)
-                ClassificationMetrics.instantiate_csv = True
+        if not Global.CFG.RESUME_TRAINING:
+            if not ClassificationMetrics.instantiate_csv:
+                check_file(csv_path, remove=True)
+                csv_columns = Global.CFG.METRICS.COLUMNS
+                with open(csv_path, mode='w', newline='') as file:
+                    csv_writer = csv.writer(file)
+                    csv_writer.writerow(csv_columns)
+                    ClassificationMetrics.instantiate_csv = True
+        else:
+            ClassificationMetrics.instantiate_csv = True
         
         with open(csv_path, mode='a', newline='') as file:
             csv_writer = csv.writer(file)

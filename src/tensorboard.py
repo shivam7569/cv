@@ -9,12 +9,14 @@ class TensorboardWriter:
 
     def __init__(self):
         summary_path = os.path.join(Global.CFG.TENSORBOARD.PATH, Global.CFG.TENSORBOARD.BASENAME)
-        check_dir(summary_path, create=True, forcedCreate=True, tree=True)
-
+        
         train_summary_path = os.path.join(summary_path, "train")
-        check_dir(train_summary_path, create=True, forcedCreate=True)
         val_summary_path = os.path.join(summary_path, "val")
-        check_dir(val_summary_path, create=True, forcedCreate=True)
+
+        if not Global.CFG.RESUME_TRAINING:
+            check_dir(summary_path, create=True, forcedCreate=True, tree=True)
+            check_dir(train_summary_path, create=True, forcedCreate=True)
+            check_dir(val_summary_path, create=True, forcedCreate=True)
 
         self.train_writer = SummaryWriter(
             log_dir=train_summary_path,
@@ -57,3 +59,10 @@ class TensorboardWriter:
         if not self.graph_written:
             self.writer.add_graph(model, input_to_model)
             self.graph_written = True
+
+    def _write_image_summary(self, image, epoch):
+        self.writer.add_image(
+            tag=f"Epoch_{epoch}",
+            img_tensor=image,
+            global_step=epoch
+        )
