@@ -1,8 +1,14 @@
 import logging
 
-import pandas as pd
+from utils.imagenet_utils import ImagenetData
 
-class Global:
+class MetaClass(type):
+    def __new__(cls, name, bases, dct):
+        new_class = super(MetaClass, cls).__new__(cls, name, bases, dct)
+        new_class.setImagenetIdVsName()
+        return new_class
+
+class Global(metaclass=MetaClass):
     LOGGER: logging.Logger = None
     LOG_FILENAME: str = None
     CFG = None
@@ -16,6 +22,11 @@ class Global:
         "eval_recall": None,
         "eval_f1_score": None
     }
+    IMAGENET_ID_VS_NAME = None
+
+    @classmethod
+    def setImagenetIdVsName(cls):
+        cls.IMAGENET_ID_VS_NAME = ImagenetData.getIdVsName()
 
     @classmethod
     def setConfiguration(cls, cfg):

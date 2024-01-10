@@ -69,7 +69,6 @@ class ImagenetData:
                 )
 
         self.num_class_images = dict(sorted(self.num_class_images.items(), key=lambda x: x[1], reverse=True))
-        # self.imagenet_classes = random.sample(list(self.num_class_images.keys())[:500], k=100)
         self.imagenet_classes = list(self.num_class_images.keys())
         self.class_vs_id = {class_id: i for i, class_id in enumerate(self.imagenet_classes)}
 
@@ -110,6 +109,3 @@ class ImagenetData:
         class_id = [i.findall("name") for i in object_][0][0].text
 
         return (filename, class_id)
-
-imgNet = ImagenetData()
-imgNet.segregateData()

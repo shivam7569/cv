@@ -1,5 +1,6 @@
 from tqdm import tqdm
 import torch
+from datasets.classification.dataset import ClassificationDataset
 from src.gpu_devices import GPU_Support
 import torch.nn.functional as F
 from src.metrics import ClassificationMetrics
@@ -30,6 +31,8 @@ class Eval:
         self.model.eval()
         if self.tb_writer is not None: self.tb_writer.setWriter("val")
 
+        test_image = False
+
         data_iterator = tqdm(self.data_loader, desc=f"Evaluating", unit="batch")
         loss = 0
         for batch in data_iterator:
@@ -54,6 +57,10 @@ class Eval:
                 predicted_classes = torch.argmax(F.softmax(output, dim=1), dim=1)
 
                 self.metrics.update(lbl_batch.cpu().numpy(), predicted_classes.cpu().numpy())
+
+                if not test_image and epoch % 10 == 0:
+                    self.tb_writer.write("image")(image=ClassificationDataset._vizualizeBatch(batch=(img_batch, predicted_classes.cpu().numpy())), epoch=epoch+1)
+                    test_image = True
 
         loss /= len(self.data_loader)
         self.metrics.aggregate_metrics()
