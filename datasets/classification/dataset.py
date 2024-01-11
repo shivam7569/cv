@@ -165,7 +165,13 @@ class ClassificationDataset(Dataset):
 
         images, labels = batch
 
+        image_size = images.size(-1)
+
         k = min(k, images.size(0))
+
+        if isinstance(labels, list):
+            labels = labels[2] * labels[0] + (1 - labels[2]) * labels[1]
+            labels = labels.long()
 
         images, labels = images[:k], labels[:k].tolist()
         class_names = [imagenet_id_vs_name[str(i)] for i in labels]
@@ -179,7 +185,7 @@ class ClassificationDataset(Dataset):
 
         for i in range(4):
             for j in range(4):
-                draw.text((228 * i + 50, 228 * (j + 1) - 50), class_names[i+j*4], (0, 102, 204), font=font)
+                draw.text(((image_size+4) * i + 50, (image_size+4) * (j + 1) - 50), class_names[i+j*4], (0, 102, 204), font=font)
 
         canvas = pil_to_tensor(canvas)
 
