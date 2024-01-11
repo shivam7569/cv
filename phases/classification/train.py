@@ -423,9 +423,8 @@ class Train:
             Global.LOGGER.info(f"Running in debug mode")
 
         if Global.CFG.RESUME_TRAINING:
-            checkpoint_path = [os.path.join(Global.CFG.CHECKPOINT.PATH, backbone_name, i) for i in os.listdir(os.path.join(Global.CFG.CHECKPOINT.PATH, backbone_name)) if backbone_name in i][0]
-            Global.LOGGER.info(f"Resuming training process from checkpoint: {checkpoint_path}")
-            checkpoint = torch.load(checkpoint_path)
+            Global.LOGGER.info(f"Resuming training process from epoch checkpoint")
+            checkpoint = Checkpoint.load(model=None, name=backbone_name, checkpoint_name="epoch_checkpoint", return_checkpoint=True)
 
         Global.LOGGER.info(f"Instantiating {cfg.LOGGING.NAME} Architecture for classification on 1000 classes")
         model = getattr(backbones, backbone_name)(**cfg[backbone_name].PARAMS)

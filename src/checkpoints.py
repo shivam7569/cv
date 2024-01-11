@@ -36,12 +36,18 @@ class Checkpoint:
                 os.remove(os.path.join(self.checkpoint_dir, chkpt))
 
     @staticmethod
-    def load(model, name):
+    def load(model, name, checkpoint_name=None, return_checkpoint=False):
+
+        if checkpoint_name is None: checkpoint_name = name
+
         checkpoint_filepath = os.path.join(
             os.path.join(Global.CFG.CHECKPOINT.PATH, name),
-            [i for i in os.listdir(os.path.join(Global.CFG.CHECKPOINT.PATH, name)) if name in i][0]
+            [i for i in os.listdir(os.path.join(Global.CFG.CHECKPOINT.PATH, name)) if checkpoint_name in i][0]
         )
         checkpoint = torch.load(checkpoint_filepath)
+
+        if return_checkpoint: return checkpoint
+
         model.load_state_dict(checkpoint['model_state_dict'])
 
         return model

@@ -173,7 +173,9 @@ class ClassificationDataset(Dataset):
             labels = labels[2] * labels[0] + (1 - labels[2]) * labels[1]
             labels = labels.long()
 
-        images, labels = images[:k], labels[:k].tolist()
+        random_indices = torch.randperm(images.size(0))
+
+        images, labels = images[random_indices][:k], labels[random_indices][:k].tolist()
         class_names = [imagenet_id_vs_name[str(i)] for i in labels]
 
         images = ClassificationDataset.INVERSE_TRANSFORM(images)
@@ -181,11 +183,11 @@ class ClassificationDataset(Dataset):
         canvas = T.ToPILImage()(out)
 
         draw = ImageDraw.Draw(canvas)
-        font = ImageFont.truetype("utils/_files/Aileron-Black.otf", 25)
+        font = ImageFont.truetype("utils/_files/Aileron-Black.otf", 20)
 
         for i in range(4):
             for j in range(4):
-                draw.text(((image_size+4) * i + 50, (image_size+4) * (j + 1) - 50), class_names[i+j*4], (0, 102, 204), font=font)
+                draw.text(((image_size+4) * i + 25, (image_size+4) * (j + 1) - 50), class_names[i+j*4], (0, 102, 204), font=font)
 
         canvas = pil_to_tensor(canvas)
 
