@@ -173,10 +173,3 @@ class T2T_Module(nn.Module):
         x = self.projection_layer(x)
 
         return x
-
-# t2t_vit = T2T_ViT()
-# img = torch.rand(32, 3, 224, 224)
-# vit_in = t2t_vit(img)
-
-# # print(t2t_vit)
-# print(vit_in.shape)
