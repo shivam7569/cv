@@ -7,8 +7,10 @@ from utils.global_params import Global
 
 class MultiHeadSelfAttention(nn.Module):
 
-    def __init__(self, embed_dim, num_heads, attention_dropout=None, qkv_bias=False):
+    def __init__(self, embed_dim, num_heads, attention_dropout=0.0, qkv_bias=False, in_dims=None):
         super(MultiHeadSelfAttention, self).__init__()
+
+        if in_dims is None: in_dims = embed_dim
 
         assert embed_dim % num_heads == 0, Global.LOGGER.error(f"Number of attention heads {num_heads} is not a divisor of embedding dimension: {embed_dim}")
 
@@ -17,12 +19,12 @@ class MultiHeadSelfAttention(nn.Module):
 
         self.d_k = embed_dim // num_heads
 
-        self.w_q = nn.Linear(in_features=embed_dim, out_features=embed_dim, bias=qkv_bias)
-        self.w_k = nn.Linear(in_features=embed_dim, out_features=embed_dim, bias=qkv_bias)
-        self.w_v = nn.Linear(in_features=embed_dim, out_features=embed_dim, bias=qkv_bias)
+        self.w_q = nn.Linear(in_features=in_dims, out_features=embed_dim, bias=qkv_bias)
+        self.w_k = nn.Linear(in_features=in_dims, out_features=embed_dim, bias=qkv_bias)
+        self.w_v = nn.Linear(in_features=in_dims, out_features=embed_dim, bias=qkv_bias)
         self.w_o = nn.Linear(in_features=embed_dim, out_features=embed_dim, bias=True)
 
-        self.attention_dropout = nn.Dropout(p=attention_dropout) if attention_dropout is not None else None
+        self.attention_dropout = nn.Dropout(p=attention_dropout)
 
     def _init_qkv_weights(self):
 

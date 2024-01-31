@@ -8,9 +8,10 @@ from backbones.InceptionNet_v3.model import Inceptionv3
 from backbones.ResNeXt.model import ResNeXt
 from backbones.MobileNet.model import MobileNet
 from backbones.MobileNet_v2.model import MobileNetv2
-from backbones.SENet.model import SENet
 from backbones.SPPNet.model import SPPNet
-from backbones.attention.ViT.model import ViT
+from backbones.ViT.model import ViT
+from backbones.SENet.model import SENet
 from backbones.ConvNeXt.model import ConvNeXt
-from backbones.attention.DeiT.model import DeiT
+from backbones.DeiT.model import DeiT
 from backbones.ResNetSB.model import ResNetSB
+from backbones.T2T_ViT.model import T2T_ViT

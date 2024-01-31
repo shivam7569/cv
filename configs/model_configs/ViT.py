@@ -1,6 +1,3 @@
-import math
-
-
 def ViTConfig(cfg):
     from configs.config import CfgNode as CN
 
@@ -25,13 +22,13 @@ def ViTConfig(cfg):
     cfg.ViT.PARAMS.d_model = 768
     cfg.ViT.PARAMS.image_size = 192
     cfg.ViT.PARAMS.patch_size = 16
-    cfg.ViT.PARAMS.classifier_mlp_d = 3072 # (4 * d_model)
-    cfg.ViT.PARAMS.encoder_mlp_d = 2048
+    cfg.ViT.PARAMS.classifier_mlp_d = 2048
+    cfg.ViT.PARAMS.encoder_mlp_d = 768 * 4
     cfg.ViT.PARAMS.encoder_num_heads = 12
     cfg.ViT.PARAMS.num_encoder_blocks = 12
     cfg.ViT.PARAMS.dropout = 0.0
     cfg.ViT.PARAMS.encoder_dropout = 0.0
-    cfg.ViT.PARAMS.encoder_attention_dropout = None
+    cfg.ViT.PARAMS.encoder_attention_dropout = 0.0
     cfg.ViT.PARAMS.patchify_technique = "linear"
     cfg.ViT.PARAMS.stochastic_depth = True
     cfg.ViT.PARAMS.stochastic_depth_mp = 0.1

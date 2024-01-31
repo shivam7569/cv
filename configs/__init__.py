@@ -17,3 +17,4 @@ from configs.model_configs.ViT import ViTConfig
 from configs.model_configs.ConvNeXt import ConvNeXtConfig
 from configs.model_configs.DeiT import DeiTConfig
 from configs.model_configs.ResNetSB import ResNetSBConfig
+from configs.model_configs.T2T_ViT import T2T_ViTConfig

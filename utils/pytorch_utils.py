@@ -65,6 +65,23 @@ def async_parallel_setup(rank, world_size):
 def async_cleanup():
     dist.destroy_process_group()
 
+def get_sinusoidal_embedding(max_seq_len, embedding_dim):
+
+    if embedding_dim % 2 != 0:
+        raise ValueError(f"Sinusoidal position embeddings cannot be applied to odd token embedding dimension")
+    
+
+
+    position = torch.arange(0, max_seq_len).unsqueeze_(1)
+    denominators = torch.pow(10000.0, 2*torch.arange(0, embedding_dim // 2) / 2)
+
+    sinusoidal_embedding = torch.zeros(max_seq_len, embedding_dim)
+    
+    sinusoidal_embedding[:, 0::2] = torch.sin(position / denominators)
+    sinusoidal_embedding[:, 1::2] = torch.cos(position / denominators)
+    
+    return sinusoidal_embedding
+
 class DropPath(nn.Module):
     
     def __init__(self, drop_prob, scale_by_keep=True):
@@ -214,3 +231,25 @@ class RepeatAugSampler(torch.utils.data.Sampler):
 
     def set_epoch(self, epoch):
         self.epoch = epoch
+
+class TransformerSEBlock(nn.Module):
+
+    def __init__(self, in_channels, r=16):
+        super(TransformerSEBlock, self).__init__()
+
+        self.squeeze = nn.Sequential(
+            nn.AdaptiveAvgPool1d(output_size=1),
+            nn.Flatten(start_dim=1),
+            nn.Linear(in_features=in_channels, out_features=in_channels // r, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Linear(in_features=in_channels // r, out_features=in_channels, bias=False),
+            nn.Sigmoid()
+        )
+
+        self.in_channels = in_channels
+
+    def forward(self, x):
+        squeeze = self.squeeze(x)
+        excitation = squeeze.view(-1, self.in_channels, 1).expand_as(x) * x
+
+        return excitation

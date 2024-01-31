@@ -85,3 +85,5 @@ class ModelConfigs:
             DeiTConfig(cfg)
         elif model_name.lower() == "resnetsb":
             ResNetSBConfig(cfg)
+        elif model_name.lower() == "t2t_vit":
+            T2T_ViTConfig(cfg)

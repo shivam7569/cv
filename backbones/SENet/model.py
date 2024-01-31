@@ -73,14 +73,12 @@ class ResidualBlock(nn.Module):
 
     def forward(self, x):
         block_out = self.block(x)
-        seBlock_out = self.se_block(block_out).unsqueeze(-1).unsqueeze(-1)
-
-        residual_se_rescale = torch.mul(block_out, seBlock_out)
+        seBlock_out = self.se_block(block_out)
 
         if self.identity_downsample is not None:    
             x = self.identity_downsample(x)
 
-        out = torch.add(x, residual_se_rescale)
+        out = torch.add(x, seBlock_out)
         out = nn.ReLU(inplace=True)(out)
 
         return out
@@ -120,20 +118,21 @@ class SEBlock(nn.Module):
 
         self.squeeze = nn.Sequential(
             nn.AdaptiveAvgPool2d(output_size=(1, 1)),
-            nn.Flatten(start_dim=1)
-        )
-        self.excitation = nn.Sequential(
-            nn.Linear(in_features=in_channels, out_features=int(in_channels/r)),
+            nn.Flatten(start_dim=1),
+            nn.Linear(in_features=in_channels, out_features=int(in_channels/r), bias=False),
             nn.ReLU(inplace=True),
-            nn.Linear(in_features=int(in_channels/r), out_features=in_channels),
+            nn.Linear(in_features=int(in_channels/r), out_features=in_channels, bias=False),
             nn.Sigmoid()
         )
 
-    def forward(self, x):
-        x = self.squeeze(x)
-        x = self.excitation(x)
+        self.in_channels = in_channels
 
-        return x
+    def forward(self, x):
+
+        squeeze = self.squeeze(x)
+        excitation = squeeze.view(-1, self.in_channels, 1, 1).expand_as(x) * x
+
+        return excitation
 
 class SENet(nn.Module):
 

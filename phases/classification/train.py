@@ -133,7 +133,7 @@ class Train:
                     f1_score = self.evaluation.epoch_metrics["f1_score"]
                     self._mark_checkpoint(epoch=epoch, f1_score=f1_score, epoch_chkpt=False)
                 if Global.CFG.CHECKPOINT.SAVE_EPOCH_CHECKPOINTS:
-                    self._mark_checkpoint(epoch=None, f1_score=None, epoch_chkpt=True)
+                    self._mark_checkpoint(epoch=epoch, f1_score=None, epoch_chkpt=True)
 
                 Global.resetEpochMetrics()
 
@@ -262,7 +262,7 @@ class Train:
                 overwrite=True
             )
         else:
-            self.checkpointer.save(None, "epoch_checkpoint.pth", overwrite=False)
+            self.checkpointer.save(epoch=epoch, chkp_name="epoch_checkpoint.pth", overwrite=False)
 
     def _exponential_moving_average(self):
         if self.exponential_moving_average is not None:
@@ -424,7 +424,7 @@ class Train:
 
         if Global.CFG.RESUME_TRAINING:
             Global.LOGGER.info(f"Resuming training process from epoch checkpoint")
-            checkpoint = Checkpoint.load(model=None, name=backbone_name, checkpoint_name="epoch_checkpoint", return_checkpoint=True)
+            checkpoint = Checkpoint.load(model=None, name=backbone_name, checkpoint_name=None, return_checkpoint=True)
 
         Global.LOGGER.info(f"Instantiating {cfg.LOGGING.NAME} Architecture for classification on 1000 classes")
         model = getattr(backbones, backbone_name)(**cfg[backbone_name].PARAMS)

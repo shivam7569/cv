@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
-from backbones.attention import ViTEncoder
-from backbones.attention.transformers.vit_encoder import EncoderBlock
+from attention.transformers.vit_encoder import ViTEncoder
 
 from utils.global_params import Global
 from utils.pytorch_utils import DropPath
@@ -110,26 +109,3 @@ class ViT(nn.Module):
         x = self.classifier(class_token)
 
         return x
-    
-# x = torch.rand(1, 3, 192, 192)
-# v = ViT(
-#     1000,
-#     768,
-#     192,
-#     16,
-#     3072,
-#     2048,
-#     12,
-#     12,
-#     0.0,
-#     0.0,
-#     None,
-#     "linear",
-#     True,
-#     0.1,
-#     1e-4,
-#     3
-# )
-# v.updateStochasticDepthRate()
-# print()
-# v.updateStochasticDepthRate()
