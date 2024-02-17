@@ -15,3 +15,4 @@ from backbones.ConvNeXt.model import ConvNeXt
 from backbones.DeiT.model import DeiT
 from backbones.ResNetSB.model import ResNetSB
 from backbones.T2T_ViT.model import T2T_ViT
+from backbones.TNT.model import TNT

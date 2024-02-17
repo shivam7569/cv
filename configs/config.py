@@ -87,3 +87,5 @@ class ModelConfigs:
             ResNetSBConfig(cfg)
         elif model_name.lower() == "t2t_vit":
             T2T_ViTConfig(cfg)
+        elif model_name.lower() == "tnt":
+            TNTConfig(cfg)
