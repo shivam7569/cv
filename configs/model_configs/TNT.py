@@ -30,7 +30,7 @@ def TNTConfig(cfg):
     cfg.TNT.PARAMS.num_blocks = 12
     cfg.TNT.PARAMS.patch_encoder_dropout = 0.1
     cfg.TNT.PARAMS.patch_attention_dropout = 0.0
-    cfg.TNT.PARAMS.patch_ln_order = "pre"
+    cfg.TNT.PARAMS.patch_ln_order = "residual"
     cfg.TNT.PARAMS.patch_stodepth = True
     cfg.TNT.PARAMS.patch_stodepth_mp = 0.1
     cfg.TNT.PARAMS.patch_layer_scale = None

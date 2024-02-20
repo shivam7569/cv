@@ -70,11 +70,17 @@ class TNTEncoder(nn.Module):
                 ) for i in range(num_blocks)
             ]
         )
-        
+
+        self.patch_ln_order = patch_ln_order
+
+        if self.patch_ln_order == "residual":
+            self.final_patch_norm = nn.LayerNorm(normalized_shape=patch_embed_dim)
 
     def forward(self, sentences, words):
         batch_size = sentences.size(0)
         num_sentences = sentences.size(1) - 1
+
+        res_sentences = sentences.clone()
 
         for i in range(self.num_blocks):
             outer_transformer = self.outer_transformer_blocks[i]
@@ -86,6 +92,13 @@ class TNTEncoder(nn.Module):
             )
 
             sentences += words_residual
-            sentences = outer_transformer(sentences)
+
+            if self.patch_ln_order == "residual":
+                sentences, res_sentences = outer_transformer(sentences, res_sentences)
+            else:
+                sentences = outer_transformer(sentences)
+
+        if self.patch_ln_order == "residual":
+            sentences = sentences + self.final_patch_norm(res_sentences)
 
         return sentences

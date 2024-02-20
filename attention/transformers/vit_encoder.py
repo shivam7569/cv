@@ -29,7 +29,7 @@ class ViTEncoder(nn.Module):
         else:
             drop_probs = [0.0 for _ in range(num_blocks)]
 
-        encoder_layers = nn.ModuleList(
+        self.encoder_layers = nn.ModuleList(
             [
                 TransformerBlock(
                     embed_dim=embed_dim, d_ff=d_ff, num_heads=num_heads,
@@ -40,10 +40,23 @@ class ViTEncoder(nn.Module):
             ]
         )
         
-        self.encoder = nn.Sequential(*encoder_layers)
+        self.encoder = nn.Sequential(*self.encoder_layers)
+
+        self.ln_order = ln_order
+
+        if self.ln_order == "residual":
+            self.final_norm = nn.LayerNorm(normalized_shape=embed_dim)
 
     def forward(self, x):
 
-        encoder_out = self.encoder(x)
+        if self.ln_order in ["post", "pre"]:
+            encoder_out = self.encoder(x)
+
+        elif self.ln_order == "residual":
+            res = x.clone()
+            for transformer_block in self.encoder_layers:
+                x, res = transformer_block(x, res)
+
+            encoder_out = x + self.final_norm(res)
 
         return encoder_out

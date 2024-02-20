@@ -32,16 +32,39 @@ class TokenTransformer(nn.Module):
     def forward_post_ln(self, x):
 
         msa_out = self.msa(q=x, k=x, v=x, mask=None)
+        msa_out = self.dropPath_1(self.ls1(msa_out))
+
         msa_residual = x + msa_out
 
         ln_1_out = self.ln_1(msa_residual)
 
         mlp_out = self.mlp(ln_1_out)
+        mlp_out = self.dropPath_2(self.ls2(mlp_out))
         mlp_residual = ln_1_out + mlp_out
 
         ln_2_out = self.ln_2(mlp_residual)
 
         return ln_2_out
+    
+    def forward_dual_residual(self, x, res):
+
+        msa_out = self.msa(q=x, k=x, v=x, mask=None)
+        msa_out = self.dropPath_1(self.ls1(msa_out))
+
+        x = x + msa_out
+        x = self.ln_1(x)
+
+        res = msa_out + res
+
+        mlp_out = self.mlp(x)
+        mlp_out = self.dropPath_2(self.ls2(mlp_out))
+
+        x = x + mlp_out
+        x = self.ln_2(x)
+
+        res = mlp_out + res
+
+        return (x, res)
 
     def forward_pre_ln(self, x):
 
@@ -57,9 +80,12 @@ class TokenTransformer(nn.Module):
 
         return mlp_residual
 
-    def forward(self, x):
+    def forward(self, x, res=None):
         if self.ln_order == "post":
             return self.forward_post_ln(x)
         elif self.ln_order == "pre":
             return self.forward_pre_ln(x)
+        elif self.ln_order == "residual":
+            assert res is not None
+            return self.forward_dual_residual(x, res)
         

@@ -24,6 +24,7 @@ class ViT(nn.Module):
             stochastic_depth=False,
             stochastic_depth_mp=None,
             layer_scale=None,
+            ln_order="residual",
             in_channels=3
         ):
         
@@ -54,7 +55,7 @@ class ViT(nn.Module):
             embed_dim=d_model, d_ff=encoder_mlp_d, num_heads=encoder_num_heads,
             num_blocks=num_encoder_blocks, encoder_dropout=encoder_dropout, 
             attention_dropout=encoder_attention_dropout, stodepth=stochastic_depth, 
-            stodepth_mp=stochastic_depth_mp, layer_scale=layer_scale
+            stodepth_mp=stochastic_depth_mp, layer_scale=layer_scale, ln_order=ln_order
         )
         self.stochastic_depth_mp = stochastic_depth_mp
 
