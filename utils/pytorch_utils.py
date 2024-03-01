@@ -65,23 +65,6 @@ def async_parallel_setup(rank, world_size):
 def async_cleanup():
     dist.destroy_process_group()
 
-def get_sinusoidal_embedding(max_seq_len, embedding_dim):
-
-    if embedding_dim % 2 != 0:
-        raise ValueError(f"Sinusoidal position embeddings cannot be applied to odd token embedding dimension")
-    
-
-
-    position = torch.arange(0, max_seq_len).unsqueeze_(1)
-    denominators = torch.pow(10000.0, 2*torch.arange(0, embedding_dim // 2) / 2)
-
-    sinusoidal_embedding = torch.zeros(max_seq_len, embedding_dim)
-    
-    sinusoidal_embedding[:, 0::2] = torch.sin(position / denominators)
-    sinusoidal_embedding[:, 1::2] = torch.cos(position / denominators)
-    
-    return sinusoidal_embedding
-
 class DropPath(nn.Module):
     
     def __init__(self, drop_prob, scale_by_keep=True):

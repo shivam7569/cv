@@ -16,3 +16,5 @@ from backbones.DeiT.model import DeiT
 from backbones.ResNetSB.model import ResNetSB
 from backbones.T2T_ViT.model import T2T_ViT
 from backbones.TNT.model import TNT
+from backbones.BoT_ViT.model import BoT_ViT
+from backbones.HPool_ViT.model import HPool_ViT

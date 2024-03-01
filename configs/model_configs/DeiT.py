@@ -25,8 +25,8 @@ def DeiTConfig(cfg):
     cfg.DeiT.PARAMS.d_model = 768
     cfg.DeiT.PARAMS.image_size = 224
     cfg.DeiT.PARAMS.patch_size = 16
-    cfg.DeiT.PARAMS.classifier_mlp_d = 3072 # (4 * d_model)
-    cfg.DeiT.PARAMS.encoder_mlp_d = 2048
+    cfg.DeiT.PARAMS.classifier_mlp_d = 2048
+    cfg.DeiT.PARAMS.encoder_mlp_d = 768 * 4
     cfg.DeiT.PARAMS.encoder_num_heads = 12
     cfg.DeiT.PARAMS.num_encoder_blocks = 12
     cfg.DeiT.PARAMS.dropout = 0.1

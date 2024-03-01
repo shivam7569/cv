@@ -36,12 +36,12 @@ class MultiHeadSelfAttention(nn.Module):
 
     def attention(self, query, key, value, mask):
 
-        enery = (query @ key.transpose(-2, -1)) / math.sqrt(self.d_k)
+        energy = (query @ key.transpose(-2, -1)) / math.sqrt(self.d_k)
 
         if mask is not None:
-            enery.masked_fill_(mask == 0, np.NINF)
+            energy.masked_fill_(mask == 0, np.NINF)
 
-        attention_scores = enery.softmax(dim=-1)
+        attention_scores = energy.softmax(dim=-1)
 
         if self.attention_dropout is not None:
             attention_scores = self.attention_dropout(attention_scores)

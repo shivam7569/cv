@@ -89,3 +89,7 @@ class ModelConfigs:
             T2T_ViTConfig(cfg)
         elif model_name.lower() == "tnt":
             TNTConfig(cfg)
+        elif model_name.lower() == "bot_vit":
+            BoT_ViTConfig(cfg)
+        elif model_name.lower() == "hpool_vit":
+            HPool_ViTConfig(cfg)

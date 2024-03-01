@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from attention.transformers.vit_encoder import ViTEncoder
 from attention.transformers.token_transformer import TokenTransformer
-from utils.pytorch_utils import get_sinusoidal_embedding
+from utils.position_embeddings import get_sinusoidal_embedding
 
 class T2T_ViT(nn.Module):
 

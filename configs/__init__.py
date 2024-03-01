@@ -19,3 +19,5 @@ from configs.model_configs.DeiT import DeiTConfig
 from configs.model_configs.ResNetSB import ResNetSBConfig
 from configs.model_configs.T2T_ViT import T2T_ViTConfig
 from configs.model_configs.TNT import TNTConfig
+from configs.model_configs.BoT_ViT import BoT_ViTConfig
+from configs.model_configs.HPool_ViT import HPool_ViTConfig
