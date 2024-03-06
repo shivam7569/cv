@@ -29,6 +29,7 @@ def ViTConfig(cfg):
     cfg.ViT.PARAMS.dropout = 0.0
     cfg.ViT.PARAMS.encoder_dropout = 0.0
     cfg.ViT.PARAMS.encoder_attention_dropout = 0.0
+    cfg.ViT.PARAMS.encoder_projection_dropout = 0.0
     cfg.ViT.PARAMS.patchify_technique = "linear"
     cfg.ViT.PARAMS.stochastic_depth = True
     cfg.ViT.PARAMS.stochastic_depth_mp = 0.1

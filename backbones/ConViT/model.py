@@ -5,11 +5,10 @@ from attention.transformers.vit_encoder import ViTEncoder
 from utils.global_params import Global
 from utils.pytorch_utils import DropPath
 
-class HPool_ViT(nn.Module):
+class ConViT(nn.Module):
 
     def __init__(
             self,
-            num_classes,
             d_model,
             image_size,
             patch_size,
@@ -17,6 +16,11 @@ class HPool_ViT(nn.Module):
             encoder_mlp_d,
             encoder_num_heads,
             num_encoder_blocks,
+            num_gated_blocks=10,
+            locality_strength=1.0,
+            locality_distance_method="constant",
+            use_conv_init=True,
+            d_pos=3,
             dropout=0.0,
             encoder_dropout=0.0,
             encoder_attention_dropout=0.0,
@@ -26,13 +30,13 @@ class HPool_ViT(nn.Module):
             stochastic_depth_mp=None,
             layer_scale=None,
             ln_order="residual",
-            hvt_pool=None,
-            in_channels=3
+            in_channels=3,
+            num_classes=1000
         ):
         
-        super(HPool_ViT, self).__init__()
+        super(ConViT, self).__init__()
 
-        HPool_ViT._assertions(image_size=image_size, patch_size=patch_size, patchify_technique=patchify_technique)
+        ConViT._assertions(image_size=image_size, patch_size=patch_size, patchify_technique=patchify_technique)
 
         self.num_classes = num_classes
         self.in_channels = in_channels
@@ -43,17 +47,20 @@ class HPool_ViT(nn.Module):
 
         self.linear_projection = nn.Linear(in_features=self.embed_size, out_features=d_model)
 
-        self.position_embeddings = nn.Parameter(
-            torch.normal(mean=0.0, std=0.02, size=(1, 1, d_model)), requires_grad=True
-        )
-
         self.dropout = nn.Dropout(p=dropout)
 
         self.encoder = ViTEncoder(
             embed_dim=d_model, d_ff=encoder_mlp_d, num_heads=encoder_num_heads,
             num_blocks=num_encoder_blocks, encoder_dropout=encoder_dropout, 
-            attention_dropout=encoder_attention_dropout, projection_dropout=encoder_projection_dropout, stodepth=stochastic_depth, 
-            stodepth_mp=stochastic_depth_mp, layer_scale=layer_scale, ln_order=ln_order, hvt_pool=hvt_pool
+            attention_dropout=encoder_attention_dropout, projection_dropout=encoder_projection_dropout,
+            stodepth=stochastic_depth, stodepth_mp=stochastic_depth_mp, layer_scale=layer_scale, ln_order=ln_order,
+            hvt_pool=None, gated_transformer_params={
+                "locality_strength": locality_strength,
+                "locality_distance_method": locality_distance_method,
+                "use_conv_init": use_conv_init,
+                "d_pos": d_pos,
+                "num_blocks": num_gated_blocks
+            }
         )
         self.stochastic_depth_mp = stochastic_depth_mp
 
@@ -96,14 +103,11 @@ class HPool_ViT(nn.Module):
     def forward(self, x):
         x = self.patchify(x)
         x = self.linear_projection(x)
-
-        x = x + self.position_embeddings.expand(x.size(0), x.size(1), -1)
         x = self.dropout(x)
-
         x = self.encoder(x)
 
-        class_token_or_hvt = x[:, 0, :]
+        class_token = x[:, 0, :]
 
-        x = self.classifier(class_token_or_hvt)
+        x = self.classifier(class_token)
 
         return x

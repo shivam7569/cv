@@ -15,6 +15,7 @@ class TNTEncoder(nn.Module):
             num_blocks,
             patch_encoder_dropout=0.0,
             patch_attention_dropout=0.0,
+            patch_projection_dropout=0.0,
             patch_ln_order="pre",
             patch_stodepth=False,
             patch_stodepth_mp=None,
@@ -25,6 +26,7 @@ class TNTEncoder(nn.Module):
             patch_in_dims=None,
             pixel_encoder_dropout=0.0,
             pixel_attention_dropout=0.0,
+            pixel_projection_dropout=0.0,
             pixel_ln_order="pre",
             pixel_stodepth=False,
             pixel_stodepth_mp=None,
@@ -49,8 +51,9 @@ class TNTEncoder(nn.Module):
                 TransformerBlock(
                     embed_dim=patch_embed_dim, d_ff=patch_d_ff, num_heads=patch_num_heads,
                     encoder_dropout=patch_encoder_dropout, attention_dropout=patch_attention_dropout,
-                    ln_order=patch_ln_order, stodepth_prob=patch_drop_probs[i], layer_scale=patch_layer_scale,
-                    se_block=patch_se_block, se_points=patch_se_points, qkv_bias=patch_qkv_bias, in_dims=patch_in_dims
+                    projection_dropout=patch_projection_dropout, ln_order=patch_ln_order, stodepth_prob=patch_drop_probs[i],
+                    layer_scale=patch_layer_scale, se_block=patch_se_block, se_points=patch_se_points,
+                    qkv_bias=patch_qkv_bias, in_dims=patch_in_dims
                 ) for i in range(num_blocks)
             ]
         )
@@ -65,8 +68,9 @@ class TNTEncoder(nn.Module):
                 TransformerBlock(
                     embed_dim=pixel_embed_dim, d_ff=pixel_d_ff, num_heads=pixel_num_heads,
                     encoder_dropout=pixel_encoder_dropout, attention_dropout=pixel_attention_dropout,
-                    ln_order=pixel_ln_order, stodepth_prob=pixel_drop_probs[i], layer_scale=pixel_layer_scale,
-                    se_block=pixel_se_block, se_points=pixel_se_points, qkv_bias=pixel_qkv_bias, in_dims=pixel_in_dims
+                    projection_dropout=pixel_projection_dropout, ln_order=pixel_ln_order, stodepth_prob=pixel_drop_probs[i],
+                    layer_scale=pixel_layer_scale, se_block=pixel_se_block, se_points=pixel_se_points,
+                    qkv_bias=pixel_qkv_bias, in_dims=pixel_in_dims
                 ) for i in range(num_blocks)
             ]
         )

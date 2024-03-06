@@ -1,12 +1,24 @@
 def VGG16Config(cfg):
     from configs.config import CfgNode as CN
 
+    cfg.ASYNC_TRAINING = True
+    cfg.DEBUG = None
+    cfg.PROFILING = False
+
     cfg.VGG16 = CN()
     cfg.CHECKPOINT.SAVE_EPOCH_CHECKPOINTS = True
     cfg.LOGGING.NAME = "VGG16"
     cfg.METRICS.NAME = "VGG16"
     cfg.CHECKPOINT.BASENAME = "VGG16"
     cfg.TENSORBOARD.BASENAME = "VGG16"
+
+    cfg.VGG16.PARAMS = CN()
+    cfg.VGG16.PARAMS.num_classes = 1000
+    cfg.VGG16.PARAMS.in_channels = 3
+
+    cfg.TRAIN = CN()
+    cfg.TRAIN.PARAMS = CN()
+    cfg.TRAIN.PARAMS.epochs = 150
 
     cfg.PIPELINES = CN()
     cfg.PIPELINES.TRAIN = [
@@ -51,7 +63,7 @@ def VGG16Config(cfg):
     cfg.VGG16.OPTIMIZER = CN()
     cfg.VGG16.OPTIMIZER.NAME = "SGD"
     cfg.VGG16.OPTIMIZER.PARAMS = CN()
-    cfg.VGG16.OPTIMIZER.PARAMS.lr = 0.01
+    cfg.VGG16.OPTIMIZER.PARAMS.lr = 0.01 * cfg.num_gpus 
     cfg.VGG16.OPTIMIZER.PARAMS.momentum = 0.9
     cfg.VGG16.OPTIMIZER.PARAMS.weight_decay = 0.0005
 

@@ -7,7 +7,6 @@ def DeiTConfig(cfg):
 
     cfg.ASYNC_TRAINING = True
     cfg.REPEAT_AUGMENTATIONS = True
-    cfg.num_gpus = 3
 
     cfg.DEBUG = None
     cfg.PROFILING = False

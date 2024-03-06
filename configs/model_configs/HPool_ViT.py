@@ -29,6 +29,7 @@ def HPool_ViTConfig(cfg):
     cfg.HPool_ViT.PARAMS.dropout = 0.0
     cfg.HPool_ViT.PARAMS.encoder_dropout = 0.0
     cfg.HPool_ViT.PARAMS.encoder_attention_dropout = 0.0
+    cfg.HPool_ViT.PARAMS.encoder_projection_dropout = 0.0
     cfg.HPool_ViT.PARAMS.patchify_technique = "linear"
     cfg.HPool_ViT.PARAMS.stochastic_depth = True
     cfg.HPool_ViT.PARAMS.stochastic_depth_mp = 0.1

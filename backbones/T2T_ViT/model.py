@@ -16,6 +16,7 @@ class T2T_ViT(nn.Module):
             t2t_module_transformer_num_heads=1,
             t2t_module_transformer_encoder_dropout=0.0,
             t2t_module_transformer_attention_dropout=0.0,
+            t2t_module_transformer_projection_dropout=0.0,
             t2t_module_patch_size=3,
             t2t_module_overlapping=1,
             t2t_module_padding=1,
@@ -27,6 +28,7 @@ class T2T_ViT(nn.Module):
             vit_backbone_num_blocks=14,
             vit_backbone_encoder_dropout=0.0,
             vit_backbone_attention_dropout=0.0,
+            vit_backbone_projection_dropout=0.0,
             vit_backbone_stodepth=True,
             vit_backbone_stodepth_mp=0.1,
             vit_backbone_layer_scale=1e-6,
@@ -50,6 +52,7 @@ class T2T_ViT(nn.Module):
             t2t_module_transformer_num_heads=t2t_module_transformer_num_heads,
             t2t_module_transformer_encoder_dropout=t2t_module_transformer_encoder_dropout,
             t2t_module_transformer_attention_dropout=t2t_module_transformer_attention_dropout,
+            t2t_module_transformer_projection_dropout=t2t_module_transformer_projection_dropout,
             t2t_module_patch_size=t2t_module_patch_size,
             t2t_module_overlapping=t2t_module_overlapping,
             t2t_module_padding=t2t_module_padding,
@@ -71,9 +74,9 @@ class T2T_ViT(nn.Module):
         self.vit = ViTEncoder(
             embed_dim=embed_dim, d_ff=vit_backbone_d_ff, num_heads=vit_backbone_num_heads,
             num_blocks=vit_backbone_num_blocks, encoder_dropout=vit_backbone_encoder_dropout, 
-            attention_dropout=vit_backbone_attention_dropout, stodepth=vit_backbone_stodepth, 
-            stodepth_mp=vit_backbone_stodepth_mp, layer_scale=vit_backbone_layer_scale, se_block=vit_backbone_num_patches+1,
-            se_points=vit_backbone_se_points, qkv_bias=vit_backbone_qkv_bias, in_dims=vit_backbone_in_dims
+            attention_dropout=vit_backbone_attention_dropout, projection_dropout=vit_backbone_projection_dropout,
+            stodepth=vit_backbone_stodepth, stodepth_mp=vit_backbone_stodepth_mp, layer_scale=vit_backbone_layer_scale,
+            se_block=vit_backbone_num_patches+1, se_points=vit_backbone_se_points, qkv_bias=vit_backbone_qkv_bias, in_dims=vit_backbone_in_dims
         )
         self.classifier = nn.Sequential(
             nn.Linear(in_features=embed_dim, out_features=classifier_hidden_dim),
@@ -107,6 +110,7 @@ class T2T_Module(nn.Module):
             t2t_module_transformer_num_heads,
             t2t_module_transformer_encoder_dropout,
             t2t_module_transformer_attention_dropout,
+            t2t_module_transformer_projection_dropout,
             t2t_module_patch_size,
             t2t_module_overlapping,
             t2t_module_padding,
@@ -128,7 +132,8 @@ class T2T_Module(nn.Module):
             d_ff=t2t_module_d_ff,
             num_heads=t2t_module_transformer_num_heads,
             encoder_dropout=t2t_module_transformer_encoder_dropout,
-            attention_dropout=t2t_module_transformer_attention_dropout
+            attention_dropout=t2t_module_transformer_attention_dropout,
+            projection_dropout=t2t_module_transformer_projection_dropout
         )
 
         self.t2t_transformer_2 = TokenTransformer(
@@ -137,7 +142,8 @@ class T2T_Module(nn.Module):
             d_ff=t2t_module_d_ff,
             num_heads=t2t_module_transformer_num_heads,
             encoder_dropout=t2t_module_transformer_encoder_dropout,
-            attention_dropout=t2t_module_transformer_attention_dropout
+            attention_dropout=t2t_module_transformer_attention_dropout,
+            projection_dropout=t2t_module_transformer_projection_dropout
         )
 
         self.projection_layer = nn.Linear(

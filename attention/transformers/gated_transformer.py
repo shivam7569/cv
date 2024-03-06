@@ -1,22 +1,25 @@
 import torch.nn as nn
+from attention.variants.gated_multiheadselfattention import Gated_MultiHeadSelfAttention
 from attention.variants.multiheadselfattention import MultiHeadSelfAttention
 from utils.pytorch_utils import DropPath, LayerScale, TransformerSEBlock
 
-class TransformerBlock(nn.Module):
+class GatedTransformerBlock(nn.Module):
 
     def __init__(
             self, embed_dim, d_ff, num_heads, encoder_dropout, attention_dropout, projection_dropout,
-            ln_order="post", stodepth_prob=0.0, layer_scale=None, se_block=None, se_points="both",
-            qkv_bias=False, in_dims=None, re_attention=False
+            locality_strength, use_conv_init, locality_distance_method, d_pos=3, ln_order="post",
+            stodepth_prob=0.0, layer_scale=None, se_block=None, se_points="both", qkv_bias=False, in_dims=None
         ):
-        super(TransformerBlock, self).__init__()
+        super(GatedTransformerBlock, self).__init__()
 
         self.ln_1 = nn.LayerNorm(normalized_shape=embed_dim)
         self.ln_2 = nn.LayerNorm(normalized_shape=embed_dim)
-        self.msa = MultiHeadSelfAttention(
-            embed_dim=embed_dim, num_heads=num_heads,
-            attention_dropout=attention_dropout, projection_dropout=projection_dropout,
-            qkv_bias=qkv_bias, in_dims=in_dims, re_attention=re_attention
+
+        self.msa = Gated_MultiHeadSelfAttention(
+            embed_dim=embed_dim, num_heads=num_heads, d_pos=d_pos,
+            locality_strength=locality_strength, use_conv_init=use_conv_init,
+            locality_distance_method=locality_distance_method, attention_dropout=attention_dropout,
+            projection_dropout=projection_dropout, qkv_bias=qkv_bias
         )
         self.mlp = nn.Sequential(
             nn.Linear(in_features=embed_dim, out_features=d_ff),

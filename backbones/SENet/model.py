@@ -2,9 +2,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from src.gpu_devices import GPU_Support
-
-
 class ResidualGroup(nn.ModuleList):
     def __init__(self, num_blocks, in_channels, channels_1x1_in, channels_3x3,
                 channels_1x1_out, bold=True, reduction_ratio=16):
@@ -173,7 +170,6 @@ class SENet(nn.Module):
         )
 
         self.initializeConv()
-        self.getLayersToCuda()
 
     def initializeConv(self):
         for module in self.init_features.modules():
@@ -187,23 +183,6 @@ class SENet(nn.Module):
 
                 nn.init.normal_(weight, mean=init_mean, std=init_std)
                 nn.init.constant_(bias, val=0.0)
-
-    def getLayersToCuda(self):
-        if GPU_Support.support_gpu == 2:
-            self.init_features.to("cuda:0")
-            self.res_group_1.to("cuda:0")
-            self.res_group_2.to("cuda:0")
-
-            self.res_group_3.to("cuda:1")
-            self.res_group_4.to("cuda:1")
-            self.classifier.to("cuda:1")
-        elif GPU_Support.support_gpu == 1:
-            self.init_features.to("cuda:0")
-            self.res_group_1.to("cuda:0")
-            self.res_group_2.to("cuda:0")
-            self.res_group_3.to("cuda:0")
-            self.res_group_4.to("cuda:0")
-            self.classifier.to("cuda:0")
 
     def forward(self, x):
         x = self.init_features(x)

@@ -93,3 +93,7 @@ class ModelConfigs:
             BoT_ViTConfig(cfg)
         elif model_name.lower() == "hpool_vit":
             HPool_ViTConfig(cfg)
+        elif model_name.lower() == "convit":
+            ConViTConfig(cfg)
+        elif model_name.lower() == "deepvit":
+            DeepViTConfig(cfg)

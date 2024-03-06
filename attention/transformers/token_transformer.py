@@ -4,12 +4,12 @@ from attention.variants.multiheadselfattention import MultiHeadSelfAttention
 
 class TokenTransformer(nn.Module):
 
-    def __init__(self, in_dims, embed_dim, d_ff, num_heads, encoder_dropout, attention_dropout, ln_order="pre", stodepth_prob=0.0, layer_scale=None):
+    def __init__(self, in_dims, embed_dim, d_ff, num_heads, encoder_dropout, attention_dropout, projection_dropout, ln_order="pre", stodepth_prob=0.0, layer_scale=None):
         super(TokenTransformer, self).__init__()
 
         self.ln_1 = nn.LayerNorm(normalized_shape=embed_dim if ln_order == "post" else in_dims)
         self.ln_2 = nn.LayerNorm(normalized_shape=embed_dim)
-        self.msa = MultiHeadSelfAttention(in_dims=in_dims, embed_dim=embed_dim, num_heads=num_heads, attention_dropout=attention_dropout)
+        self.msa = MultiHeadSelfAttention(in_dims=in_dims, embed_dim=embed_dim, num_heads=num_heads, attention_dropout=attention_dropout, projection_dropout=projection_dropout)
         self.mlp = nn.Sequential(
             nn.Linear(in_features=embed_dim, out_features=d_ff),
             nn.GELU(),

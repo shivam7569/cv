@@ -20,6 +20,7 @@ class ViT(nn.Module):
             dropout=0.0,
             encoder_dropout=0.0,
             encoder_attention_dropout=0.0,
+            encoder_projection_dropout=0.0,
             patchify_technique="linear",
             stochastic_depth=False,
             stochastic_depth_mp=None,
@@ -56,8 +57,8 @@ class ViT(nn.Module):
         self.encoder = ViTEncoder(
             embed_dim=d_model, d_ff=encoder_mlp_d, num_heads=encoder_num_heads,
             num_blocks=num_encoder_blocks, encoder_dropout=encoder_dropout, 
-            attention_dropout=encoder_attention_dropout, stodepth=stochastic_depth, 
-            stodepth_mp=stochastic_depth_mp, layer_scale=layer_scale, ln_order=ln_order
+            attention_dropout=encoder_attention_dropout, projection_dropout=encoder_projection_dropout,
+            stodepth=stochastic_depth, stodepth_mp=stochastic_depth_mp, layer_scale=layer_scale, ln_order=ln_order
         )
         self.stochastic_depth_mp = stochastic_depth_mp
 

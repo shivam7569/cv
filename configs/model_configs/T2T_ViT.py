@@ -24,6 +24,7 @@ def T2T_ViTConfig(cfg):
     cfg.T2T_ViT.PARAMS.t2t_module_transformer_num_heads = 1
     cfg.T2T_ViT.PARAMS.t2t_module_transformer_encoder_dropout = 0.0
     cfg.T2T_ViT.PARAMS.t2t_module_transformer_attention_dropout = 0.0
+    cfg.T2T_ViT.PARAMS.t2t_module_transformer_projection_dropout = 0.0
     cfg.T2T_ViT.PARAMS.t2t_module_patch_size = 3
     cfg.T2T_ViT.PARAMS.t2t_module_overlapping = 1
     cfg.T2T_ViT.PARAMS.t2t_module_padding = 1
@@ -35,6 +36,7 @@ def T2T_ViTConfig(cfg):
     cfg.T2T_ViT.PARAMS.vit_backbone_num_blocks = 14
     cfg.T2T_ViT.PARAMS.vit_backbone_encoder_dropout = 0.0
     cfg.T2T_ViT.PARAMS.vit_backbone_attention_dropout = 0.0
+    cfg.T2T_ViT.PARAMS.vit_backbone_projection_dropout = 0.0
     cfg.T2T_ViT.PARAMS.vit_backbone_stodepth = True
     cfg.T2T_ViT.PARAMS.vit_backbone_stodepth_mp = 0.1
     cfg.T2T_ViT.PARAMS.vit_backbone_layer_scale = 1e-6

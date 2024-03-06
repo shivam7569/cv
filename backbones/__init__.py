@@ -18,3 +18,5 @@ from backbones.T2T_ViT.model import T2T_ViT
 from backbones.TNT.model import TNT
 from backbones.BoT_ViT.model import BoT_ViT
 from backbones.HPool_ViT.model import HPool_ViT
+from backbones.ConViT.model import ConViT
+from backbones.DeepViT.model import DeepViT

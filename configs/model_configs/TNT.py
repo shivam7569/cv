@@ -30,6 +30,7 @@ def TNTConfig(cfg):
     cfg.TNT.PARAMS.num_blocks = 12
     cfg.TNT.PARAMS.patch_encoder_dropout = 0.1
     cfg.TNT.PARAMS.patch_attention_dropout = 0.0
+    cfg.TNT.PARAMS.patch_projection_dropout = 0.0
     cfg.TNT.PARAMS.patch_ln_order = "residual"
     cfg.TNT.PARAMS.patch_stodepth = True
     cfg.TNT.PARAMS.patch_stodepth_mp = 0.1
@@ -40,6 +41,7 @@ def TNTConfig(cfg):
     cfg.TNT.PARAMS.patch_in_dims = None
     cfg.TNT.PARAMS.pixel_encoder_dropout = 0.0
     cfg.TNT.PARAMS.pixel_attention_dropout = 0.0
+    cfg.TNT.PARAMS.pixel_projection_dropout = 0.0
     cfg.TNT.PARAMS.pixel_ln_order = "pre"
     cfg.TNT.PARAMS.pixel_stodepth = False
     cfg.TNT.PARAMS.pixel_stodepth_mp = None

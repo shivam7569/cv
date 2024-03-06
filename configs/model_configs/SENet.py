@@ -3,11 +3,26 @@ def SENetConfig(cfg):
 
     cfg.SENet = CN()
 
+    cfg.ASYNC_TRAINING = True
+    cfg.DEBUG = None
+    cfg.PROFILING = False
+
     cfg.CHECKPOINT.SAVE_EPOCH_CHECKPOINTS = True
     cfg.LOGGING.NAME = "SENet"
     cfg.METRICS.NAME = "SENet"
     cfg.CHECKPOINT.BASENAME = "SENet"
     cfg.TENSORBOARD.BASENAME = "SENet"
+
+    cfg.SENet.PARAMS = CN()
+    cfg.SENet.PARAMS.num_classes = 1000
+    cfg.SENet.PARAMS.in_channels = 3
+    cfg.SENet.PARAMS.reduction_ratio = 16
+
+    cfg.TRAIN = CN()
+    cfg.TRAIN.PARAMS = CN()
+    cfg.TRAIN.PARAMS.epochs = 150
+    cfg.TRAIN.PARAMS.gradient_accumulation = True
+    cfg.TRAIN.PARAMS.gradient_accumulation_batch_size = 1024
 
     cfg.PIPELINES = CN()
     cfg.PIPELINES.TRAIN = [
@@ -20,14 +35,14 @@ def SENetConfig(cfg):
     ]
 
     cfg.SENet.DATALOADER_TRAIN_PARAMS = CN()
-    cfg.SENet.DATALOADER_TRAIN_PARAMS.batch_size = 64
+    cfg.SENet.DATALOADER_TRAIN_PARAMS.batch_size = 32
     cfg.SENet.DATALOADER_TRAIN_PARAMS.shuffle = True
-    cfg.SENet.DATALOADER_TRAIN_PARAMS.num_workers = 16
+    cfg.SENet.DATALOADER_TRAIN_PARAMS.num_workers = 8
     cfg.SENet.DATALOADER_TRAIN_PARAMS.pin_memory = True
     cfg.SENet.DATALOADER_TRAIN_PARAMS.drop_last = True
 
     cfg.SENet.DATALOADER_VAL_PARAMS = CN()
-    cfg.SENet.DATALOADER_VAL_PARAMS.batch_size = 128
+    cfg.SENet.DATALOADER_VAL_PARAMS.batch_size = 32
     cfg.SENet.DATALOADER_VAL_PARAMS.shuffle = True
     cfg.SENet.DATALOADER_VAL_PARAMS.num_workers = 8
     cfg.SENet.DATALOADER_VAL_PARAMS.pin_memory = True
@@ -51,7 +66,7 @@ def SENetConfig(cfg):
     cfg.SENet.OPTIMIZER = CN()
     cfg.SENet.OPTIMIZER.NAME = "SGD"
     cfg.SENet.OPTIMIZER.PARAMS = CN()
-    cfg.SENet.OPTIMIZER.PARAMS.lr = 0.1
+    cfg.SENet.OPTIMIZER.PARAMS.lr = 0.6 * cfg.num_gpus
     cfg.SENet.OPTIMIZER.PARAMS.momentum = 0.9
     cfg.SENet.OPTIMIZER.PARAMS.weight_decay = 0.0005
 

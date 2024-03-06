@@ -7,7 +7,7 @@ from utils.global_params import Global
 
 class MultiHeadSelfAttention(nn.Module):
 
-    def __init__(self, embed_dim, num_heads, attention_dropout=0.0, qkv_bias=False, in_dims=None):
+    def __init__(self, embed_dim, num_heads, attention_dropout=0.0, projection_dropout=0.0, qkv_bias=False, in_dims=None, re_attention=False):
         super(MultiHeadSelfAttention, self).__init__()
 
         if in_dims is None: in_dims = embed_dim
@@ -24,7 +24,15 @@ class MultiHeadSelfAttention(nn.Module):
         self.w_v = nn.Linear(in_features=in_dims, out_features=embed_dim, bias=qkv_bias)
         self.w_o = nn.Linear(in_features=embed_dim, out_features=embed_dim, bias=True)
 
-        self.attention_dropout = nn.Dropout(p=attention_dropout)
+        self.attention_dropout = nn.Dropout(p=attention_dropout) if attention_dropout > 0.0 else nn.Identity()
+        self.projection_dropout = nn.Dropout(p=projection_dropout) if projection_dropout > 0.0 else nn.Identity()
+
+        self.re_attention = re_attention
+        if self.re_attention:
+            self.re_attention_layer = nn.Conv2d(
+                in_channels=num_heads, out_channels=num_heads, kernel_size=1, stride=1
+            )
+            self.re_attention_bn = nn.BatchNorm2d(num_features=num_heads)
 
     def _init_qkv_weights(self):
 
@@ -42,6 +50,10 @@ class MultiHeadSelfAttention(nn.Module):
             energy.masked_fill_(mask == 0, np.NINF)
 
         attention_scores = energy.softmax(dim=-1)
+
+        if self.re_attention:
+            attention_scores = self.re_attention_layer(attention_scores)
+            attention_scores = self.re_attention_bn(attention_scores)
 
         if self.attention_dropout is not None:
             attention_scores = self.attention_dropout(attention_scores)
@@ -63,6 +75,6 @@ class MultiHeadSelfAttention(nn.Module):
 
         attention_out = attention_out.transpose(1, 2).contiguous().view(attention_out.shape[0], -1, self.embed_dim) # (b, num_heads, sl, head_embed_dim) -> (b, sl, num_heads, head_embed_dim) -> (b, sl, ed)
 
-        msa_out = self.w_o(attention_out) # shape: (b, sl, ed)
+        msa_out = self.projection_dropout(self.w_o(attention_out)) # shape: (b, sl, ed)
 
         return msa_out

@@ -1,15 +1,12 @@
 from collections import OrderedDict
-from turtle import forward
 import numpy as np
 import torch
 import torch.nn as nn
 
-from src.gpu_devices import GPU_Support
-
 
 class VGG16(nn.Module):
 
-    def __init__(self, num_classes, in_channels=3, toCuda=True):
+    def __init__(self, num_classes, in_channels=3):
         super(VGG16, self).__init__()
 
         self.feature_extractor_layers = OrderedDict(
@@ -86,8 +83,6 @@ class VGG16(nn.Module):
         self.feature_extractor_1 = self.feature_extractor[:10]
         self.feature_extractor_2 = self.feature_extractor[10:]
 
-        if toCuda: self.getLayerToCuda()
-
     def vgg_init(self, convLayer):
 
         init_n = (convLayer.kernel_size[0] ** 2) * convLayer.out_channels
@@ -102,32 +97,12 @@ class VGG16(nn.Module):
             if isinstance(module, nn.Conv2d):
                 self.vgg_init(module)
 
-    def getLayerToCuda(self):
-
-        if GPU_Support.support_gpu == 2:
-            self.feature_extractor_1.to("cuda:0")
-            self.feature_extractor_2.to("cuda:1")
-            self.classifier.to("cuda:1")
-        elif GPU_Support.support_gpu == 1:
-            self.feature_extractor.to("cuda:0")
-            self.classifier.to("cuda:0")
-
-    @staticmethod
-    def get_layer_out(layer, input_):
-        if GPU_Support.support_gpu > 1:
-            layer_device = next(layer.parameters()).device
-            input_ = input_.cpu().to(layer_device)
-            out = layer(input_)
-        else:
-            out = layer(input_)
-        return out
-
     def forward(self, x):
 
-        x = VGG16.get_layer_out(self.feature_extractor_1, x)
-        x = VGG16.get_layer_out(self.feature_extractor_2, x)
+        x = self.feature_extractor_1(x)
+        x = self.feature_extractor_2(x)
         x = torch.flatten(x, start_dim=1)
-        x = VGG16.get_layer_out(self.classifier, x)
+        x = self.classifier(x)
         
         return x
     
