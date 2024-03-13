@@ -1,13 +1,14 @@
 import torch.nn as nn
+from attention.feed_forwards.locally_enhanced_ff import LeFF
 from attention.variants.multiheadselfattention import MultiHeadSelfAttention
-from utils.pytorch_utils import DropPath, LayerScale, TransformerSEBlock
+from utils.layers import DropPath, LayerScale, TransformerSEBlock
 
 class TransformerBlock(nn.Module):
 
     def __init__(
             self, embed_dim, d_ff, num_heads, encoder_dropout, attention_dropout, projection_dropout,
             ln_order="post", stodepth_prob=0.0, layer_scale=None, se_block=None, se_points="both",
-            qkv_bias=False, in_dims=None, re_attention=False
+            qkv_bias=False, in_dims=None, re_attention=False, leff=None, ceit_cross_attention=False
         ):
         super(TransformerBlock, self).__init__()
 
@@ -18,12 +19,16 @@ class TransformerBlock(nn.Module):
             attention_dropout=attention_dropout, projection_dropout=projection_dropout,
             qkv_bias=qkv_bias, in_dims=in_dims, re_attention=re_attention
         )
-        self.mlp = nn.Sequential(
-            nn.Linear(in_features=embed_dim, out_features=d_ff),
-            nn.GELU(),
-            nn.Dropout(p=encoder_dropout),
-            nn.Linear(in_features=d_ff, out_features=embed_dim)
-        )
+
+        if leff is None:
+            self.mlp = nn.Sequential(
+                nn.Linear(in_features=embed_dim, out_features=d_ff),
+                nn.GELU(),
+                nn.Dropout(p=encoder_dropout),
+                nn.Linear(in_features=d_ff, out_features=embed_dim)
+            )
+        else:
+            self.mlp = LeFF(**leff)
 
         self.ln_order = ln_order
         self.dropPath_1 = DropPath(
@@ -40,9 +45,15 @@ class TransformerBlock(nn.Module):
         self.se_block = TransformerSEBlock(in_channels=se_block, r=16) if se_block is not None else nn.Identity()
         self.se_points = se_points
 
+        self.ceit_cross_attention = ceit_cross_attention
+
     def forward_post_ln(self, x):
 
-        msa_out = self.msa(q=x, k=x, v=x, mask=None)
+        if not self.ceit_cross_attention:
+            msa_out = self.msa(q=x, k=x, v=x, mask=None)
+        else:
+            x, other_layers_class_tokens = x[:, -1, :].unsqueeze(1), x[:, :-1, :]
+            msa_out = self.msa(q=x, k=other_layers_class_tokens, v=other_layers_class_tokens, mask=None)
 
         if self.se_points in ["both", "msa"]:
             msa_out = self.se_block(msa_out)
@@ -69,8 +80,13 @@ class TransformerBlock(nn.Module):
     def forward_pre_ln(self, x):
 
         ln_1_out = self.ln_1(x)
-        msa_out = self.msa(q=ln_1_out, k=ln_1_out, v=ln_1_out, mask=None)
 
+        if not self.ceit_cross_attention:
+            msa_out = self.msa(q=ln_1_out, k=ln_1_out, v=ln_1_out, mask=None)
+        else:
+            x, other_layers_class_tokens = self.ln_1(x[:, -1, :].unsqueeze(1)), self.ln_1(x[:, :-1, :])
+            msa_out = self.msa(q=x, k=other_layers_class_tokens, v=other_layers_class_tokens, mask=None)
+        
         if self.se_points in ["both", "msa"]:
             msa_out = self.se_block(msa_out)
         
@@ -92,7 +108,11 @@ class TransformerBlock(nn.Module):
 
     def forward_dual_residual(self, x, res):
 
-        msa_out = self.msa(q=x, k=x, v=x, mask=None)
+        if not self.ceit_cross_attention:
+            msa_out = self.msa(q=x, k=x, v=x, mask=None)
+        else:
+            x, other_layers_class_tokens = x[:, -1, :].unsqueeze(1), x[:, :-1, :]
+            msa_out = self.msa(q=x, k=other_layers_class_tokens, v=other_layers_class_tokens, mask=None)
 
         if self.se_points in ["both", "msa"]:
             msa_out = self.se_block(msa_out)

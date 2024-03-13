@@ -23,3 +23,4 @@ from configs.model_configs.BoT_ViT import BoT_ViTConfig
 from configs.model_configs.HPool_ViT import HPool_ViTConfig
 from configs.model_configs.ConViT import ConViTConfig
 from configs.model_configs.DeepViT import DeepViTConfig
+from configs.model_configs.CeiT import CeiTConfig

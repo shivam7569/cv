@@ -124,10 +124,10 @@ class EMA(nn.Module):
         self.ema_model.requires_grad_(requires_grad=False)
 
         self.parameter_names = {
-            name for name, _ in self.ema_model.named_parameters()
+            name for name, param in self.ema_model.named_parameters() if param.dtype in [torch.float, torch.float16]
         }
         self.buffer_names = {
-            name for name, _ in self.ema_model.named_buffers()
+            name for name, buffer in self.ema_model.named_buffers() if buffer.dtype in [torch.float, torch.float16]
         }
 
         self.warmup_steps = warmup_steps

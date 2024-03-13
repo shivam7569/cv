@@ -25,7 +25,8 @@ class ViTEncoder(nn.Module):
             in_dims=None,
             hvt_pool=None,
             gated_transformer_params=None,
-            re_attention=False
+            re_attention=False,
+            leff_params=None
         ):
 
         super(ViTEncoder, self).__init__()
@@ -36,6 +37,7 @@ class ViTEncoder(nn.Module):
             drop_probs = [0.0 for _ in range(num_blocks)]
 
         self.gated_transformer_params = gated_transformer_params
+        self.leff_params = leff_params
 
         if gated_transformer_params is None:
             self.encoder_layers = nn.ModuleList(
@@ -44,7 +46,7 @@ class ViTEncoder(nn.Module):
                         embed_dim=embed_dim, d_ff=d_ff, num_heads=num_heads,
                         encoder_dropout=encoder_dropout, attention_dropout=attention_dropout,
                         projection_dropout=projection_dropout, ln_order=ln_order, stodepth_prob=drop_probs[i], layer_scale=layer_scale,
-                        se_block=se_block, se_points=se_points, qkv_bias=qkv_bias, in_dims=in_dims, re_attention=re_attention
+                        se_block=se_block, se_points=se_points, qkv_bias=qkv_bias, in_dims=in_dims, re_attention=re_attention, leff=leff_params
                     ) for i in range(num_blocks)
                 ]
             )
@@ -127,6 +129,13 @@ class ViTEncoder(nn.Module):
                         res = torch.cat([self.class_token.expand(res.size(0), -1, -1), res], dim=1)
                     x, res = transformer_block(x, res)
                 encoder_out = x + self.final_norm(res)
+        elif self.leff_params is not None:
+            lca = []
+            for transformer_block in self.encoder:
+                x = transformer_block(x)
+                lca.append(x[:, 0, :])
+
+            encoder_out = lca
         else:
             if self.ln_order in ["post", "pre"]:
                 encoder_out = self.encoder(x)

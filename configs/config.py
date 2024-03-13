@@ -97,3 +97,5 @@ class ModelConfigs:
             ConViTConfig(cfg)
         elif model_name.lower() == "deepvit":
             DeepViTConfig(cfg)
+        elif model_name.lower() == "ceit":
+            CeiTConfig(cfg)
