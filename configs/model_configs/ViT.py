@@ -66,7 +66,7 @@ def ViTConfig(cfg):
     ]
     cfg.PIPELINES.VAL = [
         dict(func="readImage", params=dict(uint8=True)),
-        dict(func="resizeWithAspectRatio", params=dict(size=192))
+        dict(func="resizeWithAspectRatio", params=dict(size=224 if cfg.ViT.PARAMS.image_size == 192 else 256))
     ]
 
     cfg.ViT.DATALOADER_TRAIN_PARAMS = CN()

@@ -83,7 +83,7 @@ def TNTConfig(cfg):
     ]
     cfg.PIPELINES.VAL = [
         dict(func="readImage", params=dict(uint8=True)),
-        dict(func="resizeWithAspectRatio", params=dict(size=192))
+        dict(func="resizeWithAspectRatio", params=dict(size=224 if cfg.TNT.PARAMS.image_size == 192 else 256))
     ]
 
     cfg.TNT.DATALOADER_TRAIN_PARAMS = CN()
@@ -102,10 +102,11 @@ def TNTConfig(cfg):
 
     cfg.TNT.TRANSFORMS = CN()
 
-    cfg.TNT.TRANSFORMS.TRAIN = [
+    cfg.DeiT.TRANSFORMS.TRAIN = [
         dict(name="ToPILImage", params=None),
         dict(name="RandomResizedCrop", params=dict(size=(cfg.TNT.PARAMS.image_size, cfg.TNT.PARAMS.image_size))),
         dict(name="RandomHorizontalFlip", params=dict(p=0.5)),
+        dict(name="RandomAugmentation", params=dict(m=9, n=2, mstd=0.5)),
         dict(name="ToTensor", params=None),
         dict(name="Normalize", params=dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])),
         dict(name="RandomCutOut", params=dict(probability=0.25, mode="pixel", device="cpu"))

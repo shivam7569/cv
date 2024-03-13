@@ -65,7 +65,7 @@ def DeiTConfig(cfg):
     ]
     cfg.PIPELINES.VAL = [
         dict(func="readImage", params=dict(uint8=True)),
-        dict(func="resizeWithAspectRatio", params=dict(size=256))
+        dict(func="resizeWithAspectRatio", params=dict(size=224 if cfg.DeiT.PARAMS.image_size == 192 else 256))
     ]
 
     cfg.DeiT.DATALOADER_TRAIN_PARAMS = CN()

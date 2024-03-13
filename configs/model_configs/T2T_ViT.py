@@ -77,7 +77,7 @@ def T2T_ViTConfig(cfg):
     ]
     cfg.PIPELINES.VAL = [
         dict(func="readImage", params=dict(uint8=True)),
-        dict(func="resizeWithAspectRatio", params=dict(size=192))
+        dict(func="resizeWithAspectRatio", params=dict(size=224 if cfg.T2T_ViT.PARAMS.image_size == 192 else 256))
     ]
 
     cfg.T2T_ViT.DATALOADER_TRAIN_PARAMS = CN()
@@ -96,10 +96,11 @@ def T2T_ViTConfig(cfg):
 
     cfg.T2T_ViT.TRANSFORMS = CN()
 
-    cfg.T2T_ViT.TRANSFORMS.TRAIN = [
+    cfg.DeiT.TRANSFORMS.TRAIN = [
         dict(name="ToPILImage", params=None),
         dict(name="RandomResizedCrop", params=dict(size=(cfg.T2T_ViT.PARAMS.image_size, cfg.T2T_ViT.PARAMS.image_size))),
         dict(name="RandomHorizontalFlip", params=dict(p=0.5)),
+        dict(name="RandomAugmentation", params=dict(m=9, n=2, mstd=0.5)),
         dict(name="ToTensor", params=None),
         dict(name="Normalize", params=dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])),
         dict(name="RandomCutOut", params=dict(probability=0.25, mode="pixel", device="cpu"))
