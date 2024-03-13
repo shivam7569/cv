@@ -3,7 +3,7 @@ import torch.nn as nn
 from attention.transformers.vit_encoder import ViTEncoder
 
 from utils.global_params import Global
-from utils.pytorch_utils import DropPath
+from utils.layers import DropPath
 
 class ViT(nn.Module):
 
@@ -60,7 +60,6 @@ class ViT(nn.Module):
             attention_dropout=encoder_attention_dropout, projection_dropout=encoder_projection_dropout,
             stodepth=stochastic_depth, stodepth_mp=stochastic_depth_mp, layer_scale=layer_scale, ln_order=ln_order
         )
-        self.stochastic_depth_mp = stochastic_depth_mp
 
         self.classifier = nn.Sequential(
             nn.Linear(in_features=d_model, out_features=classifier_mlp_d),

@@ -1,7 +1,6 @@
 import torch.nn as nn
 from attention.variants.gated_multiheadselfattention import Gated_MultiHeadSelfAttention
-from attention.variants.multiheadselfattention import MultiHeadSelfAttention
-from utils.pytorch_utils import DropPath, LayerScale, TransformerSEBlock
+from utils.layers import DropPath, LayerScale, TransformerSEBlock
 
 class GatedTransformerBlock(nn.Module):
 

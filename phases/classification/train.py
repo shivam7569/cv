@@ -17,7 +17,8 @@ from src import optimizers
 from phases.classification.eval import Eval
 from utils.logging_utils import start_logger
 from utils.os_utils import check_dir
-from utils.pytorch_utils import EMA, RepeatAugSampler, async_parallel_setup
+from utils.training import EMA, RepeatAugSampler
+from utils.pytorch_utils import async_parallel_setup
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data import DataLoader, DistributedSampler
 
@@ -85,7 +86,12 @@ class Train:
 
         self.exponential_moving_average = exponential_moving_average
         if exponential_moving_average is not None:
-            self.ema_model = EMA(model=self.model.module, decay=exponential_moving_average, warmup=2, decay_step=1) if async_parallel else EMA(model=self.model, decay=exponential_moving_average, warmup=2, decay_step=1)
+            self.ema_model = EMA(
+                model=self.model.module, 
+                beta=exponential_moving_average) \
+                    if async_parallel else EMA(
+                        model=self.model,
+                        beta=exponential_moving_average)
 
         if async_parallel:
             Global.LOGGER.info(f"Training asynchronously with parallel model distribution")

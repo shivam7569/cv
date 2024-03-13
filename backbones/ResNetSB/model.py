@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 
 from src.gpu_devices import GPU_Support
-from utils.pytorch_utils import DropPath, LayerScale
+from utils.layers import DropPath, LayerScale
 
 
 class ResidualGroup(nn.ModuleList):

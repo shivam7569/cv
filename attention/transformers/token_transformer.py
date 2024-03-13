@@ -1,5 +1,5 @@
 import torch.nn as nn
-from utils.pytorch_utils import DropPath, LayerScale
+from utils.layers import DropPath, LayerScale
 from attention.variants.multiheadselfattention import MultiHeadSelfAttention
 
 class TokenTransformer(nn.Module):

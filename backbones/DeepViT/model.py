@@ -3,7 +3,7 @@ import torch.nn as nn
 from attention.transformers.vit_encoder import ViTEncoder
 
 from utils.global_params import Global
-from utils.pytorch_utils import DropPath
+from utils.layers import DropPath
 
 class DeepViT(nn.Module):
 
