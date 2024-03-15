@@ -30,7 +30,7 @@
   - [x] [Hierarchical Pooling ViT](https://arxiv.org/abs/2103.10619.pdf)
   - [x] [Convolutional Inductive ViT](https://arxiv.org/abs/2103.10697.pdf)
   - [x] [Deeper ViT](https://arxiv.org/abs/2103.11886.pdf)
-  - [ ] [Convolution Designs in ViT](https://arxiv.org/abs/2103.11816.pdf)
+  - [x] [Convolution Designs in ViT](https://arxiv.org/abs/2103.11816.pdf)
   - [ ] [Swin-Transformers](https://arxiv.org/abs/2103.14030)
   - [ ] [Cross Attention ViT](https://arxiv.org/abs/2103.14899.pdf)
   - [ ] [Rethinking Spatial Dimensions of ViT](https://arxiv.org/abs/2103.16302.pdf)
