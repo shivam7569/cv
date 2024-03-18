@@ -75,8 +75,14 @@ class TNT(nn.Module):
 
         self.patchify = self._linear_patchify if patchify_technique == "linear" else self._conv_patchify
 
-        self.linear_projection_sentences = nn.Linear(in_features=sentence_embed_dim, out_features=patch_embed)
-        self.linear_projection_words = nn.Linear(in_features=word_embed_dim, out_features=pixel_embed)
+        self.linear_projection_sentences = nn.Sequential(
+            nn.Linear(in_features=sentence_embed_dim, out_features=patch_embed),
+            nn.LayerNorm(normalized_shape=patch_embed)
+        )
+        self.linear_projection_words = nn.Sequential(
+            nn.Linear(in_features=word_embed_dim, out_features=pixel_embed),
+            nn.LayerNorm(normalized_shape=pixel_embed)
+        )
 
         self.tnt_dropout = nn.Dropout(p=tnt_dropout)
 

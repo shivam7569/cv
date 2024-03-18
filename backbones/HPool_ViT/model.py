@@ -41,7 +41,10 @@ class HPool_ViT(nn.Module):
 
         self.patchify = self._linear_patchify if patchify_technique == "linear" else self._conv_patchify
 
-        self.linear_projection = nn.Linear(in_features=self.embed_size, out_features=d_model)
+        self.linear_projection = nn.Sequential(
+            nn.Linear(in_features=self.embed_size, out_features=d_model),
+            nn.LayerNorm(normalized_shape=d_model)
+        )
 
         self.position_embeddings = nn.Parameter(
             torch.normal(mean=0.0, std=0.02, size=(1, 1, d_model)), requires_grad=True

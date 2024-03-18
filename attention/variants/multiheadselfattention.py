@@ -34,6 +34,8 @@ class MultiHeadSelfAttention(nn.Module):
             )
             self.re_attention_bn = nn.BatchNorm2d(num_features=num_heads)
 
+        self._init_qkv_weights()
+
     def _init_qkv_weights(self):
 
         nn.init.trunc_normal_(self.w_q.weight, mean=0.0, std=0.02)
