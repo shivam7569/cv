@@ -104,7 +104,7 @@ def ResNetSBConfig(cfg):
     cfg.ResNetSB.LR_SCHEDULER.PARAMS.after_scheduler.NAME = "CosineAnnealingWarmRestarts"
     cfg.ResNetSB.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS = CN()
     cfg.ResNetSB.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_0 = 15
-    cfg.ResNetSB.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_mult = 2
+    cfg.ResNetSB.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_mult = 3
     cfg.ResNetSB.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.eta_min = 1e-6
     cfg.ResNetSB.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.last_epoch = -1
 

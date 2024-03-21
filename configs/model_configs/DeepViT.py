@@ -124,7 +124,7 @@ def DeepViTConfig(cfg):
     cfg.DeepViT.LR_SCHEDULER.PARAMS.after_scheduler.NAME = "CosineAnnealingWarmRestarts"
     cfg.DeepViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS = CN()
     cfg.DeepViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_0 = 15
-    cfg.DeepViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_mult = 2
+    cfg.DeepViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_mult = 3
     cfg.DeepViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.eta_min = 1e-8
     cfg.DeepViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.last_epoch = -1
     

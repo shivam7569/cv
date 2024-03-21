@@ -120,7 +120,7 @@ def DeiTConfig(cfg):
     cfg.DeiT.LR_SCHEDULER.PARAMS.after_scheduler.NAME = "CosineAnnealingWarmRestarts"
     cfg.DeiT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS = CN()
     cfg.DeiT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_0 = 15
-    cfg.DeiT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_mult = 2
+    cfg.DeiT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_mult = 3
     cfg.DeiT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.eta_min = 0.0
     cfg.DeiT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.last_epoch = -1
     

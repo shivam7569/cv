@@ -125,7 +125,7 @@ def ViTConfig(cfg):
     cfg.ViT.LR_SCHEDULER.PARAMS.after_scheduler.NAME = "CosineAnnealingWarmRestarts"
     cfg.ViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS = CN()
     cfg.ViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_0 = 15
-    cfg.ViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_mult = 2
+    cfg.ViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_mult = 3
     cfg.ViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.eta_min = 1e-8
     cfg.ViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.last_epoch = -1
     

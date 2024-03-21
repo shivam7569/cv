@@ -132,7 +132,7 @@ def T2T_ViTConfig(cfg):
     cfg.T2T_ViT.LR_SCHEDULER.PARAMS.after_scheduler.NAME = "CosineAnnealingWarmRestarts"
     cfg.T2T_ViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS = CN()
     cfg.T2T_ViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_0 = 15
-    cfg.T2T_ViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_mult = 2
+    cfg.T2T_ViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_mult = 3
     cfg.T2T_ViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.eta_min = 1e-8
     cfg.T2T_ViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.last_epoch = -1
     

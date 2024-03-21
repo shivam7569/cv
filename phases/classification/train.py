@@ -186,7 +186,7 @@ class Train:
                 else:
                     lbl_batch = lbl_batch.to(self.async_parallel_rank, non_blocking=True)
 
-            if self.tb_writer is not None and not self.graph_written:
+            if (self.tb_writer is not None) and (not self.graph_written) and (Global.CFG.WRITE_TENSORBOARD_GRAPH):
                 tb_model = self.model if not self.async_parallel else self.model.module
                 self.tb_writer.write("graph")(model=tb_model, input_to_model=img_batch)
                 self.graph_written = True

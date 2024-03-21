@@ -58,5 +58,6 @@ _C.REPEAT_AUGMENTATIONS = False
 _C.RESUME_TRAINING = False
 
 _C.SAVE_FIRST_SAMPLE = True
+_C.WRITE_TENSORBOARD_GRAPH = True
 
 os.environ["TORCH_HOME"] = "/media/drive6/hqh2kor/projects/cv/checkpoints/pytorch_hub/"

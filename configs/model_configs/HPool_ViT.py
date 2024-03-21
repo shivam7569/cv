@@ -120,7 +120,7 @@ def HPool_ViTConfig(cfg):
     cfg.HPool_ViT.LR_SCHEDULER.PARAMS.after_scheduler.NAME = "CosineAnnealingWarmRestarts"
     cfg.HPool_ViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS = CN()
     cfg.HPool_ViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_0 = 15
-    cfg.HPool_ViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_mult = 2
+    cfg.HPool_ViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_mult = 3
     cfg.HPool_ViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.eta_min = 1e-8
     cfg.HPool_ViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.last_epoch = -1
     

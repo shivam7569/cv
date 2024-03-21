@@ -138,7 +138,7 @@ def TNTConfig(cfg):
     cfg.TNT.LR_SCHEDULER.PARAMS.after_scheduler.NAME = "CosineAnnealingWarmRestarts"
     cfg.TNT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS = CN()
     cfg.TNT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_0 = 15
-    cfg.TNT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_mult = 2
+    cfg.TNT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_mult = 3
     cfg.TNT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.eta_min = 1e-8
     cfg.TNT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.last_epoch = -1
     

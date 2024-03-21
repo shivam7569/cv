@@ -105,7 +105,7 @@ def BoT_ViTConfig(cfg):
     cfg.BoT_ViT.LR_SCHEDULER.PARAMS.after_scheduler.NAME = "CosineAnnealingWarmRestarts"
     cfg.BoT_ViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS = CN()
     cfg.BoT_ViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_0 = 5
-    cfg.BoT_ViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_mult = 2
+    cfg.BoT_ViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_mult = 3
     cfg.BoT_ViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.eta_min = 0.0
     cfg.BoT_ViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.last_epoch = -1
     
