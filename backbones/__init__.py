@@ -21,3 +21,4 @@ from backbones.HPool_ViT.model import HPool_ViT
 from backbones.ConViT.model import ConViT
 from backbones.DeepViT.model import DeepViT
 from backbones.CeiT.model import CeiT
+from backbones.SwinT.model import SwinT

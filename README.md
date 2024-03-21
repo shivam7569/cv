@@ -31,7 +31,7 @@
   - [x] [Convolutional Inductive ViT](https://arxiv.org/abs/2103.10697.pdf)
   - [x] [Deeper ViT](https://arxiv.org/abs/2103.11886.pdf)
   - [x] [Convolution Designs in ViT](https://arxiv.org/abs/2103.11816.pdf)
-  - [ ] [Swin-Transformers](https://arxiv.org/abs/2103.14030)
+  - [x] [Swin-Transformers](https://arxiv.org/abs/2103.14030)
   - [ ] [Cross Attention ViT](https://arxiv.org/abs/2103.14899.pdf)
   - [ ] [Rethinking Spatial Dimensions of ViT](https://arxiv.org/abs/2103.16302.pdf)
   - [ ] [Convolutions to ViT](https://arxiv.org/abs/2103.15808.pdf)
@@ -48,12 +48,9 @@
   - [ ] [Cross CoVariance ViT](https://arxiv.org/abs/2106.09681.pdf)
   - [ ] [Dino](https://arxiv.org/abs/2104.14294)
   - [ ] [Dinov2](https://arxiv.org/abs/2304.07193)
-  - [ ] [EVA](https://arxiv.org/abs/2211.07636)
 
 ## Object Detection
 
-- [ ] [R-CNN](https://arxiv.org/abs/1311.2524)
-- [ ] [Fast R-CNN](https://arxiv.org/abs/1504.08083)
 - [ ] [Faster R-CNN](https://arxiv.org/abs/1506.01497)
 - [ ] [Cascade R-CNN](https://arxiv.org/abs/1712.00726)
 - [ ] [YOLO](https://arxiv.org/abs/1506.02640)

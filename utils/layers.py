@@ -79,3 +79,29 @@ class TransformerSEBlock(nn.Module):
         excitation = squeeze.view(-1, self.in_channels, 1).expand_as(x) * x
 
         return excitation
+
+class PatchMerge(nn.Module):
+
+    def __init__(self, m, in_c):
+        super(PatchMerge, self).__init__()
+
+        self.m = m
+        self.in_c = in_c
+
+        self.norm = nn.LayerNorm(normalized_shape=m*in_c)
+        self.reduction = nn.Linear(in_features=(m**2)*in_c, out_features=m*in_c)
+
+    def forward(self, x):
+
+        coords = [(i, j) for i in range(self.m) for j in range(self.m)]
+
+        distinct_patches = []
+
+        for coord in coords:
+            coord_window = x[:, coord[0]::self.m, coord[1]::self.m, :]
+            distinct_patches.append(coord_window)
+
+        merged_patches = torch.cat(distinct_patches, dim=-1)
+        merged_patches = self.norm(self.reduction(merged_patches))
+
+        return merged_patches
