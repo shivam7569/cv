@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import numpy as np
 import torch
 import torch.nn as nn
@@ -59,7 +60,7 @@ class ResidualBlock(nn.Module):
         else:
             self.identity_downsample = None
 
-        self.dropPath = DropPath(drop_prob=drop_prob)
+        self.dropPath = DropPath(drop_prob=drop_prob) if drop_prob > 0.0 else nn.Identity()
         if ResNetSB._LAYER_SCALE is not None:
             self.layer_scale = LayerScale(
                 num_channels=channels_1x1_out,
@@ -135,7 +136,7 @@ class ResNetSB(nn.Module):
         else:
             drop_probs = [0.0 for _ in range(sum(num_blocks))]
 
-        self.init_features = nn.Sequential(
+        init_features = nn.Sequential(
             nn.Conv2d(
                 in_channels=in_channels, out_channels=64,
                 kernel_size=7, stride=2, padding=3
@@ -145,25 +146,37 @@ class ResNetSB(nn.Module):
             nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         )
 
-        self.res_group_1 = ResidualGroup(
+        res_group_1 = ResidualGroup(
             num_blocks=3, in_channels=64, channels_1x1_in=64,
             channels_3x3=64, channels_1x1_out=256, bold=True,
             drop_probs=drop_probs[0: sum(num_blocks[:1])]
         )
-        self.res_group_2 = ResidualGroup(
+        res_group_2 = ResidualGroup(
             num_blocks=4, in_channels=256, channels_1x1_in=128,
             channels_3x3=128, channels_1x1_out=512, bold=False,
             drop_probs=drop_probs[sum(num_blocks[:1]): sum(num_blocks[:2])]
         )
-        self.res_group_3 = ResidualGroup(
+        res_group_3 = ResidualGroup(
             num_blocks=6, in_channels=512, channels_1x1_in=256,
             channels_3x3=256, channels_1x1_out=1024, bold=False,
             drop_probs=drop_probs[sum(num_blocks[:2]): sum(num_blocks[:3])]
         )
-        self.res_group_4 = ResidualGroup(
+        res_group_4 = ResidualGroup(
             num_blocks=3, in_channels=1024, channels_1x1_in=512,
             channels_3x3=512, channels_1x1_out=2048, bold=False,
             drop_probs=drop_probs[sum(num_blocks[:3]): sum(num_blocks[:4])]
+        )
+
+        self.backbone = nn.Sequential(
+            OrderedDict(
+                [
+                    ("init_features", init_features),
+                    ("res_group_1", res_group_1),
+                    ("res_group_2", res_group_2),
+                    ("res_group_3", res_group_3),
+                    ("res_group_4", res_group_4)
+                ]
+            )
         )
 
         self.classifier = nn.Sequential(
@@ -176,7 +189,7 @@ class ResNetSB(nn.Module):
         if toCuda: self.getLayersToCuda()
 
     def initializeConv(self):
-        for module in self.init_features.modules():
+        for module in self.backbone.init_features.modules():
             if isinstance(module, nn.Conv2d):
                 weight = module.weight
                 bias = module.bias
@@ -206,11 +219,7 @@ class ResNetSB(nn.Module):
             self.classifier.to("cuda:0")
 
     def forward(self, x):
-        x = self.init_features(x)
-        x = self.res_group_1(x)
-        x = self.res_group_2(x)
-        x = self.res_group_3(x)
-        x = self.res_group_4(x)
+        x = self.backbone(x)
         x = self.classifier(x)
 
         return x

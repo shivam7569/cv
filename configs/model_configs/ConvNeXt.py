@@ -112,7 +112,7 @@ def ConvNeXtConfig(cfg):
     cfg.ConvNeXt.LR_SCHEDULER.PARAMS.after_scheduler.NAME = "CosineAnnealingWarmRestarts"
     cfg.ConvNeXt.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS = CN()
     cfg.ConvNeXt.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_0 = 15
-    cfg.ConvNeXt.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_mult = 2
+    cfg.ConvNeXt.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_mult = 3
     cfg.ConvNeXt.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.eta_min = 0.0
     cfg.ConvNeXt.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.last_epoch = -1
     

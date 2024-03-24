@@ -3,11 +3,23 @@ def ResNetConfig(cfg):
 
     cfg.ResNet = CN()
 
+    cfg.ASYNC_TRAINING = True
+
     cfg.CHECKPOINT.SAVE_EPOCH_CHECKPOINTS = True
     cfg.LOGGING.NAME = "ResNet"
     cfg.METRICS.NAME = "ResNet"
     cfg.CHECKPOINT.BASENAME = "ResNet"
     cfg.TENSORBOARD.BASENAME = "ResNet"
+
+    cfg.ResNet.PARAMS = CN()
+    cfg.ResNet.PARAMS.num_classes = 1000
+    cfg.ResNet.PARAMS.in_channels = 3
+
+    cfg.TRAIN = CN()
+    cfg.TRAIN.PARAMS = CN()
+    cfg.TRAIN.PARAMS.epochs = 150
+    cfg.TRAIN.PARAMS.gradient_accumulation = True
+    cfg.TRAIN.PARAMS.gradient_accumulation_batch_size = 256
 
     cfg.PIPELINES = CN()
     cfg.PIPELINES.TRAIN = [
@@ -20,7 +32,7 @@ def ResNetConfig(cfg):
     ]
 
     cfg.ResNet.DATALOADER_TRAIN_PARAMS = CN()
-    cfg.ResNet.DATALOADER_TRAIN_PARAMS.batch_size = 64
+    cfg.ResNet.DATALOADER_TRAIN_PARAMS.batch_size = 96
     cfg.ResNet.DATALOADER_TRAIN_PARAMS.shuffle = True
     cfg.ResNet.DATALOADER_TRAIN_PARAMS.num_workers = 16
     cfg.ResNet.DATALOADER_TRAIN_PARAMS.pin_memory = True
@@ -57,14 +69,14 @@ def ResNetConfig(cfg):
     cfg.ResNet.OPTIMIZER = CN()
     cfg.ResNet.OPTIMIZER.NAME = "SGD"
     cfg.ResNet.OPTIMIZER.PARAMS = CN()
-    cfg.ResNet.OPTIMIZER.PARAMS.lr = 0.1
+    cfg.ResNet.OPTIMIZER.PARAMS.lr = 0.1 * cfg.num_gpus
     cfg.ResNet.OPTIMIZER.PARAMS.momentum = 0.9
     cfg.ResNet.OPTIMIZER.PARAMS.weight_decay = 1e-4
 
     cfg.ResNet.LR_SCHEDULER = CN()
     cfg.ResNet.LR_SCHEDULER.NAME = "MultiplicativeLR"
-    cfg.ResNet.LR_SCHEDULER.FACTOR = 0.945
     cfg.ResNet.LR_SCHEDULER.PARAMS = CN()
+    cfg.ResNet.LR_SCHEDULER.PARAMS.factor = 0.945
     cfg.ResNet.LR_SCHEDULER.PARAMS.verbose = False
 
     cfg.ResNet.LOSS = CN()

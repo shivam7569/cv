@@ -42,7 +42,7 @@ class Checkpoint:
 
         checkpoint_filepath = os.path.join(
             os.path.join(Global.CFG.CHECKPOINT.PATH, name),
-            [i for i in os.listdir(os.path.join(Global.CFG.CHECKPOINT.PATH, name)) if checkpoint_name in i][0]
+            [i for i in os.listdir(os.path.join(Global.CFG.CHECKPOINT.PATH, name)) if checkpoint_name not in i][0]
         )
         checkpoint = torch.load(checkpoint_filepath, map_location="cpu")
 

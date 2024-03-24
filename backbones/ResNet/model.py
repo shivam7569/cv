@@ -1,9 +1,7 @@
 import numpy as np
 import torch
 import torch.nn as nn
-
-from src.gpu_devices import GPU_Support
-
+from collections import OrderedDict
 
 class ResidualGroup(nn.ModuleList):
     def __init__(self, num_blocks, in_channels, channels_1x1_in, channels_3x3, channels_1x1_out, bold=True):
@@ -108,7 +106,7 @@ class ResNet(nn.Module):
     def __init__(self, num_classes, in_channels=3):
         super(ResNet, self).__init__()
 
-        self.init_features = nn.Sequential(
+        init_features = nn.Sequential(
             nn.Conv2d(
                 in_channels=in_channels, out_channels=64,
                 kernel_size=7, stride=2, padding=3
@@ -118,21 +116,33 @@ class ResNet(nn.Module):
             nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         )
 
-        self.res_group_1 = ResidualGroup(
+        res_group_1 = ResidualGroup(
             num_blocks=3, in_channels=64, channels_1x1_in=64,
             channels_3x3=64, channels_1x1_out=256, bold=True
         )
-        self.res_group_2 = ResidualGroup(
+        res_group_2 = ResidualGroup(
             num_blocks=4, in_channels=256, channels_1x1_in=128,
             channels_3x3=128, channels_1x1_out=512, bold=False
         )
-        self.res_group_3 = ResidualGroup(
+        res_group_3 = ResidualGroup(
             num_blocks=6, in_channels=512, channels_1x1_in=256,
             channels_3x3=256, channels_1x1_out=1024, bold=False
         )
-        self.res_group_4 = ResidualGroup(
+        res_group_4 = ResidualGroup(
             num_blocks=3, in_channels=1024, channels_1x1_in=512,
             channels_3x3=512, channels_1x1_out=2048, bold=False
+        )
+
+        self.backbone = nn.Sequential(
+            OrderedDict(
+                [
+                    ("init_features", init_features),
+                    ("res_group_1", res_group_1),
+                    ("res_group_2", res_group_2),
+                    ("res_group_3", res_group_3),
+                    ("res_group_4", res_group_4)
+                ]
+            )
         )
 
         self.classifier = nn.Sequential(
@@ -142,10 +152,9 @@ class ResNet(nn.Module):
         )
 
         self.initializeConv()
-        self.getLayersToCuda()
 
     def initializeConv(self):
-        for module in self.init_features.modules():
+        for module in self.backbone.init_features.modules():
             if isinstance(module, nn.Conv2d):
                 weight = module.weight
                 bias = module.bias
@@ -157,30 +166,8 @@ class ResNet(nn.Module):
                 nn.init.normal_(weight, mean=init_mean, std=init_std)
                 nn.init.constant_(bias, val=0.0)
 
-    def getLayersToCuda(self):
-        if GPU_Support.support_gpu == 2:
-            self.init_features.to("cuda:0")
-            self.res_group_1.to("cuda:0")
-            self.res_group_2.to("cuda:0")
-
-            self.res_group_3.to("cuda:1")
-            self.res_group_4.to("cuda:1")
-            self.classifier.to("cuda:1")
-        elif GPU_Support.support_gpu == 1:
-            self.init_features.to("cuda:0")
-            self.res_group_1.to("cuda:0")
-            self.res_group_2.to("cuda:0")
-            self.res_group_3.to("cuda:0")
-            self.res_group_4.to("cuda:0")
-            self.classifier.to("cuda:0")
-
     def forward(self, x):
-        x = self.init_features(x)
-        x = self.res_group_1(x)
-        x = self.res_group_2(x)
-        x = self.res_group_3(x)
-        x = self.res_group_4(x)
+        x = self.backbone(x)
         x = self.classifier(x)
 
         return x
-    

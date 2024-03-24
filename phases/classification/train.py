@@ -319,8 +319,12 @@ class Train:
                 torch.optim.lr_scheduler, scheduler_name
                 )(optimizer, lr_lambda=lr_lambda, **scheduler_params)
         elif scheduler_name == "MultiplicativeLR":
-            lr_lambda = lambda epoch: scheduler_params["factor"]
-            del scheduler_params["factor"]
+            Global.addRuntimeParam("factor", scheduler_params["factor"])
+            try:
+                del scheduler_params["factor"]
+            except:
+                pass
+            lr_lambda = lambda epoch: Global.getRuntimeParam("factor")
             lr_scheduler = getattr(
                 torch.optim.lr_scheduler, scheduler_name
             )(optimizer, lr_lambda=lr_lambda, **scheduler_params)

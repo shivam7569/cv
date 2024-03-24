@@ -23,6 +23,7 @@ class Global(metaclass=MetaClass):
         "eval_f1_score": None
     }
     IMAGENET_ID_VS_NAME = None
+    RUNTIME_PARAMS = {}
 
     @classmethod
     def setImagenetIdVsName(cls):
@@ -47,3 +48,12 @@ class Global(metaclass=MetaClass):
             "eval_recall": None,
             "eval_f1_score": None
         }
+
+    @classmethod
+    def addRuntimeParam(cls, key, value):
+        if key not in Global.RUNTIME_PARAMS.keys():
+            Global.RUNTIME_PARAMS[key] = value
+
+    @classmethod
+    def getRuntimeParam(cls, key):
+        return Global.RUNTIME_PARAMS[key]

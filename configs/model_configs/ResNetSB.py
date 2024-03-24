@@ -54,7 +54,7 @@ def ResNetSBConfig(cfg):
     ]
 
     cfg.ResNetSB.DATALOADER_TRAIN_PARAMS = CN()
-    cfg.ResNetSB.DATALOADER_TRAIN_PARAMS.batch_size = 64
+    cfg.ResNetSB.DATALOADER_TRAIN_PARAMS.batch_size = 96
     cfg.ResNetSB.DATALOADER_TRAIN_PARAMS.shuffle = True
     cfg.ResNetSB.DATALOADER_TRAIN_PARAMS.num_workers = 8
     cfg.ResNetSB.DATALOADER_TRAIN_PARAMS.pin_memory = True
@@ -96,7 +96,7 @@ def ResNetSBConfig(cfg):
     cfg.ResNetSB.LR_SCHEDULER = CN()
     cfg.ResNetSB.LR_SCHEDULER.NAME = "WarmUpCosineLRScheduler"
     cfg.ResNetSB.LR_SCHEDULER.PARAMS = CN()
-    cfg.ResNetSB.LR_SCHEDULER.PARAMS.lr_initial = 1e-6
+    cfg.ResNetSB.LR_SCHEDULER.PARAMS.lr_initial = 1e-8
     cfg.ResNetSB.LR_SCHEDULER.PARAMS.lr_final = cfg.ResNetSB.OPTIMIZER.PARAMS.lr
     cfg.ResNetSB.LR_SCHEDULER.PARAMS.warmup_epochs = 5
     cfg.ResNetSB.LR_SCHEDULER.PARAMS.warmup_method = "linear"
@@ -105,7 +105,7 @@ def ResNetSBConfig(cfg):
     cfg.ResNetSB.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS = CN()
     cfg.ResNetSB.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_0 = 15
     cfg.ResNetSB.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_mult = 3
-    cfg.ResNetSB.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.eta_min = 1e-6
+    cfg.ResNetSB.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.eta_min = 1e-8
     cfg.ResNetSB.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.last_epoch = -1
 
     cfg.ResNetSB.LOSS = CN()
