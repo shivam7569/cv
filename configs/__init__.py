@@ -12,7 +12,6 @@ from configs.model_configs.MobileNetv2 import MobileNetv2Config
 from configs.model_configs.SENet import SENetConfig
 from configs.model_configs.SPPNet import SPPNetConfig
 from configs.model_configs.RCNN import RCNNConfig
-from configs.model_configs.FastRCNN import Fast_RCNNConfig
 from configs.model_configs.ViT import ViTConfig
 from configs.model_configs.ConvNeXt import ConvNeXtConfig
 from configs.model_configs.DeiT import DeiTConfig
@@ -25,3 +24,4 @@ from configs.model_configs.ConViT import ConViTConfig
 from configs.model_configs.DeepViT import DeepViTConfig
 from configs.model_configs.CeiT import CeiTConfig
 from configs.model_configs.SwinT import SwinTConfig
+from configs.model_configs.FasterRCNN import FasterRCNNConfig

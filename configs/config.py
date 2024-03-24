@@ -75,8 +75,6 @@ class ModelConfigs:
             RCNNConfig(cfg)
         elif model_name.lower() == "sppnet":
             SPPNetConfig(cfg)
-        elif model_name.lower() == "fast_rcnn":
-            Fast_RCNNConfig(cfg)
         elif model_name.lower() == "vit":
             ViTConfig(cfg)
         elif model_name.lower() == "convnext":
@@ -101,3 +99,5 @@ class ModelConfigs:
             CeiTConfig(cfg)
         elif model_name.lower() == "swint":
             SwinTConfig(cfg)
+        elif model_name.lower() == "fasterrcnn":
+            FasterRCNNConfig(cfg)
