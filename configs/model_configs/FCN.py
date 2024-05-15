@@ -27,8 +27,8 @@ def FCNConfig(cfg):
     cfg.TRAIN = CN()
     cfg.TRAIN.PARAMS = CN()
     cfg.TRAIN.PARAMS.epochs = 500
-    cfg.TRAIN.PARAMS.gradient_accumulation = False
-    cfg.TRAIN.PARAMS.gradient_accumulation_batch_size = None
+    cfg.TRAIN.PARAMS.gradient_accumulation = True
+    cfg.TRAIN.PARAMS.gradient_accumulation_batch_size = 20
     cfg.TRAIN.PARAMS.gradient_clipping = None
     cfg.TRAIN.PARAMS.exponential_moving_average = None
     cfg.TRAIN.PARAMS.updateStochasticDepthRate = None
@@ -46,7 +46,7 @@ def FCNConfig(cfg):
     ]
 
     cfg.FCN.DATALOADER_TRAIN_PARAMS = CN()
-    cfg.FCN.DATALOADER_TRAIN_PARAMS.batch_size = 20
+    cfg.FCN.DATALOADER_TRAIN_PARAMS.batch_size = 4
     cfg.FCN.DATALOADER_TRAIN_PARAMS.shuffle = True
     cfg.FCN.DATALOADER_TRAIN_PARAMS.num_workers = 8
     cfg.FCN.DATALOADER_TRAIN_PARAMS.pin_memory = True
@@ -87,11 +87,11 @@ def FCNConfig(cfg):
     cfg.FCN.LOSS = CN()
     cfg.FCN.LOSS.NAME = "CrossEntropyLoss"
     cfg.FCN.LOSS.PARAMS = CN()
-    cfg.FCN.LOSS.PARAMS.weight = None
     cfg.FCN.LOSS.PARAMS.size_average = None
     cfg.FCN.LOSS.PARAMS.ignore_index = -100
     cfg.FCN.LOSS.PARAMS.reduce = None
     cfg.FCN.LOSS.PARAMS.reduction = "mean"
+    cfg.FCN.LOSS.PARAMS.class_weightage_method = "inverse_frequency"
 
     cfg.REGULARIZATION = CN()
     cfg.REGULARIZATION.MODE = ''

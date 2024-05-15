@@ -476,8 +476,14 @@ class Train:
             Global.LOGGER.info(f"No Learning Rate Scheduler specified")
 
         Global.LOGGER.info(f"Instantiating Loss Function: {cfg[semseg_model_name].LOSS.NAME}")
+        class_weight_method = cfg[semseg_model_name].LOSS.PARAMS.pop("class_weightage_method", None)
+        if class_weight_method is not None:
+            class_weights = SegmentationDataset.get_class_weights(loader=data_loaders["train"], method=class_weight_method).to(rank, non_blocking=True)
+        else:
+            class_weights = None
+
         try:
-            loss_function = getattr(torch.nn, cfg[semseg_model_name].LOSS.NAME)(**cfg[semseg_model_name].LOSS.PARAMS)
+            loss_function = getattr(torch.nn, cfg[semseg_model_name].LOSS.NAME)(weight=class_weights, **cfg[semseg_model_name].LOSS.PARAMS)
         except:
             loss_function = getattr(semseg_model_name, cfg[semseg_model_name].LOSS.NAME)(**cfg[semseg_model_name].LOSS.PARAMS)
         Global.LOGGER.info(f"Loss Function instantiated")

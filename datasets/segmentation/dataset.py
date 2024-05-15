@@ -78,6 +78,33 @@ class SegmentationDataset(Dataset):
         return img, mask
     
     @staticmethod
+    def get_class_weights(loader, method):
+        frequencies = {
+            i: 0 for i in CocoParser.getIdVsName().keys()
+        }
+        for batch in loader:
+            _, masks = batch
+            classes, class_counts = np.unique(masks.numpy(), return_counts=True)
+            
+            for i in range(classes.shape[0]):
+                frequencies[str(classes[i])] += class_counts[i]
+
+        total_class_frequencies = np.array(list(frequencies.values()), dtype=np.longlong)
+        total_class_frequencies[total_class_frequencies == 0] = 1
+
+        if method == "inverse_frequency":
+            weights = 1 / total_class_frequencies
+            weights /= np.sum(weights)
+        elif method == "median_frequency":
+            class_median = np.median(total_class_frequencies)
+            weights = class_median / total_class_frequencies
+            weights /= np.sum(weights)
+
+        weights = torch.from_numpy(weights).to(torch.float32)
+        
+        return weights
+    
+    @staticmethod
     def _vizualizeBatch(batch, k=4):
 
         images, masks = batch
