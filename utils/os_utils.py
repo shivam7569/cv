@@ -29,13 +29,14 @@ def check_file(path, remove=False):
 
     return exists
 
-def find_free_port():
+def find_free_port(port=12301, max_port=12400):
 
-    while True:
-        sock = socket.socket()
-        sock.bind(("", 0))
-        port = sock.getsockname()[1]
-
-        if port > 12300 and port < 12400: break
-        
-    return port
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    while port < max_port:
+        try:
+            sock.bind(('', port))
+            sock.close()
+            return port
+        except OSError:
+            port += 1
+    raise IOError('no free ports')
