@@ -103,3 +103,5 @@ class ModelConfigs:
             FasterRCNNConfig(cfg)
         elif model_name.lower() == "fcn":
             FCNConfig(cfg)
+        elif model_name.lower() == "unet":
+            UNetConfig(cfg)

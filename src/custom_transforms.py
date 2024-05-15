@@ -1,9 +1,14 @@
 import math
-import cv2
 import random
 import numpy as np
 import torch
+import torchvision
 import torchvision.transforms as T
+
+torchvision.disable_beta_transforms_warning()
+
+import torchvision.transforms.v2 as T2
+from torchvision.transforms import InterpolationMode
 import torchvision.transforms.functional as F
 from utils.transforms_utils import Augmentations
 
@@ -195,6 +200,37 @@ class SegmentationRandomCrop:
         crop_params = T.RandomCrop.get_params(img, self.size)
         img = F.crop(img, *crop_params)
         mask = F.crop(mask, *crop_params)
+
+        return (img, mask)
+    
+class SegmentationElasticTransform:
+
+    def __init__(self, alpha, sigma, p=0.5, interpolation_mode="bilinear", fill=0):
+        
+        if interpolation_mode == "bilinear":
+            interpolation_method = InterpolationMode.BILINEAR
+        elif interpolation_mode == "nearest":
+            interpolation_method = InterpolationMode.NEAREST
+        else:
+            interpolation_method = InterpolationMode.BILINEAR
+
+        self.image_elastic_transform = T2.ElasticTransform(
+            alpha=alpha, sigma=sigma, interpolation=interpolation_method, fill=fill
+        )
+        self.mask_elastic_transform = T2.ElasticTransform(
+            alpha=alpha, sigma=sigma, interpolation=InterpolationMode.NEAREST, fill=fill
+        )
+
+        self.p = p
+
+    def __call__(self, data):
+
+        if np.random.random() > self.p:
+            return data
+        
+        img, mask = data
+        img = self.image_elastic_transform(img)
+        mask = self.mask_elastic_transform(mask)
 
         return (img, mask)
 

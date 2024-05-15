@@ -1,6 +1,5 @@
 import os
 import random
-import cv2
 import numpy as np
 import torch
 from datasets.classification.dataset import ClassificationDataset
@@ -9,7 +8,6 @@ from torch.utils.data import Dataset
 from torchvision import transforms as T
 from torchvision.utils import make_grid
 
-from PIL import ImageDraw
 from datasets.coco_parser import CocoParser
 from utils.global_params import Global
 from utils.mask_utils import getColorMask, getOverlay
@@ -88,6 +86,9 @@ class SegmentationDataset(Dataset):
             
             for i in range(classes.shape[0]):
                 frequencies[str(classes[i])] += class_counts[i]
+
+        if 0 in list(frequencies.values()):
+            Global.LOGGER.warn(f"While calculating class frequencies, some classes were not found in dataset")
 
         total_class_frequencies = np.array(list(frequencies.values()), dtype=np.longlong)
         total_class_frequencies[total_class_frequencies == 0] = 1
