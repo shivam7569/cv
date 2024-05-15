@@ -10,7 +10,7 @@ def FCNConfig(cfg):
     cfg.ASYNC_TRAINING = True
     cfg.REPEAT_AUGMENTATIONS = False
     cfg.SAVE_FIRST_SAMPLE = True
-    cfg.WRITE_TENSORBOARD_GRAPH = False
+    cfg.WRITE_TENSORBOARD_GRAPH = True
 
     cfg.PROFILING = False
 
