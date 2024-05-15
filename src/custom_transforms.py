@@ -4,6 +4,7 @@ import random
 import numpy as np
 import torch
 import torchvision.transforms as T
+import torchvision.transforms.functional as F
 from utils.transforms_utils import Augmentations
 
 class FancyPCA:
@@ -49,21 +50,153 @@ class FancyPCA:
 
 class DetectionHorizontalFlip:
 
-    def __init__(self, p=0.5):
+    def __init__(self, p=0.5, normalized_anns=True):
         self.p = p
+        self.horizontal_flip = T.RandomHorizontalFlip(p=1.0)
+        self.normalized_anns = normalized_anns
 
     def __call__(self, data):
-        img, bboxes, anns = data
-        _, img_w = img.shape[:2]
 
-        if self.p < np.random.random():
-            return img, bboxes, anns
+        if np.random.random() > self.p:
+            return data
+        
+        img, anns = data
+        img_w, _ = img.size
 
-        img = cv2.flip(img, flipCode=1)
-        bboxes[:, [0, 2]] = img_w - bboxes[:, [2, 0]]
-        anns[:, [0, 2]] = img_w - anns[:, [2, 0]]
+        img = self.horizontal_flip(img)
+        if self.normalized_anns: anns[:, [0, 2]] = 1 - anns[:, [0, 2]]
+        else: anns[:, [0, 2]] = img_w - anns[:, [0, 2]]
 
-        return img, bboxes, anns
+        return (img, anns)
+
+class DetectionToPILImage:
+
+    def __init__(self):
+        self.toPILImage = T.ToPILImage()
+
+    def __call__(self, data):
+        img, anns = data
+        img = self.toPILImage(img)
+
+        return (img, anns)
+
+class DetectionToTensor:
+
+    def __init__(self):
+        self.toTensor = T.ToTensor()
+
+    def __call__(self, data):
+        img, anns = data
+        img = self.toTensor(img)
+
+        return (img, anns)
+    
+class DetectionNormalize:
+
+    def __init__(self, mean, std):
+        self.normalize = T.Normalize(mean=mean, std=std)
+
+    def __call__(self, data):
+        img, anns = data
+        img = self.normalize(img)
+
+        return (img, anns)
+
+class DetectionResize:
+
+    def __init__(self, size, normalized_anns=True):
+        self.resize = T.Resize(size=size)
+        self.normalized_anns = normalized_anns
+
+    def __call__(self, data):
+        img, anns = data
+        img_w, img_h = img.size
+        img = self.resize(img)
+        img_new_w, img_new_h = img.size
+
+        if not self.normalized_anns:
+            anns[:, [0, 2]] = (anns[:, [0, 2]] / img_w) * img_new_w
+            anns[:, [1, 3]] = (anns[:, [1, 3]] / img_h) * img_new_h
+
+        return (img, anns)
+    
+class SegmentationToPILImage:
+
+    def __init__(self):
+        self.toPILImage = T.ToPILImage()
+
+    def __call__(self, data):
+        img, mask = data
+        img = self.toPILImage(img)
+        mask = self.toPILImage(mask)
+
+        return (img, mask)
+    
+class SegmentationCenterCrop:
+
+    def __init__(self, size):
+        self.centerCrop = T.CenterCrop(size=size)
+
+    def __call__(self, data):
+        img, mask = data
+        img = self.centerCrop(img)
+        mask = self.centerCrop(mask)
+
+        return (img, mask)
+    
+class SegmentationHorizontalFlip:
+
+    def __init__(self, p):
+        self.p = p
+        self.horizontal_flip = T.RandomHorizontalFlip(p=1.0)
+
+    def __call__(self, data):
+        
+        if np.random.random() > self.p:
+            return data
+        
+        img, mask = data
+        img = self.horizontal_flip(img)
+        mask = self.horizontal_flip(mask)
+
+        return (img, mask)
+
+class SegmentationToTensor:
+
+    def __init__(self):
+        self.toTensor = T.ToTensor()
+
+    def __call__(self, data):
+        img, mask = data
+
+        img = self.toTensor(img)
+        mask = torch.as_tensor(np.array(mask), dtype=torch.int64)
+
+        return (img, mask)
+    
+class SegmentationNormalize:
+
+    def __init__(self, mean, std):
+        self.normalize = T.Normalize(mean=mean, std=std)
+
+    def __call__(self, data):
+        img, mask = data
+        img = self.normalize(img)
+
+        return (img, mask)
+    
+class SegmentationRandomCrop:
+
+    def __init__(self, size):
+        self.size = size
+
+    def __call__(self, data):
+        img, mask = data
+        crop_params = T.RandomCrop.get_params(img, self.size)
+        img = F.crop(img, *crop_params)
+        mask = F.crop(mask, *crop_params)
+
+        return (img, mask)
 
 def mixup_data(data, targets, alpha, use_cuda=True):
 

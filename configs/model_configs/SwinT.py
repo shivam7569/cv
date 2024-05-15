@@ -1,3 +1,6 @@
+import math
+
+
 def SwinTConfig(cfg):
 
     from configs.config import CfgNode as CN
@@ -111,7 +114,7 @@ def SwinTConfig(cfg):
     cfg.SwinT.OPTIMIZER = CN()
     cfg.SwinT.OPTIMIZER.NAME = "AdamW"
     cfg.SwinT.OPTIMIZER.PARAMS = CN()
-    cfg.SwinT.OPTIMIZER.PARAMS.lr = 1e-3 * cfg.num_gpus 
+    cfg.SwinT.OPTIMIZER.PARAMS.lr = 1e-3 * math.sqrt(cfg.num_gpus)
     cfg.SwinT.OPTIMIZER.PARAMS.betas = (0.9, 0.999)
     cfg.SwinT.OPTIMIZER.PARAMS.weight_decay = 0.05
 
@@ -126,7 +129,7 @@ def SwinTConfig(cfg):
     cfg.SwinT.LR_SCHEDULER.PARAMS.after_scheduler.NAME = "CosineAnnealingWarmRestarts"
     cfg.SwinT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS = CN()
     cfg.SwinT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_0 = 15
-    cfg.SwinT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_mult = 3
+    cfg.SwinT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_mult = 4
     cfg.SwinT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.eta_min = 1e-8
     cfg.SwinT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.last_epoch = -1
     

@@ -1,0 +1,1 @@
+from semseg.FCN.model import FCN

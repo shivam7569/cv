@@ -3,6 +3,10 @@ import cv2
 import numpy as np
 from PIL import Image
 
+__MASK_PIPELINE_FUNCTIONS__ = [
+    "mask_to_img_size"
+]
+
 
 def readImage(img_path, uint8):
 
@@ -166,3 +170,9 @@ def fast_rcnn_resize(img, min_size, max_size):
         img = cv2.resize(img, (new_w, new_h))
 
     return img
+
+def mask_to_img_size(img, mask):
+    height, width, _ = img.shape
+    mask = cv2.resize(mask, (width, height), interpolation=cv2.INTER_NEAREST)
+
+    return mask

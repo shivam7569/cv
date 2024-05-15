@@ -101,3 +101,5 @@ class ModelConfigs:
             SwinTConfig(cfg)
         elif model_name.lower() == "fasterrcnn":
             FasterRCNNConfig(cfg)
+        elif model_name.lower() == "fcn":
+            FCNConfig(cfg)

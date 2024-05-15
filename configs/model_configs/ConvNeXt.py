@@ -7,6 +7,8 @@ def ConvNeXtConfig(cfg):
     cfg.ConvNeXt = CN()
 
     cfg.ASYNC_TRAINING = True
+    cfg.REPEAT_AUGMENTATIONS = True
+    cfg.REPEAT_AUGMENTATIONS_NUM_REPEATS = 4
 
     cfg.DEBUG = None
     cfg.PROFILING = False
@@ -33,14 +35,14 @@ def ConvNeXtConfig(cfg):
 
     cfg.TRAIN = CN()
     cfg.TRAIN.PARAMS = CN()
-    cfg.TRAIN.PARAMS.epochs = 600
+    cfg.TRAIN.PARAMS.epochs = 1000
     cfg.TRAIN.PARAMS.gradient_accumulation = True
     cfg.TRAIN.PARAMS.gradient_accumulation_batch_size = 4096
     cfg.TRAIN.PARAMS.gradient_clipping = None
     cfg.TRAIN.PARAMS.exponential_moving_average = 0.999
 
     cfg.DATA_MIXING.enabled = True
-    cfg.DATA_MIXING.mixup_alpha = 0.8
+    cfg.DATA_MIXING.mixup_alpha = 0.2
     cfg.DATA_MIXING.cutmix_alpha = 1.0
     cfg.DATA_MIXING.cutmix_minmax = None
     cfg.DATA_MIXING.prob = 0.5
@@ -83,12 +85,12 @@ def ConvNeXtConfig(cfg):
         dict(name="RandomAugmentation", params=dict(m=9, n=2, mstd=0.5)),
         dict(name="ToTensor", params=None),
         dict(name="Normalize", params=dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])),
-        dict(name="RandomCutOut", params=dict(probability=0.25, mode="pixel", device="cpu")) # to be used after normalization when mode is pixel, as it will avoid changing the image statistics
+        dict(name="RandomCutOut", params=dict(probability=0.1, mode="pixel", device="cpu")) # to be used after normalization when mode is pixel, as it will avoid changing the image statistics
     ]
 
     cfg.ConvNeXt.TRANSFORMS.VAL = [
         dict(name="ToPILImage", params=None),
-        dict(name="CenterCrop", params=dict(size=(224, 224))),
+        dict(name="CenterCrop", params=dict(size=(256, 256))),
         dict(name="RandomHorizontalFlip", params=dict(p=0.5)),
         dict(name="ToTensor", params=None),
         dict(name="Normalize", params=dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
@@ -97,7 +99,7 @@ def ConvNeXtConfig(cfg):
     cfg.ConvNeXt.OPTIMIZER = CN()
     cfg.ConvNeXt.OPTIMIZER.NAME = "AdamW"
     cfg.ConvNeXt.OPTIMIZER.PARAMS = CN()
-    cfg.ConvNeXt.OPTIMIZER.PARAMS.lr = 4e-3 * cfg.num_gpus
+    cfg.ConvNeXt.OPTIMIZER.PARAMS.lr = 4e-3 * math.sqrt(cfg.num_gpus)
     cfg.ConvNeXt.OPTIMIZER.PARAMS.betas = (0.9, 0.999)
     cfg.ConvNeXt.OPTIMIZER.PARAMS.weight_decay = 0.05
 
@@ -106,13 +108,13 @@ def ConvNeXtConfig(cfg):
     cfg.ConvNeXt.LR_SCHEDULER.PARAMS = CN()
     cfg.ConvNeXt.LR_SCHEDULER.PARAMS.lr_initial = 0.0
     cfg.ConvNeXt.LR_SCHEDULER.PARAMS.lr_final = cfg.ConvNeXt.OPTIMIZER.PARAMS.lr
-    cfg.ConvNeXt.LR_SCHEDULER.PARAMS.warmup_epochs = 20
+    cfg.ConvNeXt.LR_SCHEDULER.PARAMS.warmup_epochs = 10
     cfg.ConvNeXt.LR_SCHEDULER.PARAMS.warmup_method = "linear"
     cfg.ConvNeXt.LR_SCHEDULER.PARAMS.after_scheduler = CN()
     cfg.ConvNeXt.LR_SCHEDULER.PARAMS.after_scheduler.NAME = "CosineAnnealingWarmRestarts"
     cfg.ConvNeXt.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS = CN()
     cfg.ConvNeXt.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_0 = 15
-    cfg.ConvNeXt.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_mult = 3
+    cfg.ConvNeXt.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_mult = 4
     cfg.ConvNeXt.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.eta_min = 0.0
     cfg.ConvNeXt.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.last_epoch = -1
     

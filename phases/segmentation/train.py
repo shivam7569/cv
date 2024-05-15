@@ -2,18 +2,17 @@ import os
 import numpy as np
 import torch
 from tqdm import tqdm
-import backbones
+import semseg
 from configs.config import setup_config
-from datasets.classification.dataset import ClassificationDataset
+from datasets.segmentation.dataset import SegmentationDataset
 from src.gpu_devices import GPU_Support
 from src.checkpoints import Checkpoint
 from src.tensorboard import TensorboardWriter
 from utils.global_params import Global
-import src.losses as custom_loss_fns
 from src import custom_lrs
 from src import optimizers
 
-from phases.classification.eval import Eval
+from phases.segmentation.eval import Eval
 from utils.logging_utils import start_logger
 from utils.os_utils import check_dir
 from utils.training import EMA, RepeatAugSampler
@@ -41,7 +40,6 @@ class Train:
             lr_tb_write_per_epoch=True,
             epochs=100,
             phase_dependent=False,
-            custom_loss=None,
             gradient_clipping=None,
             profiling=None,
             resume_epoch=0,
@@ -62,7 +60,6 @@ class Train:
         self.tb_writer = tb_writer
         self.lr_tb_write_per_epoch = lr_tb_write_per_epoch
         self.phase_dependent = phase_dependent
-        self.custom_loss = custom_loss
         self.gradient_clipping = gradient_clipping
         self.resume_epoch = resume_epoch
         self.updateStochasticDepthRate = updateStochasticDepthRate
@@ -114,7 +111,7 @@ class Train:
         self.log_train_setting()
 
     def start(self):
-        if not self.async_parallel_rank: f1_score = np.NINF
+        if not self.async_parallel_rank: iou_score = np.NINF
         for epoch in range(self.resume_epoch, self.epochs):
 
             if self.async_parallel:
@@ -134,11 +131,11 @@ class Train:
                 Global.METRICS["train_loss"] = epoch_loss
                 self.evaluation.start(epoch=epoch)
 
-                if self.evaluation.epoch_metrics["f1_score"] > f1_score:
-                    f1_score = self.evaluation.epoch_metrics["f1_score"]
-                    self._mark_checkpoint(epoch=epoch, f1_score=f1_score, epoch_chkpt=False)
+                if self.evaluation.epoch_metrics["iou"] > iou_score:
+                    iou_score = self.evaluation.epoch_metrics["iou"]
+                    self._mark_checkpoint(epoch=epoch, iou_score=iou_score, epoch_chkpt=False)
                 if Global.CFG.CHECKPOINT.SAVE_EPOCH_CHECKPOINTS:
-                    self._mark_checkpoint(epoch=epoch, f1_score=None, epoch_chkpt=True)
+                    self._mark_checkpoint(epoch=epoch, iou_score=None, epoch_chkpt=True)
 
                 Global.resetEpochMetrics()
 
@@ -162,28 +159,31 @@ class Train:
         
         if not self.async_parallel_rank: epoch_loss = 0
         for idx, batch in enumerate(data_iterator):
-            img_batch, lbl_batch = batch
+            img_batch, mask_batch = batch
 
             if Global.CFG.SAVE_FIRST_SAMPLE:
                 if (self.tb_writer is not None) and (not self.sample_batch_log) and (epoch == 0):
-                    self.tb_writer.write("image")(image=ClassificationDataset._vizualizeBatch(batch=batch), epoch=epoch+1)
+                    self.tb_writer.write("image")(image=SegmentationDataset._vizualizeBatch(batch), epoch=epoch+1)
                     self.sample_batch_log = True
 
             if not self.async_parallel:
-                if GPU_Support.support_gpu:
-                    last_gpu_id = f"cuda:{GPU_Support.support_gpu - 1}"
+                # if GPU_Support.support_gpu:
+                #     last_gpu_id = f"cuda:{GPU_Support.support_gpu - 1}"
             
-                    img_batch = img_batch.to(last_gpu_id)
-                    if isinstance(lbl_batch, list):
-                        lbl_batch = [i.to(last_gpu_id) if isinstance(i, torch.Tensor) else i for i in lbl_batch]
-                    else:
-                        lbl_batch = lbl_batch.to(last_gpu_id)
+                #     img_batch = img_batch.to(last_gpu_id)
+                #     if isinstance(lbl_batch, list):
+                #         lbl_batch = [i.to(last_gpu_id) if isinstance(i, torch.Tensor) else i for i in lbl_batch]
+                #     else:
+                #         lbl_batch = lbl_batch.to(last_gpu_id)
+                pass
             else:
                 img_batch = img_batch.to(self.async_parallel_rank, non_blocking=True)
-                if isinstance(lbl_batch, list):
-                    lbl_batch = [i.to(self.async_parallel_rank, non_blocking=True) if isinstance(i, torch.Tensor) else i for i in lbl_batch]
-                else:
-                    lbl_batch = lbl_batch.to(self.async_parallel_rank, non_blocking=True)
+                # if isinstance(lbl_batch, list):
+                    # lbl_batch = [i.to(self.async_parallel_rank, non_blocking=True) if isinstance(i, torch.Tensor) else i for i in lbl_batch]
+                # else:
+                    # lbl_batch = lbl_batch.to(self.async_parallel_rank, non_blocking=True)
+
+                mask_batch = mask_batch.to(self.async_parallel_rank, non_blocking=True)
 
             if (self.tb_writer is not None) and (not self.graph_written) and (Global.CFG.WRITE_TENSORBOARD_GRAPH):
                 tb_model = self.model if not self.async_parallel else self.model.module
@@ -195,17 +195,7 @@ class Train:
             else:
                 output = self.model(img_batch)
 
-            if self.custom_loss: # legacy
-                loss_fn = getattr(custom_loss_fns, self.custom_loss)
-                loss = loss_fn(output, lbl_batch, primitive_loss_fn=self.loss_function)
-            else:
-                if isinstance(lbl_batch, list):
-                    loss = lbl_batch[2] * self.loss_function(output, lbl_batch[0]) + (1 - lbl_batch[2]) * self.loss_function(output, lbl_batch[1])
-                else:
-                    if self.phase_dependent:
-                        loss = self.loss_function(output, lbl_batch, phase="training")
-                    else:
-                        loss = self.loss_function(output, lbl_batch)
+            loss = self.loss_function(output, mask_batch.squeeze(1))
 
             if Global.CFG.REGULARIZATION.MODE in ["L1", "L2"]:
                 loss = self._regularize(loss=loss)
@@ -254,13 +244,13 @@ class Train:
             if clipping_method == "norm":
                 torch.nn.utils.clip_grad.clip_grad_norm_(self.model.parameters(), max_norm=clipping_threshold)
 
-    def _mark_checkpoint(self, epoch, f1_score, epoch_chkpt):
+    def _mark_checkpoint(self, epoch, iou_score, epoch_chkpt):
         if not epoch_chkpt:
             if '/' in Global.CFG.CHECKPOINT.BASENAME:
                     basename = Global.CFG.CHECKPOINT.BASENAME.split("/")[-1]
             else:
                 basename = Global.CFG.CHECKPOINT.BASENAME
-            checkpoint_name = basename + f"_epoch_{epoch+1}_f1_{f1_score}.pth"
+            checkpoint_name = basename + f"_epoch_{epoch+1}_iou_{iou_score}.pth"
             Global.LOGGER.info(f"Saving metric checkpoint for epoch {epoch+1}")
             self.checkpointer.save(
                 epoch=epoch,
@@ -421,7 +411,7 @@ class Train:
             Global.LOGGER.info(f"Exponential moving average is enabled while inferencing with decay of: {self.exponential_moving_average}")
 
     @staticmethod
-    def async_train(rank, backbone_name, world_size):
+    def async_train(rank, semseg_model_name, world_size):
 
         async_parallel_setup(rank=rank, world_size=world_size)
         cfg = setup_config()
@@ -432,49 +422,32 @@ class Train:
         if Global.CFG.DEBUG is not None:
             Global.LOGGER.info(f"Running in debug mode")
 
-        if Global.CFG.RESUME_TRAINING:
-            Global.LOGGER.info(f"Resuming training process from epoch checkpoint")
-            checkpoint = Checkpoint.load(model=None, name=backbone_name, checkpoint_name=None, return_checkpoint=True)
-
-        Global.LOGGER.info(f"Instantiating {cfg.LOGGING.NAME} Architecture for classification on 1000 classes")
-        model = getattr(backbones, backbone_name)(**cfg[backbone_name].PARAMS)
-
-        if Global.CFG.RESUME_TRAINING:
-            Global.LOGGER.info(f"Loading state of model from checkpoint")
-            model.load_state_dict(
-                state_dict=checkpoint["model_state_dict"],
-                strict=True
-            )
+        Global.LOGGER.info(f"Instantiating {cfg.LOGGING.NAME} Architecture for segmentation on 81 classes")
+        model = getattr(semseg, semseg_model_name)(**cfg[semseg_model_name].PARAMS)
 
         model.to(device=rank)
 
         model = DDP(model, device_ids=[rank])
         Global.LOGGER.info(f"{cfg.LOGGING.NAME} Architecture instantiated")
 
-        Global.LOGGER.info(f"Instantiating Optimizer: {cfg[backbone_name].OPTIMIZER.NAME}")
+        Global.LOGGER.info(f"Instantiating Optimizer: {cfg[semseg_model_name].OPTIMIZER.NAME}")
         try:
-            optimizer = getattr(torch.optim, cfg[backbone_name].OPTIMIZER.NAME)(model.parameters(), **cfg[backbone_name].OPTIMIZER.PARAMS)
+            optimizer = getattr(torch.optim, cfg[semseg_model_name].OPTIMIZER.NAME)(model.parameters(), **cfg[semseg_model_name].OPTIMIZER.PARAMS)
         except:
-            optimizer = getattr(optimizers, cfg[backbone_name].OPTIMIZER.NAME)(model.parameters(), **cfg[backbone_name].OPTIMIZER.PARAMS)
+            optimizer = getattr(optimizers, cfg[semseg_model_name].OPTIMIZER.NAME)(model.parameters(), **cfg[semseg_model_name].OPTIMIZER.PARAMS)
         Global.LOGGER.info(f"Optimizer instantiated")
 
-        if Global.CFG.RESUME_TRAINING:
-            Global.LOGGER.info(f"Loading state of optimizer from checkpoint")
-            optimizer.load_state_dict(
-                state_dict=checkpoint["optimizer_state_dict"]
-            )
-
-        train_dataset = ClassificationDataset("train", transforms=cfg[backbone_name].TRANSFORMS.TRAIN, ddp=True, debug=cfg.DEBUG)
-        val_dataset = ClassificationDataset("val", transforms=cfg[backbone_name].TRANSFORMS.VAL, ddp=True, debug=cfg.DEBUG)
+        train_dataset = SegmentationDataset("train", transforms=cfg[semseg_model_name].TRANSFORMS.TRAIN, ddp=True, debug=cfg.DEBUG)
+        val_dataset = SegmentationDataset("val", transforms=cfg[semseg_model_name].TRANSFORMS.VAL, ddp=True, debug=cfg.DEBUG)
 
         Global.LOGGER.info(f"Intantiating data loaders for training and validation")
         data_loaders = {}
-        cfg[backbone_name].DATALOADER_TRAIN_PARAMS.pop("shuffle")
-        cfg[backbone_name].DATALOADER_VAL_PARAMS.pop("shuffle")
+        cfg[semseg_model_name].DATALOADER_TRAIN_PARAMS.pop("shuffle")
+        cfg[semseg_model_name].DATALOADER_VAL_PARAMS.pop("shuffle")
 
         if cfg.REPEAT_AUGMENTATIONS:
             train_sampler = RepeatAugSampler(
-                dataset=train_dataset, num_replicas=world_size, rank=rank, num_repeats=cfg.REPEAT_AUGMENTATIONS_NUM_REPEATS
+                dataset=train_dataset, num_replicas=world_size, rank=rank
             )
         else:
             train_sampler = DistributedSampler(
@@ -482,33 +455,31 @@ class Train:
             )
         data_loaders["train"] = DataLoader(
             dataset=train_dataset, collate_fn=train_dataset.collate_fn,
-            sampler=train_sampler, **cfg[backbone_name].DATALOADER_TRAIN_PARAMS
+            sampler=train_sampler, **cfg[semseg_model_name].DATALOADER_TRAIN_PARAMS
         )
         data_loaders["val"] = DataLoader(
             dataset=val_dataset, collate_fn=val_dataset.collate_fn,
-            **cfg[backbone_name].DATALOADER_VAL_PARAMS
+            **cfg[semseg_model_name].DATALOADER_VAL_PARAMS
         )
         Global.LOGGER.info(f"Data loaders instantiated")
 
-        Global.LOGGER.info(f"Instantiating Learning Rate Scheduler: {cfg[backbone_name].LR_SCHEDULER.NAME}")
-        lr_scheduler = Train.get_lr_scheduler(
-            scheduler_name=cfg[backbone_name].LR_SCHEDULER.NAME,
-            optimizer=optimizer,
-            scheduler_params=cfg[backbone_name].LR_SCHEDULER.PARAMS
-        )
-        Global.LOGGER.info(f"Learning Rate Scheduler instantiated")
-
-        if Global.CFG.RESUME_TRAINING:
-            Global.LOGGER.info(f"Loading state of lr scheduler from checkpoint")
-            lr_scheduler.load_state_dict(
-                state_dict=checkpoint["scheduler_state_dict"],
-            )
-
-        Global.LOGGER.info(f"Instantiating Loss Function: {cfg[backbone_name].LOSS.NAME}")
         try:
-            loss_function = getattr(torch.nn, cfg[backbone_name].LOSS.NAME)(**cfg[backbone_name].LOSS.PARAMS)
+            Global.LOGGER.info(f"Instantiating Learning Rate Scheduler: {cfg[semseg_model_name].LR_SCHEDULER.NAME}")
+            lr_scheduler = Train.get_lr_scheduler(
+                scheduler_name=cfg[semseg_model_name].LR_SCHEDULER.NAME,
+                optimizer=optimizer,
+                scheduler_params=cfg[semseg_model_name].LR_SCHEDULER.PARAMS
+            )
+            Global.LOGGER.info(f"Learning Rate Scheduler instantiated")
         except:
-            loss_function = getattr(custom_loss_fns, cfg[backbone_name].LOSS.NAME)(**cfg[backbone_name].LOSS.PARAMS)
+            lr_scheduler = None
+            Global.LOGGER.info(f"No Learning Rate Scheduler specified")
+
+        Global.LOGGER.info(f"Instantiating Loss Function: {cfg[semseg_model_name].LOSS.NAME}")
+        try:
+            loss_function = getattr(torch.nn, cfg[semseg_model_name].LOSS.NAME)(**cfg[semseg_model_name].LOSS.PARAMS)
+        except:
+            loss_function = getattr(semseg_model_name, cfg[semseg_model_name].LOSS.NAME)(**cfg[semseg_model_name].LOSS.PARAMS)
         Global.LOGGER.info(f"Loss Function instantiated")
 
         tb_writer = TensorboardWriter() if rank == 0 else None
@@ -527,7 +498,7 @@ class Train:
             async_parallel_rank=rank,
             async_parallel=True,
             profiling=cfg.PROFILING,
-            resume_epoch=0 if not Global.CFG.RESUME_TRAINING else checkpoint["epoch"] + 1,
+            resume_epoch=0,
             **cfg.TRAIN.PARAMS
         )
 

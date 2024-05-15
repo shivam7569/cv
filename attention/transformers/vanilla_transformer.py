@@ -47,13 +47,13 @@ class TransformerBlock(nn.Module):
 
         self.ceit_cross_attention = ceit_cross_attention
 
-    def forward_post_ln(self, x):
+    def forward_post_ln(self, x, mask=None):
 
         if not self.ceit_cross_attention:
-            msa_out = self.msa(q=x, k=x, v=x, mask=None)
+            msa_out = self.msa(q=x, k=x, v=x, mask=mask)
         else:
             x, other_layers_class_tokens = x[:, -1, :].unsqueeze(1), x[:, :-1, :]
-            msa_out = self.msa(q=x, k=other_layers_class_tokens, v=other_layers_class_tokens, mask=None)
+            msa_out = self.msa(q=x, k=other_layers_class_tokens, v=other_layers_class_tokens, mask=mask)
 
         if self.se_points in ["both", "msa"]:
             msa_out = self.se_block(msa_out)
@@ -77,15 +77,15 @@ class TransformerBlock(nn.Module):
 
         return ln_2_out
 
-    def forward_pre_ln(self, x):
+    def forward_pre_ln(self, x, mask=None):
 
         ln_1_out = self.ln_1(x)
 
         if not self.ceit_cross_attention:
-            msa_out = self.msa(q=ln_1_out, k=ln_1_out, v=ln_1_out, mask=None)
+            msa_out = self.msa(q=ln_1_out, k=ln_1_out, v=ln_1_out, mask=mask)
         else:
             x, other_layers_class_tokens = self.ln_1(x[:, -1, :].unsqueeze(1)), self.ln_1(x[:, :-1, :])
-            msa_out = self.msa(q=x, k=other_layers_class_tokens, v=other_layers_class_tokens, mask=None)
+            msa_out = self.msa(q=x, k=other_layers_class_tokens, v=other_layers_class_tokens, mask=mask)
         
         if self.se_points in ["both", "msa"]:
             msa_out = self.se_block(msa_out)
@@ -106,13 +106,13 @@ class TransformerBlock(nn.Module):
 
         return mlp_residual
 
-    def forward_dual_residual(self, x, res):
+    def forward_dual_residual(self, x, res, mask=None):
 
         if not self.ceit_cross_attention:
-            msa_out = self.msa(q=x, k=x, v=x, mask=None)
+            msa_out = self.msa(q=x, k=x, v=x, mask=mask)
         else:
             x, other_layers_class_tokens = x[:, -1, :].unsqueeze(1), x[:, :-1, :]
-            msa_out = self.msa(q=x, k=other_layers_class_tokens, v=other_layers_class_tokens, mask=None)
+            msa_out = self.msa(q=x, k=other_layers_class_tokens, v=other_layers_class_tokens, mask=mask)
 
         if self.se_points in ["both", "msa"]:
             msa_out = self.se_block(msa_out)
@@ -138,12 +138,12 @@ class TransformerBlock(nn.Module):
 
         return (x, res)
 
-    def forward(self, x, res=None):
+    def forward(self, x, res=None, mask=None):
         if self.ln_order == "post":
-            return self.forward_post_ln(x)
+            return self.forward_post_ln(x, mask)
         elif self.ln_order == "pre":
-            return self.forward_pre_ln(x)
+            return self.forward_pre_ln(x, mask)
         elif self.ln_order == "residual":
             assert res is not None
-            return self.forward_dual_residual(x, res)
+            return self.forward_dual_residual(x, res, mask)
         

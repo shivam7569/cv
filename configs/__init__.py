@@ -25,3 +25,4 @@ from configs.model_configs.DeepViT import DeepViTConfig
 from configs.model_configs.CeiT import CeiTConfig
 from configs.model_configs.SwinT import SwinTConfig
 from configs.model_configs.FasterRCNN import FasterRCNNConfig
+from configs.model_configs.FCN import FCNConfig

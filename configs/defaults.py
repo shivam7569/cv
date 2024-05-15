@@ -15,6 +15,7 @@ _C.DATA.COCO_TRAIN_ANNOTATIONS = "/media/drive6/hqh2kor/datasets/coco/annotation
 _C.DATA.COCO_VAL_ANNOTATIONS = "/media/drive6/hqh2kor/datasets/coco/annotations/instances_val2017.json"
 _C.DATA.COCO_ID_TO_CORRECT_ID = "/media/drive6/hqh2kor/projects/cv/datasets/coco_files/coco_id_to_ID.json"
 _C.DATA.COCO_ID_TO_NAME = "/media/drive6/hqh2kor/projects/cv/datasets/coco_files/coco_id_to_name.json"
+_C.DATA.COCO_ID_TO_COLOR = "/media/drive6/hqh2kor/projects/cv/datasets/coco_files/color_codes.json"
 
 _C.DATA.IMAGENET_CLASS_MAPPING = "/media/drive6/hqh2kor/datasets/imagenet/LOC_synset_mapping.txt"
 _C.DATA.IMAGENET_TRAIN_IMAGES = "/media/drive6/hqh2kor/datasets/imagenet/Data/CLS-LOC/train/"
@@ -35,6 +36,7 @@ _C.METRICS = CN()
 _C.METRICS.NAME = "Process"
 _C.METRICS.PATH = "/media/drive6/hqh2kor/projects/cv/metrics/"
 _C.METRICS.COLUMNS = ["epoch", "train_loss", "eval_loss", "eval_accuracy", "eval_precision", "eval_recall", "eval_f1_score"]
+_C.METRICS.SEG_COLUMNS = ["epoch", "train_loss", "eval_loss", "eval_accuracy", "eval_precision", "eval_recall", "eval_f1_score", "eval_iou_score", "eval_dice_score", "eval_kappa_score"]
 
 _C.CHECKPOINT = CN()
 _C.CHECKPOINT.TREE = False
@@ -54,6 +56,7 @@ _C.DATA_MIXING.enabled = False
 _C.DATA_MIXING.one_hot_targets = False
 
 _C.REPEAT_AUGMENTATIONS = False
+_C.REPEAT_AUGMENTATIONS_NUM_REPEATS = 3
 
 _C.RESUME_TRAINING = False
 _C.DEBUG = None

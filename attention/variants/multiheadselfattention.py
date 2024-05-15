@@ -1,6 +1,5 @@
 import math
 import torch
-import numpy as np
 import torch.nn as nn
 
 from utils.global_params import Global
@@ -49,7 +48,7 @@ class MultiHeadSelfAttention(nn.Module):
         energy = (query @ key.transpose(-2, -1)) / math.sqrt(self.d_k)
 
         if mask is not None:
-            energy.masked_fill_(mask == 0, np.NINF)
+            energy.masked_fill_(mask, -torch.inf)
 
         attention_scores = energy.softmax(dim=-1)
 
