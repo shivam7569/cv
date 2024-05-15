@@ -1,4 +1,5 @@
 import os
+import random
 import shutil
 import socket
 
@@ -33,10 +34,10 @@ def find_free_port():
 
     while True:
         try:
-            port = 12312
+            port = random.choice(range(12310, 12380))
             sock = socket.socket()
             sock.bind(("", port))
 
             return port
         except: 
-            port += 1
+            port = random.choice(range(12310, 12380))
