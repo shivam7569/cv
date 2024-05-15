@@ -40,12 +40,12 @@ def UNetConfig(cfg):
     cfg.PIPELINES = CN()
     cfg.PIPELINES.TRAIN = [
         dict(func="readImage", params=dict(uint8=True)),
-        dict(func="resizeWithAspectRatio", params=dict(size=256)),
+        dict(func="resizeWithAspectRatio", params=dict(size=600)),
         dict(func="mask_to_img_size", params=dict())
     ]
     cfg.PIPELINES.VAL = [
         dict(func="readImage", params=dict(uint8=True)),
-        dict(func="resizeWithAspectRatio", params=dict(size=256)),
+        dict(func="resizeWithAspectRatio", params=dict(size=600)),
         dict(func="mask_to_img_size", params=dict())
     ]
 
@@ -57,7 +57,7 @@ def UNetConfig(cfg):
     cfg.UNet.DATALOADER_TRAIN_PARAMS.drop_last = True
 
     cfg.UNet.DATALOADER_VAL_PARAMS = CN()
-    cfg.UNet.DATALOADER_VAL_PARAMS.batch_size = 32
+    cfg.UNet.DATALOADER_VAL_PARAMS.batch_size = 1
     cfg.UNet.DATALOADER_VAL_PARAMS.shuffle = True
     cfg.UNet.DATALOADER_VAL_PARAMS.num_workers = 8
     cfg.UNet.DATALOADER_VAL_PARAMS.pin_memory = True
@@ -68,7 +68,7 @@ def UNetConfig(cfg):
     cfg.UNet.TRANSFORMS.TRAIN = [
         dict(name="SegmentationToPILImage", params=dict()),
         dict(name="SegmentationElasticTransform", params=dict(p=0.1, alpha=50.0, sigma=5.0)),
-        dict(name="SegmentationRandomCrop", params=dict(size=(224, 224))),
+        dict(name="SegmentationRandomCrop", params=dict(size=(572, 572))),
         dict(name="SegmentationHorizontalFlip", params=dict(p=0.5)),
         dict(name="SegmentationToTensor", params=dict()),
         dict(name="SegmentationNormalize", params=dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
@@ -76,7 +76,7 @@ def UNetConfig(cfg):
 
     cfg.UNet.TRANSFORMS.VAL = [
         dict(name="SegmentationToPILImage", params=dict()),
-        dict(name="SegmentationCenterCrop", params=dict(size=(224, 224))),
+        dict(name="SegmentationCenterCrop", params=dict(size=(572, 572))),
         dict(name="SegmentationHorizontalFlip", params=dict(p=0.5)),
         dict(name="SegmentationToTensor", params=dict()),
         dict(name="SegmentationNormalize", params=dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
@@ -96,7 +96,7 @@ def UNetConfig(cfg):
     cfg.UNet.LOSS.PARAMS.ignore_index = -100
     cfg.UNet.LOSS.PARAMS.reduce = None
     cfg.UNet.LOSS.PARAMS.reduction = "mean"
-    cfg.UNet.LOSS.PARAMS.class_weightage_method = "median_frequency"
+    # cfg.UNet.LOSS.PARAMS.class_weightage_method = "inverse_frequency"
 
     cfg.REGULARIZATION = CN()
     cfg.REGULARIZATION.MODE = ''

@@ -59,7 +59,7 @@ class Eval:
 
                 self.metrics.update(mask_batch.squeeze(1).flatten().cpu().numpy(), predicted_masks.flatten().cpu().numpy())
 
-                if not test_image and epoch % 1 == 0:
+                if not test_image and epoch % 3 == 0:
                     self.tb_writer.write("image")(image=SegmentationDataset._vizualizeBatch(batch=(img_batch, predicted_masks)), epoch=epoch+1)
                     test_image = True
 

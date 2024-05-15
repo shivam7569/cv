@@ -147,6 +147,13 @@ class UNet(nn.Module):
 
         self.retain_size = retain_size
 
+    def _crop_and_concat(self, upsampled, bypass, crop=False):
+        if crop:
+            c = (bypass.size()[2] - upsampled.size()[2]) // 2
+            bypass = NF.pad(bypass, (-c, -c, -c, -c))
+
+        return torch.cat((upsampled, bypass), dim=1)
+
     def forward(self, x):
         enc_pt_1 = self.encoder_part_1(x)
         enc_pt_1_mp = self.encoder_part_1_max_pool(enc_pt_1)
@@ -164,22 +171,22 @@ class UNet(nn.Module):
 
         bottleneck = self.bottleneck(enc_pt_5)
 
-        concat_1 = torch.cat([bottleneck, F.center_crop(enc_pt_4, bottleneck.size()[-1])], dim=1)
+        concat_1 = self._crop_and_concat(upsampled=bottleneck, bypass=enc_pt_4, crop=True)
 
         dec_pt_1 = self.decoder_pt_1(concat_1)
         dec_pt_1_uc = self.decoder_pt_1_uc(dec_pt_1)
 
-        concat_2 = torch.cat([dec_pt_1_uc, F.center_crop(enc_pt_3, dec_pt_1_uc.size()[-1])], dim=1)
+        concat_2 = self._crop_and_concat(upsampled=dec_pt_1_uc, bypass=enc_pt_3, crop=True)
 
         dec_pt_2 = self.decoder_pt_2(concat_2)
         dec_pt_2_uc = self.decoder_pt_2_uc(dec_pt_2)
 
-        concat_3 = torch.cat([dec_pt_2_uc, F.center_crop(enc_pt_2, dec_pt_2_uc.size()[-1])], dim=1)
+        concat_3 = self._crop_and_concat(upsampled=dec_pt_2_uc, bypass=enc_pt_2, crop=True)
 
         dec_pt_3 = self.decoder_pt_3(concat_3)
         dec_pt_3_uc = self.decoder_pt_3_uc(dec_pt_3)
 
-        concat_4 = torch.cat([dec_pt_3_uc, F.center_crop(enc_pt_1, dec_pt_3_uc.size()[-1])], dim=1)
+        concat_4 = self._crop_and_concat(upsampled=dec_pt_3_uc, bypass=enc_pt_1, crop=True)
 
         dec_pt_4 = self.decoder_pt_4(concat_4)
 
