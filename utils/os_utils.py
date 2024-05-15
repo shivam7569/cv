@@ -31,7 +31,7 @@ def check_file(path, remove=False):
 
 def find_free_port(port=12322, max_port=12382):
 
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock = socket.socket()
     while port < max_port:
         try:
             sock.bind(('', port))
