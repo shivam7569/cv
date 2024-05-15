@@ -96,7 +96,7 @@ def UNetConfig(cfg):
     cfg.UNet.LOSS.PARAMS.ignore_index = -100
     cfg.UNet.LOSS.PARAMS.reduce = None
     cfg.UNet.LOSS.PARAMS.reduction = "mean"
-    # cfg.UNet.LOSS.PARAMS.class_weightage_method = "inverse_frequency"
+    cfg.UNet.LOSS.PARAMS.class_weightage_method = "inverse_frequency"
 
     cfg.REGULARIZATION = CN()
     cfg.REGULARIZATION.MODE = ''
