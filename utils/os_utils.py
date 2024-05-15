@@ -1,5 +1,6 @@
 import os
 import shutil
+import socket
 
 def check_dir(path, create=True, forcedCreate=False, tree=False):
 
@@ -27,3 +28,10 @@ def check_file(path, remove=False):
         os.remove(path)
 
     return exists
+
+def find_free_port():
+    sock = socket.socket()
+    sock.bind(("", 0))
+    port = sock.getsockname()[1]
+
+    return port

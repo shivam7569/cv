@@ -9,6 +9,7 @@ from src.cv_parser import get_parser
 from src.gpu_devices import GPU_Support
 
 from utils.global_params import Global
+from utils.os_utils import find_free_port
 
 def findOptimalNumWorkers(dataset, phase, batch_size):
 
@@ -46,7 +47,7 @@ def numpy2tensor(array):
 
 def async_parallel_setup(rank, world_size):
     os.environ["MASTER_ADDR"] = "localhost"
-    os.environ["MASTER_PORT"] = "12322"
+    os.environ["MASTER_PORT"] = f"{find_free_port()}"
     os.environ["WORLD_SIZE"] = str(world_size)
     os.environ["RANK"] = str(rank)
 
