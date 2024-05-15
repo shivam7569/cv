@@ -163,11 +163,19 @@ def fast_rcnn_resize(img, min_size, max_size):
     if img_h > max_size:
         new_h = max_size
         new_w = int(new_h / aspect_ratio)
-        img = cv2.resize(img, (new_w, new_h))
+
+        shrinking = (new_w * new_h) / (img_w * img_h) < 1
+        interpolation_method = cv2.INTER_AREA if shrinking else cv2.INTER_CUBIC
+
+        img = cv2.resize(img, (new_w, new_h), interpolation=interpolation_method)
     elif img_w > max_size:
         new_w = max_size
         new_h = int(new_w * aspect_ratio)
-        img = cv2.resize(img, (new_w, new_h))
+
+        shrinking = (new_w * new_h) / (img_w * img_h) < 1
+        interpolation_method = cv2.INTER_AREA if shrinking else cv2.INTER_CUBIC
+
+        img = cv2.resize(img, (new_w, new_h), interpolation=interpolation_method)
 
     return img
 
