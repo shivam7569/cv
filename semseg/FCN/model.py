@@ -1,13 +1,8 @@
-from collections import OrderedDict
-import numpy as np
-import torch
 import torch.nn as nn
-import torch.nn.functional as F
+from collections import OrderedDict
 
 import backbones
-from configs.config import setup_config
 from src.checkpoints import Checkpoint
-from utils.global_params import Global
 
 class FCN(nn.Module):
 
