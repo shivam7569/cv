@@ -29,7 +29,7 @@ def check_file(path, remove=False):
 
     return exists
 
-def find_free_port(port=12301, max_port=12400):
+def find_free_port(port=12322, max_port=12382):
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     while port < max_port:
