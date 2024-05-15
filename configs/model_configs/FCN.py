@@ -1,3 +1,6 @@
+import math
+
+
 def FCNConfig(cfg):
 
     from configs.config import CfgNode as CN
@@ -80,7 +83,7 @@ def FCNConfig(cfg):
     cfg.FCN.OPTIMIZER = CN()
     cfg.FCN.OPTIMIZER.NAME = "SGD"
     cfg.FCN.OPTIMIZER.PARAMS = CN()
-    cfg.FCN.OPTIMIZER.PARAMS.lr = 1e-4 * cfg.num_gpus 
+    cfg.FCN.OPTIMIZER.PARAMS.lr = 1e-4 * math.sqrt(cfg.num_gpus) 
     cfg.FCN.OPTIMIZER.PARAMS.momentum = 0.9
     cfg.FCN.OPTIMIZER.PARAMS.weight_decay = 5**-4
     
