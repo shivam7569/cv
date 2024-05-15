@@ -30,8 +30,12 @@ def check_file(path, remove=False):
     return exists
 
 def find_free_port():
-    sock = socket.socket()
-    sock.bind(("", 0))
-    port = sock.getsockname()[1]
 
+    while True:
+        sock = socket.socket()
+        sock.bind(("", 0))
+        port = sock.getsockname()[1]
+
+        if port > 12300 and port < 12400: break
+        
     return port
