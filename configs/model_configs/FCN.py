@@ -85,7 +85,7 @@ def FCNConfig(cfg):
     cfg.FCN.OPTIMIZER.PARAMS = CN()
     cfg.FCN.OPTIMIZER.PARAMS.lr = 1e-3
     cfg.FCN.OPTIMIZER.PARAMS.momentum = 0.9
-    cfg.FCN.OPTIMIZER.PARAMS.weight_decay = 1e-8
+    cfg.FCN.OPTIMIZER.PARAMS.weight_decay = 1e-5
 
     cfg.FCN.LR_SCHEDULER = CN()
     cfg.FCN.LR_SCHEDULER.NAME = "StepLR"
