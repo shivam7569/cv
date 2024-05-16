@@ -1,6 +1,3 @@
-import math
-
-
 def UNetConfig(cfg):
 
     from configs.config import CfgNode as CN

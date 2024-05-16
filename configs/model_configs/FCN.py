@@ -31,7 +31,7 @@ def FCNConfig(cfg):
     cfg.TRAIN.PARAMS = CN()
     cfg.TRAIN.PARAMS.epochs = 500
     cfg.TRAIN.PARAMS.gradient_accumulation = True
-    cfg.TRAIN.PARAMS.gradient_accumulation_batch_size = 20
+    cfg.TRAIN.PARAMS.gradient_accumulation_batch_size = 64
     cfg.TRAIN.PARAMS.gradient_clipping = None
     cfg.TRAIN.PARAMS.exponential_moving_average = None
     cfg.TRAIN.PARAMS.updateStochasticDepthRate = None
@@ -49,7 +49,7 @@ def FCNConfig(cfg):
     ]
 
     cfg.FCN.DATALOADER_TRAIN_PARAMS = CN()
-    cfg.FCN.DATALOADER_TRAIN_PARAMS.batch_size = 4
+    cfg.FCN.DATALOADER_TRAIN_PARAMS.batch_size = 8
     cfg.FCN.DATALOADER_TRAIN_PARAMS.shuffle = True
     cfg.FCN.DATALOADER_TRAIN_PARAMS.num_workers = 8
     cfg.FCN.DATALOADER_TRAIN_PARAMS.pin_memory = True
@@ -83,9 +83,17 @@ def FCNConfig(cfg):
     cfg.FCN.OPTIMIZER = CN()
     cfg.FCN.OPTIMIZER.NAME = "SGD"
     cfg.FCN.OPTIMIZER.PARAMS = CN()
-    cfg.FCN.OPTIMIZER.PARAMS.lr = 1e-4 * math.sqrt(cfg.num_gpus) 
+    cfg.FCN.OPTIMIZER.PARAMS.lr = 1e-3
     cfg.FCN.OPTIMIZER.PARAMS.momentum = 0.9
-    cfg.FCN.OPTIMIZER.PARAMS.weight_decay = 5**-4
+    cfg.FCN.OPTIMIZER.PARAMS.weight_decay = 1e-8
+
+    cfg.FCN.LR_SCHEDULER = CN()
+    cfg.FCN.LR_SCHEDULER.NAME = "ReduceLROnPlateau"
+    cfg.FCN.LR_SCHEDULER.PARAMS = CN()
+    cfg.FCN.LR_SCHEDULER.PARAMS.mode = "min"
+    cfg.FCN.LR_SCHEDULER.PARAMS.factor = 0.1
+    cfg.FCN.LR_SCHEDULER.PARAMS.patience = 5
+    cfg.FCN.LR_SCHEDULER.PARAMS.min_lr = 1e-5
     
     cfg.FCN.LOSS = CN()
     cfg.FCN.LOSS.NAME = "CrossEntropyLoss"
