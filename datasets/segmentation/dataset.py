@@ -77,9 +77,9 @@ class SegmentationDataset(Dataset):
         return img, mask
     
     @staticmethod
-    def get_class_weights(loader, method):
+    def get_class_weights(loader, method, rank):
 
-        loader_iter = tqdm(loader, desc=f"Calculating {method.split('_')[0]} class frequencies", unit="batch")
+        loader_iter = tqdm(loader, desc=f"Calculating {method.split('_')[0]} class frequencies", unit="batch") if not rank else loader
 
         frequencies = {
             i: 0 for i in CocoParser.getIdVsName().keys()

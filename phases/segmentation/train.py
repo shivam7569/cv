@@ -478,7 +478,7 @@ class Train:
         Global.LOGGER.info(f"Instantiating Loss Function: {cfg[semseg_model_name].LOSS.NAME}")
         class_weight_method = cfg[semseg_model_name].LOSS.PARAMS.pop("class_weightage_method", None)
         if class_weight_method is not None:
-            class_weights = SegmentationDataset.get_class_weights(loader=data_loaders["train"], method=class_weight_method).to(rank, non_blocking=True)
+            class_weights = SegmentationDataset.get_class_weights(loader=data_loaders["train"], method=class_weight_method, rank=rank).to(rank, non_blocking=True)
         else:
             class_weights = None
 
