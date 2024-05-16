@@ -87,12 +87,11 @@ def UNetConfig(cfg):
     cfg.UNet.OPTIMIZER.PARAMS.weight_decay = 1e-8
 
     cfg.UNet.LR_SCHEDULER = CN()
-    cfg.UNet.LR_SCHEDULER.NAME = "ReduceLROnPlateau"
+    cfg.UNet.LR_SCHEDULER.NAME = "StepLR"
     cfg.UNet.LR_SCHEDULER.PARAMS = CN()
-    cfg.UNet.LR_SCHEDULER.PARAMS.mode = "min"
-    cfg.UNet.LR_SCHEDULER.PARAMS.factor = 0.1
-    cfg.UNet.LR_SCHEDULER.PARAMS.patience = 5
-    cfg.UNet.LR_SCHEDULER.PARAMS.min_lr = 1e-5
+    cfg.UNet.LR_SCHEDULER.PARAMS.step_size = 30
+    cfg.UNet.LR_SCHEDULER.PARAMS.gamma = 0.1
+    cfg.UNet.LR_SCHEDULER.PARAMS.verbose = False
     
     cfg.UNet.LOSS = CN()
     cfg.UNet.LOSS.NAME = "CrossEntropyLoss"

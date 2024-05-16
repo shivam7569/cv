@@ -88,12 +88,11 @@ def FCNConfig(cfg):
     cfg.FCN.OPTIMIZER.PARAMS.weight_decay = 1e-8
 
     cfg.FCN.LR_SCHEDULER = CN()
-    cfg.FCN.LR_SCHEDULER.NAME = "ReduceLROnPlateau"
+    cfg.FCN.LR_SCHEDULER.NAME = "StepLR"
     cfg.FCN.LR_SCHEDULER.PARAMS = CN()
-    cfg.FCN.LR_SCHEDULER.PARAMS.mode = "min"
-    cfg.FCN.LR_SCHEDULER.PARAMS.factor = 0.1
-    cfg.FCN.LR_SCHEDULER.PARAMS.patience = 5
-    cfg.FCN.LR_SCHEDULER.PARAMS.min_lr = 1e-5
+    cfg.FCN.LR_SCHEDULER.PARAMS.step_size = 30
+    cfg.FCN.LR_SCHEDULER.PARAMS.gamma = 0.1
+    cfg.FCN.LR_SCHEDULER.PARAMS.verbose = False
     
     cfg.FCN.LOSS = CN()
     cfg.FCN.LOSS.NAME = "CrossEntropyLoss"
