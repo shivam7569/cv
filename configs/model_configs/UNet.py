@@ -32,7 +32,7 @@ def UNetConfig(cfg):
     cfg.TRAIN.PARAMS = CN()
     cfg.TRAIN.PARAMS.epochs = 500
     cfg.TRAIN.PARAMS.gradient_accumulation = False
-    cfg.TRAIN.PARAMS.gradient_accumulation_batch_size = None
+    cfg.TRAIN.PARAMS.gradient_accumulation_batch_size = 64
     cfg.TRAIN.PARAMS.gradient_clipping = None
     cfg.TRAIN.PARAMS.exponential_moving_average = None
     cfg.TRAIN.PARAMS.updateStochasticDepthRate = None
@@ -40,24 +40,24 @@ def UNetConfig(cfg):
     cfg.PIPELINES = CN()
     cfg.PIPELINES.TRAIN = [
         dict(func="readImage", params=dict(uint8=True)),
-        dict(func="resizeWithAspectRatio", params=dict(size=600)),
+        dict(func="resizeWithAspectRatio", params=dict(size=256)),
         dict(func="mask_to_img_size", params=dict())
     ]
     cfg.PIPELINES.VAL = [
         dict(func="readImage", params=dict(uint8=True)),
-        dict(func="resizeWithAspectRatio", params=dict(size=600)),
+        dict(func="resizeWithAspectRatio", params=dict(size=256)),
         dict(func="mask_to_img_size", params=dict())
     ]
 
     cfg.UNet.DATALOADER_TRAIN_PARAMS = CN()
-    cfg.UNet.DATALOADER_TRAIN_PARAMS.batch_size = 1
+    cfg.UNet.DATALOADER_TRAIN_PARAMS.batch_size = 8
     cfg.UNet.DATALOADER_TRAIN_PARAMS.shuffle = True
     cfg.UNet.DATALOADER_TRAIN_PARAMS.num_workers = 8
     cfg.UNet.DATALOADER_TRAIN_PARAMS.pin_memory = True
     cfg.UNet.DATALOADER_TRAIN_PARAMS.drop_last = True
 
     cfg.UNet.DATALOADER_VAL_PARAMS = CN()
-    cfg.UNet.DATALOADER_VAL_PARAMS.batch_size = 1
+    cfg.UNet.DATALOADER_VAL_PARAMS.batch_size = 32
     cfg.UNet.DATALOADER_VAL_PARAMS.shuffle = True
     cfg.UNet.DATALOADER_VAL_PARAMS.num_workers = 8
     cfg.UNet.DATALOADER_VAL_PARAMS.pin_memory = True
@@ -68,7 +68,7 @@ def UNetConfig(cfg):
     cfg.UNet.TRANSFORMS.TRAIN = [
         dict(name="SegmentationToPILImage", params=dict()),
         dict(name="SegmentationElasticTransform", params=dict(p=0.1, alpha=50.0, sigma=5.0)),
-        dict(name="SegmentationRandomCrop", params=dict(size=(572, 572))),
+        dict(name="SegmentationRandomCrop", params=dict(size=(236, 236))),
         dict(name="SegmentationHorizontalFlip", params=dict(p=0.5)),
         dict(name="SegmentationToTensor", params=dict()),
         dict(name="SegmentationNormalize", params=dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
@@ -76,7 +76,7 @@ def UNetConfig(cfg):
 
     cfg.UNet.TRANSFORMS.VAL = [
         dict(name="SegmentationToPILImage", params=dict()),
-        dict(name="SegmentationCenterCrop", params=dict(size=(572, 572))),
+        dict(name="SegmentationCenterCrop", params=dict(size=(236, 236))),
         dict(name="SegmentationHorizontalFlip", params=dict(p=0.5)),
         dict(name="SegmentationToTensor", params=dict()),
         dict(name="SegmentationNormalize", params=dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
@@ -85,17 +85,17 @@ def UNetConfig(cfg):
     cfg.UNet.OPTIMIZER = CN()
     cfg.UNet.OPTIMIZER.NAME = "SGD"
     cfg.UNet.OPTIMIZER.PARAMS = CN()
-    cfg.UNet.OPTIMIZER.PARAMS.lr = 1e-2 * math.sqrt(cfg.num_gpus) 
+    cfg.UNet.OPTIMIZER.PARAMS.lr = 1e-2
     cfg.UNet.OPTIMIZER.PARAMS.momentum = 0.99
-    cfg.UNet.OPTIMIZER.PARAMS.weight_decay = 5**-4
+    cfg.UNet.OPTIMIZER.PARAMS.weight_decay = 1e-8
 
     cfg.UNet.LR_SCHEDULER = CN()
-    cfg.UNet.LR_SCHEDULER.NAME = "CosineAnnealingWarmRestarts"
+    cfg.UNet.LR_SCHEDULER.NAME = "ReduceLROnPlateau"
     cfg.UNet.LR_SCHEDULER.PARAMS = CN()
-    cfg.UNet.LR_SCHEDULER.PARAMS.T_0 = 10
-    cfg.UNet.LR_SCHEDULER.PARAMS.T_mult = 3
-    cfg.UNet.LR_SCHEDULER.PARAMS.eta_min = 0.0
-    cfg.UNet.LR_SCHEDULER.PARAMS.verbose = False
+    cfg.UNet.LR_SCHEDULER.PARAMS.mode = "min"
+    cfg.UNet.LR_SCHEDULER.PARAMS.factor = 0.1
+    cfg.UNet.LR_SCHEDULER.PARAMS.patience = 5
+    cfg.UNet.LR_SCHEDULER.PARAMS.min_lr = 1e-5
     
     cfg.UNet.LOSS = CN()
     cfg.UNet.LOSS.NAME = "CrossEntropyLoss"

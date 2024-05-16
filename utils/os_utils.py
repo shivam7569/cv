@@ -1,7 +1,5 @@
 import os
-import random
 import shutil
-import socket
 
 def check_dir(path, create=True, forcedCreate=False, tree=False):
 
@@ -29,15 +27,3 @@ def check_file(path, remove=False):
         os.remove(path)
 
     return exists
-
-def find_free_port():
-
-    while True:
-        try:
-            port = random.choice(range(12310, 12380))
-            sock = socket.socket()
-            sock.bind(("", port))
-
-            return port
-        except: 
-            port = random.choice(range(12310, 12380))

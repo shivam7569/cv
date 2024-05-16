@@ -5,6 +5,7 @@ from datasets.segmentation.dataset import SegmentationDataset
 from src.gpu_devices import GPU_Support
 import torch.nn.functional as F
 from src.metrics import SegmentationMetrics
+from utils.typing_utils import draw_confusion_matrix
 
 class Eval:
 
@@ -60,7 +61,7 @@ class Eval:
                 self.metrics.update(mask_batch.squeeze(1).flatten().cpu().numpy(), predicted_masks.flatten().cpu().numpy())
 
                 if not test_image and epoch % 3 == 0:
-                    self.tb_writer.write("image")(image=SegmentationDataset._vizualizeBatch(batch=(img_batch, predicted_masks)), epoch=epoch+1)
+                    self.tb_writer.write("image")(image=SegmentationDataset._vizualizeBatch(batch=(img_batch, predicted_masks)), epoch=epoch+1, tag=f"Inference")
                     test_image = True
 
         loss /= len(self.data_loader)
@@ -70,6 +71,8 @@ class Eval:
         self.epoch_metrics["eval_loss"] = loss
 
         SegmentationMetrics.writeMetricsToCSV()
+        self.metrics.normalize_cm()
+        self.tb_writer.write("figure")(figure=draw_confusion_matrix(self.metrics.normalized_confusion_matrix), epoch=epoch+1, tag="Confusion Matrix")
 
         if self.tb_writer is not None:
             self.tb_writer.write("scaler")(scalar_name="Loss", scalar_value=loss, step=epoch)

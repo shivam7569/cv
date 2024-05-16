@@ -2,6 +2,7 @@ import os
 import random
 import numpy as np
 import torch
+from tqdm import tqdm
 from datasets.classification.dataset import ClassificationDataset
 import src.pipeline_functions as PF
 from torch.utils.data import Dataset
@@ -77,10 +78,13 @@ class SegmentationDataset(Dataset):
     
     @staticmethod
     def get_class_weights(loader, method):
+
+        loader_iter = tqdm(loader, desc=f"Calculating {method.split('_')[0]} class frequencies", unit="batch")
+
         frequencies = {
             i: 0 for i in CocoParser.getIdVsName().keys()
         }
-        for batch in loader:
+        for batch in loader_iter:
             _, masks = batch
             classes, class_counts = np.unique(masks.numpy(), return_counts=True)
             

@@ -45,6 +45,8 @@ class TensorboardWriter:
             return self._write_audio_summary
         elif summary_type == "text":
             return self._write_text_summary
+        elif summary_type == "figure":
+            return self._write_figure_summary
         else:
             raise ValueError(f"Invalid summary type: {summary_type}")
         
@@ -60,9 +62,16 @@ class TensorboardWriter:
             self.writer.add_graph(model, input_to_model)
             self.graph_written = True
 
-    def _write_image_summary(self, image, epoch):
+    def _write_image_summary(self, image, epoch, tag=None):
         self.writer.add_image(
-            tag=f"Epoch_{epoch}",
+            tag=f"Epoch_{epoch}" if tag is None else tag,
             img_tensor=image,
+            global_step=epoch
+        )
+
+    def _write_figure_summary(self, figure, epoch, tag=None):
+        self.writer.add_figure(
+            tag=f"Epoch_{epoch}" if tag is None else tag,
+            figure=figure,
             global_step=epoch
         )

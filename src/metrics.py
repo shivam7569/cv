@@ -280,6 +280,12 @@ class SegmentationMetrics:
         k = (2 * (tp * tn - fp * fn)) / ((tp + fp) * (fp + tn) + (tp * fn) * (fn * tn) + self.eps)
 
         return np.round(k, decimals=3)
+
+    def normalize_cm(self):
+        total_gts_per_class = self.confusion_matrix.sum(axis=1)[:, np.newaxis]
+        total_gts_per_class[total_gts_per_class == 0] = 1
+
+        self.normalized_confusion_matrix = self.confusion_matrix / total_gts_per_class
     
     def aggregate_metrics(self):
         class_accuracies = self.accuracy()

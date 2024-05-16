@@ -235,24 +235,12 @@ class ConvBlock(nn.Module):
 
         for m in self.conv_block_1.modules():
             if isinstance(m, nn.Conv2d):
-                kernel_size = m.kernel_size[0]
-                num_features = m.out_channels
-
-                mean = 0.0
-                std = math.sqrt(2 / ((kernel_size ** 2) * num_features))
-
-                nn.init.normal_(m.weight, mean=mean, std=std)
+                nn.init.xavier_normal_(m.weight)
                 nn.init.zeros_(m.bias)
 
         for m in self.conv_block_2.modules():
             if isinstance(m, nn.Conv2d):
-                kernel_size = m.kernel_size[0]
-                num_features = m.out_channels
-
-                mean = 0.0
-                std = math.sqrt(2 / ((kernel_size ** 2) * num_features))
-
-                nn.init.normal_(m.weight, mean=mean, std=std)
+                nn.init.xavier_normal_(m.weight)
                 nn.init.zeros_(m.bias)
 
     def forward(self, x):
