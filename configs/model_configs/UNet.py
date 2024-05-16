@@ -85,9 +85,17 @@ def UNetConfig(cfg):
     cfg.UNet.OPTIMIZER = CN()
     cfg.UNet.OPTIMIZER.NAME = "SGD"
     cfg.UNet.OPTIMIZER.PARAMS = CN()
-    cfg.UNet.OPTIMIZER.PARAMS.lr = 1e-4 * math.sqrt(cfg.num_gpus) 
+    cfg.UNet.OPTIMIZER.PARAMS.lr = 1e-2 * math.sqrt(cfg.num_gpus) 
     cfg.UNet.OPTIMIZER.PARAMS.momentum = 0.99
     cfg.UNet.OPTIMIZER.PARAMS.weight_decay = 5**-4
+
+    cfg.UNet.LR_SCHEDULER = CN()
+    cfg.UNet.LR_SCHEDULER.NAME = "CosineAnnealingWarmRestarts"
+    cfg.UNet.LR_SCHEDULER.PARAMS = CN()
+    cfg.UNet.LR_SCHEDULER.PARAMS.T_0 = 10
+    cfg.UNet.LR_SCHEDULER.PARAMS.T_mult = 3
+    cfg.UNet.LR_SCHEDULER.PARAMS.eta_min = 0.0
+    cfg.UNet.LR_SCHEDULER.PARAMS.verbose = False
     
     cfg.UNet.LOSS = CN()
     cfg.UNet.LOSS.NAME = "CrossEntropyLoss"
