@@ -17,7 +17,7 @@ class Eval:
             tb_writer,
             async_parallel,
             async_parallel_rank,
-            num_classes=1000
+            num_classes=81
     ):
         self.model = model
         self.data_loader = data_loader

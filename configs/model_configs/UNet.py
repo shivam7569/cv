@@ -89,7 +89,7 @@ def UNetConfig(cfg):
     cfg.UNet.LR_SCHEDULER = CN()
     cfg.UNet.LR_SCHEDULER.NAME = "CosineAnnealingWarmRestarts"
     cfg.UNet.LR_SCHEDULER.PARAMS = CN()
-    cfg.UNet.LR_SCHEDULER.PARAMS.T_0 = 15
+    cfg.UNet.LR_SCHEDULER.PARAMS.T_0 = 20
     cfg.UNet.LR_SCHEDULER.PARAMS.T_mult = 2
     cfg.UNet.LR_SCHEDULER.PARAMS.eta_min = 1e-6
     cfg.UNet.LR_SCHEDULER.PARAMS.last_epoch = -1
