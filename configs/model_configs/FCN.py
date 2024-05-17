@@ -30,8 +30,8 @@ def FCNConfig(cfg):
     cfg.TRAIN = CN()
     cfg.TRAIN.PARAMS = CN()
     cfg.TRAIN.PARAMS.epochs = 500
-    cfg.TRAIN.PARAMS.gradient_accumulation = True
-    cfg.TRAIN.PARAMS.gradient_accumulation_batch_size = 64
+    cfg.TRAIN.PARAMS.gradient_accumulation = False
+    cfg.TRAIN.PARAMS.gradient_accumulation_batch_size = None
     cfg.TRAIN.PARAMS.gradient_clipping = None
     cfg.TRAIN.PARAMS.exponential_moving_average = None
     cfg.TRAIN.PARAMS.updateStochasticDepthRate = None
@@ -83,23 +83,23 @@ def FCNConfig(cfg):
     cfg.FCN.OPTIMIZER = CN()
     cfg.FCN.OPTIMIZER.NAME = "SGD"
     cfg.FCN.OPTIMIZER.PARAMS = CN()
-    cfg.FCN.OPTIMIZER.PARAMS.lr = 1e-3
+    cfg.FCN.OPTIMIZER.PARAMS.lr = 1e-4
     cfg.FCN.OPTIMIZER.PARAMS.momentum = 0.9
     cfg.FCN.OPTIMIZER.PARAMS.weight_decay = 1e-5
 
     cfg.FCN.LR_SCHEDULER = CN()
-    cfg.FCN.LR_SCHEDULER.NAME = "StepLR"
+    cfg.FCN.LR_SCHEDULER.NAME = "CosineAnnealingWarmRestarts"
     cfg.FCN.LR_SCHEDULER.PARAMS = CN()
-    cfg.FCN.LR_SCHEDULER.PARAMS.step_size = 30
-    cfg.FCN.LR_SCHEDULER.PARAMS.gamma = 0.1
-    cfg.FCN.LR_SCHEDULER.PARAMS.verbose = False
+    cfg.FCN.LR_SCHEDULER.PARAMS.T_0 = 15
+    cfg.FCN.LR_SCHEDULER.PARAMS.T_mult = 2
+    cfg.FCN.LR_SCHEDULER.PARAMS.eta_min = 1e-5
+    cfg.FCN.LR_SCHEDULER.PARAMS.last_epoch = -1
     
     cfg.FCN.LOSS = CN()
     cfg.FCN.LOSS.NAME = "CrossEntropyLoss"
     cfg.FCN.LOSS.PARAMS = CN()
     cfg.FCN.LOSS.PARAMS.size_average = None
     cfg.FCN.LOSS.PARAMS.ignore_index = -100
-    cfg.FCN.LOSS.PARAMS.reduce = None
     cfg.FCN.LOSS.PARAMS.reduction = "mean"
     cfg.FCN.LOSS.PARAMS.class_weightage_method = "inverse_frequency"
 

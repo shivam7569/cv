@@ -44,35 +44,40 @@ class FCN(nn.Module):
             ]
         )
 
-        self.classifier = nn.Sequential(classifier_layers)
-
-        self.pointwise_classifier_1 = nn.Conv2d(
+        self.classifier_first = nn.Conv2d(
             in_channels=256, out_channels=num_classes, kernel_size=1, stride=1, padding=0
         )
-        self.pointwise_classifier_2 = nn.Conv2d(
+        self.classifier_middle = nn.Conv2d(
             in_channels=512, out_channels=num_classes, kernel_size=1, stride=1, padding=0
         )
+        self.classifier_last = nn.Sequential(classifier_layers)
 
-        self.convTranspose_1 = nn.ConvTranspose2d(
+        self.convTranspose_first = nn.ConvTranspose2d(
             in_channels=num_classes, out_channels=num_classes, kernel_size=16, stride=8, padding=4
         )
-        self.convTranspose_2 = nn.ConvTranspose2d(
+        self.convTranspose_middle = nn.ConvTranspose2d(
             in_channels=num_classes, out_channels=num_classes, kernel_size=4, stride=2, padding=1
         )
-        self.convTranspose_3 = nn.ConvTranspose2d(
+        self.convTranspose_last = nn.ConvTranspose2d(
             in_channels=num_classes, out_channels=num_classes, kernel_size=4, stride=2, padding=1
         )
 
         self.initialize()
 
     def kernel_init(self, convLayer):
-        nn.init.zeros_(convLayer.weight)
+        nn.init.kaiming_normal_(convLayer.weight)
         nn.init.zeros_(convLayer.bias)
 
     def initialize(self):
-        for module in self.classifier.modules():
+        for module in self.classifier_last.modules():
             if isinstance(module, nn.Conv2d):
                 self.kernel_init(module)
+
+        nn.init.kaiming_normal_(self.classifier_first.weight)
+        nn.init.zeros_(self.classifier_first.bias)
+        nn.init.kaiming_normal_(self.classifier_middle.weight)
+        nn.init.zeros_(self.classifier_middle.bias)
+
     
     def forward(self, x):
         pool_outs = []
@@ -80,12 +85,12 @@ class FCN(nn.Module):
             x = pool_block.to(x.device)(x)
             pool_outs.append(x)
 
-        stream_1 = self.pointwise_classifier_1(pool_outs[0])
-        stream_2 = self.pointwise_classifier_2(pool_outs[1])
-        stream_3 = self.classifier(pool_outs[2])
+        stream_first = self.classifier_first(pool_outs[0])
+        stream_middle = self.classifier_middle(pool_outs[1])
+        stream_last = self.classifier_last(pool_outs[2])
 
-        add_stream_3_and_stream_2 = stream_2 + self.convTranspose_3(stream_3)
-        add_stream_3_and_stream_2_and_stream_1 = stream_1 + self.convTranspose_2(add_stream_3_and_stream_2)
-        mask_out = self.convTranspose_1(add_stream_3_and_stream_2_and_stream_1)
+        last_and_middle = stream_middle + self.convTranspose_last(stream_last)
+        middle_and_first = stream_first + self.convTranspose_middle(last_and_middle)
+        logits = self.convTranspose_first(middle_and_first)
 
-        return mask_out
+        return logits
