@@ -10,7 +10,6 @@ def UNetConfig(cfg):
     cfg.WRITE_TENSORBOARD_GRAPH = True
 
     cfg.PROFILING = False
-    cfg.DEBUG = 500
 
     cfg.CHECKPOINT.SAVE_EPOCH_CHECKPOINTS = True
     cfg.LOGGING.NAME = "UNet"
@@ -100,7 +99,6 @@ def UNetConfig(cfg):
     cfg.UNet.LOSS.PARAMS = CN()
     cfg.UNet.LOSS.PARAMS.size_average = None
     cfg.UNet.LOSS.PARAMS.ignore_index = -100
-    cfg.UNet.LOSS.PARAMS.reduce = None
     cfg.UNet.LOSS.PARAMS.reduction = "mean"
     cfg.UNet.LOSS.PARAMS.class_weightage_method = "inverse_frequency"
 
