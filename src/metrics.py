@@ -54,8 +54,12 @@ class ClassificationMetrics:
         self.normalized_confusion_matrix = self.confusion_matrix / total_gts_per_class
     
     def accuracy(self):
-        tp, fp, tn, fn = self._get_tp_fp_tn_fn()
-        accuracy = (tp + tn) / (tp + fp + tn + fn + self.eps)
+        tp, _, tn, _ = self._get_tp_fp_tn_fn()
+
+        total_preds_per_class = self.confusion_matrix.sum(axis=0)
+        total_preds_per_class[total_preds_per_class == 0] = 1
+
+        accuracy = tp / total_preds_per_class
 
         return np.round(accuracy, decimals=3)
     
@@ -241,8 +245,12 @@ class SegmentationMetrics:
         return tp, fp, tn, fn
     
     def accuracy(self):
-        tp, fp, tn, fn = self._get_tp_fp_tn_fn()
-        accuracy = (tp + tn) / (tp + fp + tn + fn + self.eps)
+        tp, _, tn, _ = self._get_tp_fp_tn_fn()
+
+        total_preds_per_class = self.confusion_matrix.sum(axis=0)
+        total_preds_per_class[total_preds_per_class == 0] = 1
+
+        accuracy = tp / total_preds_per_class
 
         return np.round(accuracy, decimals=3)
 
@@ -276,11 +284,14 @@ class SegmentationMetrics:
         return np.round(dice, decimals=3)
     
     def cohen_kappa(self):
-        tp, fp, tn, fn = self._get_tp_fp_tn_fn()
-        k = (2 * (tp * tn - fp * fn)) / ((tp + fp) * (fp + tn) + (tp * fn) * (fn * tn) + self.eps)
+        tp, _, _, _ = self._get_tp_fp_tn_fn()
+        agree = tp.sum() / self.confusion_matrix.sum()
+        chanceAgree = np.sum(self.confusion_matrix.sum(axis=0) * self.confusion_matrix.sum(axis=1)) / (self.confusion_matrix.sum() ** 2)
 
-        return np.round(k, decimals=3)
+        kappa_score = (agree - chanceAgree) / (1 - chanceAgree)
 
+        return round(kappa_score, 3)
+        
     def normalize_cm(self):
         total_gts_per_class = self.confusion_matrix.sum(axis=1)[:, np.newaxis]
         total_gts_per_class[total_gts_per_class == 0] = 1
@@ -294,7 +305,7 @@ class SegmentationMetrics:
         class_f1_scores = self.f1_score()
         class_iou_scores = self.jaccard_index()
         class_dice_scores = self.dice_score()
-        class_kappa_scores = self.cohen_kappa()
+        kappa_score = self.cohen_kappa()
 
         self.metrics_aggregated["accuracy"] = np.round(np.mean(class_accuracies), decimals=3)
         self.metrics_aggregated["precision"] = np.round(np.mean(class_precisions), decimals=3)
@@ -302,7 +313,7 @@ class SegmentationMetrics:
         self.metrics_aggregated["f1_score"] = np.round(np.mean(class_f1_scores), decimals=3)
         self.metrics_aggregated["iou"] = np.round(np.mean(class_iou_scores), decimals=3)
         self.metrics_aggregated["dice"] = np.round(np.mean(class_dice_scores), decimals=3)
-        self.metrics_aggregated["kappa"] = np.round(np.mean(class_kappa_scores), decimals=3)
+        self.metrics_aggregated["kappa"] = kappa_score
 
     def log_metrics(self, epoch, loss=None):
         if loss is not None:
