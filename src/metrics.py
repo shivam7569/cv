@@ -54,12 +54,8 @@ class ClassificationMetrics:
         self.normalized_confusion_matrix = self.confusion_matrix / total_gts_per_class
     
     def accuracy(self):
-        tp, _, tn, _ = self._get_tp_fp_tn_fn()
-
-        total_preds_per_class = self.confusion_matrix.sum(axis=0)
-        total_preds_per_class[total_preds_per_class == 0] = 1
-
-        accuracy = tp / total_preds_per_class
+        tp, fp, tn, fn = self._get_tp_fp_tn_fn()
+        accuracy = (tp + tn) / (tp + tn + fp + fn)
 
         return np.round(accuracy, decimals=3)
     
@@ -245,12 +241,8 @@ class SegmentationMetrics:
         return tp, fp, tn, fn
     
     def accuracy(self):
-        tp, _, tn, _ = self._get_tp_fp_tn_fn()
-
-        total_preds_per_class = self.confusion_matrix.sum(axis=0)
-        total_preds_per_class[total_preds_per_class == 0] = 1
-
-        accuracy = tp / total_preds_per_class
+        tp, fp, tn, fn = self._get_tp_fp_tn_fn()
+        accuracy = (tp + tn) / (tp + tn + fp + fn)
 
         return np.round(accuracy, decimals=3)
 
