@@ -65,7 +65,7 @@ def UNetConfig(cfg):
     cfg.UNet.TRANSFORMS.TRAIN = [
         dict(name="SegmentationToPILImage", params=dict()),
         dict(name="SegmentationElasticTransform", params=dict(p=0.1, alpha=50.0, sigma=5.0)),
-        dict(name="SegmentationRandomCrop", params=dict(size=(236, 236))),
+        dict(name="SegmentationRandomCrop", params=dict(size=(224, 224))),
         dict(name="SegmentationHorizontalFlip", params=dict(p=0.5)),
         dict(name="SegmentationToTensor", params=dict()),
         dict(name="SegmentationNormalize", params=dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
@@ -73,7 +73,7 @@ def UNetConfig(cfg):
 
     cfg.UNet.TRANSFORMS.VAL = [
         dict(name="SegmentationToPILImage", params=dict()),
-        dict(name="SegmentationCenterCrop", params=dict(size=(236, 236))),
+        dict(name="SegmentationCenterCrop", params=dict(size=(224, 224))),
         dict(name="SegmentationHorizontalFlip", params=dict(p=0.5)),
         dict(name="SegmentationToTensor", params=dict()),
         dict(name="SegmentationNormalize", params=dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
@@ -87,11 +87,12 @@ def UNetConfig(cfg):
     cfg.UNet.OPTIMIZER.PARAMS.weight_decay = 1e-8
 
     cfg.UNet.LR_SCHEDULER = CN()
-    cfg.UNet.LR_SCHEDULER.NAME = "StepLR"
+    cfg.UNet.LR_SCHEDULER.NAME = "CosineAnnealingWarmRestarts"
     cfg.UNet.LR_SCHEDULER.PARAMS = CN()
-    cfg.UNet.LR_SCHEDULER.PARAMS.step_size = 30
-    cfg.UNet.LR_SCHEDULER.PARAMS.gamma = 0.1
-    cfg.UNet.LR_SCHEDULER.PARAMS.verbose = False
+    cfg.UNet.LR_SCHEDULER.PARAMS.T_0 = 15
+    cfg.UNet.LR_SCHEDULER.PARAMS.T_mult = 2
+    cfg.UNet.LR_SCHEDULER.PARAMS.eta_min = 1e-6
+    cfg.UNet.LR_SCHEDULER.PARAMS.last_epoch = -1
     
     cfg.UNet.LOSS = CN()
     cfg.UNet.LOSS.NAME = "CrossEntropyLoss"

@@ -23,7 +23,7 @@ class UNet(nn.Module):
             out_channels=channels[0],
             kernel_size=3,
             stride=1,
-            padding=0
+            padding=0 if not retain_size else 1
         )
         self.encoder_part_1_max_pool = nn.MaxPool2d(
             kernel_size=2,
@@ -35,7 +35,7 @@ class UNet(nn.Module):
             out_channels=channels[1],
             kernel_size=3,
             stride=1,
-            padding=0
+            padding=0 if not retain_size else 1
         )
         self.encoder_part_2_max_pool = nn.MaxPool2d(
             kernel_size=2,
@@ -47,7 +47,7 @@ class UNet(nn.Module):
             out_channels=channels[2],
             kernel_size=3,
             stride=1,
-            padding=0
+            padding=0 if not retain_size else 1
         )
         self.encoder_part_3_max_pool = nn.MaxPool2d(
             kernel_size=2,
@@ -59,7 +59,7 @@ class UNet(nn.Module):
             out_channels=channels[3],
             kernel_size=3,
             stride=1,
-            padding=0
+            padding=0 if not retain_size else 1
         )
         self.encoder_part_4_max_pool = nn.MaxPool2d(
             kernel_size=2,
@@ -71,7 +71,7 @@ class UNet(nn.Module):
             out_channels=channels[4],
             kernel_size=3,
             stride=1,
-            padding=0
+            padding=0 if not retain_size else 1
         )
 
         self.dropout = nn.Dropout(p=dropout)
@@ -89,7 +89,7 @@ class UNet(nn.Module):
             out_channels=channels[3],
             kernel_size=3,
             stride=1,
-            padding=0
+            padding=0 if not retain_size else 1
         )
         self.decoder_pt_1_uc = nn.ConvTranspose2d(
             in_channels=channels[3],
@@ -104,7 +104,7 @@ class UNet(nn.Module):
             out_channels=channels[2],
             kernel_size=3,
             stride=1,
-            padding=0
+            padding=0 if not retain_size else 1
         )
         self.decoder_pt_2_uc = nn.ConvTranspose2d(
             in_channels=channels[2],
@@ -119,7 +119,7 @@ class UNet(nn.Module):
             out_channels=channels[1],
             kernel_size=3,
             stride=1,
-            padding=0
+            padding=0 if not retain_size else 1
         )
         self.decoder_pt_3_uc = nn.ConvTranspose2d(
             in_channels=channels[1],
@@ -134,7 +134,7 @@ class UNet(nn.Module):
             out_channels=channels[0],
             kernel_size=3,
             stride=1,
-            padding=0
+            padding=0 if not retain_size else 1
         )
 
         self.class_conv = nn.Conv2d(
@@ -144,8 +144,6 @@ class UNet(nn.Module):
             stride=1,
             padding=0
         )
-
-        self.retain_size = retain_size
 
     def _crop_and_concat(self, upsampled, bypass, crop=False):
         if crop:
@@ -192,11 +190,6 @@ class UNet(nn.Module):
 
         logits = self.class_conv(dec_pt_4)
 
-        if self.retain_size:
-            logits = NF.interpolate(
-                input=logits, size=x.size()[-1], mode="bilinear", align_corners=False
-            )
-
         return logits
 
 
@@ -235,12 +228,12 @@ class ConvBlock(nn.Module):
 
         for m in self.conv_block_1.modules():
             if isinstance(m, nn.Conv2d):
-                nn.init.xavier_normal_(m.weight)
+                nn.init.kaiming_normal_(m.weight)
                 nn.init.zeros_(m.bias)
 
         for m in self.conv_block_2.modules():
             if isinstance(m, nn.Conv2d):
-                nn.init.xavier_normal_(m.weight)
+                nn.init.kaiming_normal_(m.weight)
                 nn.init.zeros_(m.bias)
 
     def forward(self, x):
@@ -249,4 +242,3 @@ class ConvBlock(nn.Module):
         conv_block_2_out = self.conv_block_2(conv_block_1_out)
 
         return conv_block_2_out
-    
