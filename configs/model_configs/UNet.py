@@ -64,6 +64,7 @@ def UNetConfig(cfg):
 
     cfg.UNet.TRANSFORMS.TRAIN = [
         dict(name="SegmentationToPILImage", params=dict()),
+        dict(name="SegmentationElasticTransform", params=dict(p=0.05, alpha=50.0, sigma=5.0)),
         dict(name="SegmentationRandomCrop", params=dict(size=(224, 224))),
         dict(name="SegmentationHorizontalFlip", params=dict(p=0.5)),
         dict(name="SegmentationToTensor", params=dict()),

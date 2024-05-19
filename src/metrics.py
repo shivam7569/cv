@@ -241,36 +241,36 @@ class SegmentationMetrics:
     
     def accuracy(self):
         tp, _, _, _ = self._get_tp_fp_tn_fn()
-        accuracy = torch.clamp_min(tp / tp.sum(), min=self.eps)
+        accuracy = torch.clamp_min(tp / tp.sum() + self.eps, min=self.eps)
 
         return torch.round(accuracy, decimals=3)
 
     def precision(self):
         tp, fp, _, _ = self._get_tp_fp_tn_fn()
-        precision = torch.clamp_min(tp / (tp + fp), min=self.eps)
+        precision = torch.clamp_min(tp / (tp + fp + self.eps), min=self.eps)
 
         return torch.round(precision, decimals=3)    
 
     def recall(self):
         tp, _, _, fn = self._get_tp_fp_tn_fn()
-        recall = torch.clamp_min(tp / (tp + fn), min=self.eps)
+        recall = torch.clamp_min(tp / (tp + fn + self.eps), min=self.eps)
 
         return torch.round(recall, decimals=3)
     
     def f1_score(self):
-        f1 = torch.clamp_min((2 * self.precision() * self.recall()) / (self.precision() + self.recall()), min=self.eps)
+        f1 = torch.clamp_min((2 * self.precision() * self.recall()) / (self.precision() + self.recall() + self.eps), min=self.eps)
 
         return torch.round(f1, decimals=3)
     
     def jaccard_index(self):
         tp, fp, _, fn = self._get_tp_fp_tn_fn()
-        iou = torch.clamp_min(tp / (tp + fp + fn), min=self.eps)
+        iou = torch.clamp_min(tp / (tp + fp + fn + self.eps), min=self.eps)
 
         return torch.round(iou, decimals=3)
 
     def dice_score(self):
         tp, fp, _, fn = self._get_tp_fp_tn_fn()
-        dice = torch.clamp_min(2*tp / (2*tp + fp + fn), min=self.eps)
+        dice = torch.clamp_min(2*tp / (2*tp + fp + fn + self.eps), min=self.eps)
 
         return torch.round(dice, decimals=3)
     
