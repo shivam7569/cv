@@ -11,6 +11,7 @@ from src.tensorboard import TensorboardWriter
 from utils.global_params import Global
 from src import custom_lrs
 from src import optimizers
+from src import losses
 
 from phases.segmentation.eval import Eval
 from utils.logging_utils import start_logger
@@ -485,7 +486,8 @@ class Train:
         try:
             loss_function = getattr(torch.nn, cfg[semseg_model_name].LOSS.NAME)(weight=class_weights, **cfg[semseg_model_name].LOSS.PARAMS)
         except:
-            loss_function = getattr(semseg_model_name, cfg[semseg_model_name].LOSS.NAME)(**cfg[semseg_model_name].LOSS.PARAMS)
+            loss_function = getattr(losses, cfg[semseg_model_name].LOSS.NAME)(**cfg[semseg_model_name].LOSS.PARAMS)
+        
         Global.LOGGER.info(f"Loss Function instantiated")
 
         tb_writer = TensorboardWriter() if rank == 0 else None

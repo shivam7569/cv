@@ -54,8 +54,8 @@ class ClassificationMetrics:
         self.normalized_confusion_matrix = self.confusion_matrix / total_gts_per_class
     
     def accuracy(self):
-        tp, fp, tn, fn = self._get_tp_fp_tn_fn()
-        accuracy = (tp + tn) / (tp + tn + fp + fn)
+        tp, _, _, _ = self._get_tp_fp_tn_fn()
+        accuracy = tp / (tp.sum() + self.eps)
 
         return np.round(accuracy, decimals=3)
     
@@ -203,23 +203,22 @@ class SegmentationMetrics:
     def __init__(self, num_classes, ignore_index=-1):
         self.num_classes = num_classes
         self.eps = 1e-6
-        self.confusion_matrix = np.zeros((self.num_classes, self.num_classes), dtype=np.longlong)
+        self.confusion_matrix = torch.zeros(size=(self.num_classes, self.num_classes), dtype=torch.int64).to("cuda:0")
         self.metrics_aggregated = OrderedDict()
         self.ignore_index = ignore_index
 
     def update(self, lbls, pred):
         non_ignore_indices = (lbls >= 0) & (lbls < self.num_classes)
         lbls, pred = lbls[non_ignore_indices], pred[non_ignore_indices]
-        batch_confusion_matrix = np.zeros((self.num_classes, self.num_classes), dtype=np.longlong)
-        for pr, gt in zip(pred, lbls):
-            batch_confusion_matrix[gt, pr] += 1
-        self.confusion_matrix += batch_confusion_matrix
+
+        indices = lbls * self.num_classes + pred
+        confusion_counts = torch.bincount(indices, minlength=self.num_classes**2).reshape((self.num_classes, self.num_classes))
+        
+        self.confusion_matrix += confusion_counts
 
     def reset(self):
-        self.confusion_matrix = np.zeros((self.num_classes, self.num_classes), dtype=np.longlong)
+        self.confusion_matrix = torch.zeros(size=(self.num_classes, self.num_classes), dtype=torch.int64).to("cuda:0")
         self.metrics_aggregated = OrderedDict()
-        self.epoch_labels = []
-        self.epoch_preds = []
 
     def _get_tp_fp_tn_fn(self):
         
@@ -233,79 +232,72 @@ class SegmentationMetrics:
             tn[class_id] = sum(confusion_matrix) - (fp[class_id] + fn[class_id] + tp[class_id])
         """
 
-        tp = np.diag(self.confusion_matrix)
-        fp = np.sum(self.confusion_matrix, axis=0) - tp
-        fn = np.sum(self.confusion_matrix, axis=1) - tp
-        tn = np.sum(self.confusion_matrix) - (tp + fp + fn)
+        tp = torch.diag(self.confusion_matrix)
+        fp = torch.sum(self.confusion_matrix, dim=0) - tp
+        fn = torch.sum(self.confusion_matrix, dim=1) - tp
+        tn = torch.sum(self.confusion_matrix) - (tp + fp + fn)
         
         return tp, fp, tn, fn
     
     def accuracy(self):
-        tp, fp, tn, fn = self._get_tp_fp_tn_fn()
-        accuracy = (tp + tn) / (tp + tn + fp + fn)
+        tp, _, _, _ = self._get_tp_fp_tn_fn()
+        accuracy = torch.clamp_min(tp / tp.sum(), min=self.eps)
 
-        return np.round(accuracy, decimals=3)
+        return torch.round(accuracy, decimals=3)
 
     def precision(self):
         tp, fp, _, _ = self._get_tp_fp_tn_fn()
-        precision = tp / (tp + fp + self.eps)
+        precision = torch.clamp_min(tp / (tp + fp), min=self.eps)
 
-        return np.round(precision, decimals=3)    
+        return torch.round(precision, decimals=3)    
 
     def recall(self):
         tp, _, _, fn = self._get_tp_fp_tn_fn()
-        recall = tp / (tp + fn + self.eps)
+        recall = torch.clamp_min(tp / (tp + fn), min=self.eps)
 
-        return np.round(recall, decimals=3)
+        return torch.round(recall, decimals=3)
     
     def f1_score(self):
-        f1 = (2 * self.precision() * self.recall()) / (self.precision() + self.recall() + self.eps)
+        f1 = torch.clamp_min((2 * self.precision() * self.recall()) / (self.precision() + self.recall()), min=self.eps)
 
-        return np.round(f1, decimals=3)
+        return torch.round(f1, decimals=3)
     
     def jaccard_index(self):
         tp, fp, _, fn = self._get_tp_fp_tn_fn()
-        iou = tp / (tp + fp + fn + self.eps)
+        iou = torch.clamp_min(tp / (tp + fp + fn), min=self.eps)
 
-        return np.round(iou, decimals=3)
+        return torch.round(iou, decimals=3)
 
     def dice_score(self):
         tp, fp, _, fn = self._get_tp_fp_tn_fn()
-        dice = 2*tp / (2*tp + fp + fn + self.eps)
+        dice = torch.clamp_min(2*tp / (2*tp + fp + fn), min=self.eps)
 
-        return np.round(dice, decimals=3)
+        return torch.round(dice, decimals=3)
     
     def cohen_kappa(self):
         tp, _, _, _ = self._get_tp_fp_tn_fn()
         agree = tp.sum() / self.confusion_matrix.sum()
-        chanceAgree = np.sum(self.confusion_matrix.sum(axis=0) * self.confusion_matrix.sum(axis=1)) / (self.confusion_matrix.sum() ** 2)
+        chanceAgree = torch.sum(self.confusion_matrix.sum(dim=0) * self.confusion_matrix.sum(dim=1)) / (self.confusion_matrix.sum() ** 2)
 
         kappa_score = (agree - chanceAgree) / (1 - chanceAgree)
 
-        return round(kappa_score, 3)
+        return round(kappa_score.item(), 3)
         
     def normalize_cm(self):
-        total_gts_per_class = self.confusion_matrix.sum(axis=1)[:, np.newaxis]
+        total_gts_per_class = self.confusion_matrix.sum(dim=1)[:, None]
         total_gts_per_class[total_gts_per_class == 0] = 1
 
         self.normalized_confusion_matrix = self.confusion_matrix / total_gts_per_class
     
     def aggregate_metrics(self):
-        class_accuracies = self.accuracy()
-        class_precisions = self.precision()
-        class_recalls = self.recall()
-        class_f1_scores = self.f1_score()
-        class_iou_scores = self.jaccard_index()
-        class_dice_scores = self.dice_score()
-        kappa_score = self.cohen_kappa()
 
-        self.metrics_aggregated["accuracy"] = np.round(np.mean(class_accuracies), decimals=3)
-        self.metrics_aggregated["precision"] = np.round(np.mean(class_precisions), decimals=3)
-        self.metrics_aggregated["recall"] = np.round(np.mean(class_recalls), decimals=3)
-        self.metrics_aggregated["f1_score"] = np.round(np.mean(class_f1_scores), decimals=3)
-        self.metrics_aggregated["iou"] = np.round(np.mean(class_iou_scores), decimals=3)
-        self.metrics_aggregated["dice"] = np.round(np.mean(class_dice_scores), decimals=3)
-        self.metrics_aggregated["kappa"] = kappa_score
+        self.metrics_aggregated["accuracy"] = round(self.accuracy().mean().item(), 3)
+        self.metrics_aggregated["precision"] = round(self.precision().mean().item(), 3)
+        self.metrics_aggregated["recall"] = round(self.recall().mean().item(), 3)
+        self.metrics_aggregated["f1_score"] = round(self.f1_score().mean().item(), 3)
+        self.metrics_aggregated["iou"] = round(self.jaccard_index().mean().item(), 3)
+        self.metrics_aggregated["dice"] = round(self.dice_score().mean().item(), 3)
+        self.metrics_aggregated["kappa"] = self.cohen_kappa()
 
     def log_metrics(self, epoch, loss=None):
         if loss is not None:

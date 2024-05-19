@@ -64,7 +64,6 @@ def UNetConfig(cfg):
 
     cfg.UNet.TRANSFORMS.TRAIN = [
         dict(name="SegmentationToPILImage", params=dict()),
-        dict(name="SegmentationElasticTransform", params=dict(p=0.1, alpha=50.0, sigma=5.0)),
         dict(name="SegmentationRandomCrop", params=dict(size=(224, 224))),
         dict(name="SegmentationHorizontalFlip", params=dict(p=0.5)),
         dict(name="SegmentationToTensor", params=dict()),
@@ -95,12 +94,14 @@ def UNetConfig(cfg):
     cfg.UNet.LR_SCHEDULER.PARAMS.last_epoch = -1
     
     cfg.UNet.LOSS = CN()
-    cfg.UNet.LOSS.NAME = "CrossEntropyLoss"
+    cfg.UNet.LOSS.NAME = "DiceLoss"
     cfg.UNet.LOSS.PARAMS = CN()
-    cfg.UNet.LOSS.PARAMS.size_average = None
-    cfg.UNet.LOSS.PARAMS.ignore_index = -100
+    cfg.UNet.LOSS.PARAMS.num_classes = 81
+    cfg.UNet.LOSS.PARAMS.ignore_index = -1
     cfg.UNet.LOSS.PARAMS.reduction = "mean"
-    cfg.UNet.LOSS.PARAMS.class_weightage_method = "inverse_frequency"
+    cfg.UNet.LOSS.PARAMS.log_loss = True
+    cfg.UNet.LOSS.PARAMS.smooth = 0.0
+    cfg.UNet.LOSS.PARAMS.classes =   None
 
     cfg.REGULARIZATION = CN()
     cfg.REGULARIZATION.MODE = ''

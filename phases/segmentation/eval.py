@@ -56,11 +56,11 @@ class Eval:
                 loss += batch_loss
 
                 data_iterator.set_postfix(loss=batch_loss, refresh=True)
-                predicted_masks = torch.argmax(F.softmax(output, dim=1), dim=1)
+                predicted_masks = F.log_softmax(output, dim=1).exp().argmax(dim=1)
 
-                self.metrics.update(mask_batch.squeeze(1).flatten().cpu().numpy(), predicted_masks.flatten().cpu().numpy())
+                self.metrics.update(mask_batch.squeeze(1).flatten(), predicted_masks.flatten())
 
-                if not test_image and epoch % 3 == 0:
+                if not test_image and epoch % 2 == 0:
                     self.tb_writer.write("image")(image=SegmentationDataset._vizualizeBatch(batch=(img_batch, predicted_masks)), epoch=epoch+1, tag=f"Inference")
                     test_image = True
 
@@ -72,7 +72,7 @@ class Eval:
 
         SegmentationMetrics.writeMetricsToCSV()
         self.metrics.normalize_cm()
-        self.tb_writer.write("figure")(figure=draw_confusion_matrix(self.metrics.normalized_confusion_matrix), epoch=epoch+1, tag="Confusion Matrix")
+        self.tb_writer.write("figure")(figure=draw_confusion_matrix(self.metrics.normalized_confusion_matrix.cpu().numpy()), epoch=epoch+1, tag="Confusion Matrix")
 
         if self.tb_writer is not None:
             self.tb_writer.write("scaler")(scalar_name="Loss", scalar_value=loss, step=epoch)
