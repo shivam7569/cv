@@ -232,7 +232,7 @@ class SegMetrics:
         accuracy = (self.tp_meter.sum + self.tn_meter.sum) / (self.tp_meter.sum + self.fp_meter.sum + self.tn_meter.sum + self.fn_meter.sum + self.eps)
         precision = self.tp_meter.sum / (self.tp_meter.sum + self.fp_meter.sum + self.eps)
         recall = self.tp_meter.sum / (self.tp_meter.sum + self.fn_meter.sum + self.eps)
-        f1_score = 2 * precision * recall / (precision + recall) 
+        f1_score = 2*self.tp_meter.sum / (2*self.tp_meter.sum + self.fp_meter.sum + self.fn_meter.sum + self.eps)
 
         N = self.tp_meter.sum + self.fp_meter.sum + self.tn_meter.sum + self.fn_meter.sum
         p_o = (self.tp_meter.sum + self.tn_meter.sum) / N
