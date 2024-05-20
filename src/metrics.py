@@ -54,8 +54,8 @@ class ClassificationMetrics:
         self.normalized_confusion_matrix = self.confusion_matrix / total_gts_per_class
     
     def accuracy(self):
-        tp, _, _, _ = self._get_tp_fp_tn_fn()
-        accuracy = tp / (tp.sum() + self.eps)
+        tp, fp, tn, fn = self._get_tp_fp_tn_fn()
+        accuracy = (tp + tn) / (tp + fp + tn + fn + self.eps)
 
         return np.round(accuracy, decimals=3)
     
@@ -240,8 +240,8 @@ class SegmentationMetrics:
         return tp, fp, tn, fn
     
     def accuracy(self):
-        tp, _, _, _ = self._get_tp_fp_tn_fn()
-        accuracy = torch.clamp_min(tp / tp.sum() + self.eps, min=self.eps)
+        tp, fp, tn, fn = self._get_tp_fp_tn_fn()
+        accuracy = torch.clamp_min((tp + tn) / (tp + fp + tn + fn + self.eps), min=self.eps)
 
         return torch.round(accuracy, decimals=3)
 

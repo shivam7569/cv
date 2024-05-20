@@ -56,7 +56,7 @@ def FCNConfig(cfg):
     cfg.FCN.DATALOADER_TRAIN_PARAMS.drop_last = True
 
     cfg.FCN.DATALOADER_VAL_PARAMS = CN()
-    cfg.FCN.DATALOADER_VAL_PARAMS.batch_size = 32
+    cfg.FCN.DATALOADER_VAL_PARAMS.batch_size = 8
     cfg.FCN.DATALOADER_VAL_PARAMS.shuffle = True
     cfg.FCN.DATALOADER_VAL_PARAMS.num_workers = 8
     cfg.FCN.DATALOADER_VAL_PARAMS.pin_memory = True
@@ -90,18 +90,20 @@ def FCNConfig(cfg):
     cfg.FCN.LR_SCHEDULER = CN()
     cfg.FCN.LR_SCHEDULER.NAME = "CosineAnnealingWarmRestarts"
     cfg.FCN.LR_SCHEDULER.PARAMS = CN()
-    cfg.FCN.LR_SCHEDULER.PARAMS.T_0 = 15
+    cfg.FCN.LR_SCHEDULER.PARAMS.T_0 = 20
     cfg.FCN.LR_SCHEDULER.PARAMS.T_mult = 2
     cfg.FCN.LR_SCHEDULER.PARAMS.eta_min = 1e-5
     cfg.FCN.LR_SCHEDULER.PARAMS.last_epoch = -1
     
-    cfg.FCN.LOSS = CN()
-    cfg.FCN.LOSS.NAME = "CrossEntropyLoss"
-    cfg.FCN.LOSS.PARAMS = CN()
-    cfg.FCN.LOSS.PARAMS.size_average = None
-    cfg.FCN.LOSS.PARAMS.ignore_index = -100
-    cfg.FCN.LOSS.PARAMS.reduction = "mean"
-    cfg.FCN.LOSS.PARAMS.class_weightage_method = "inverse_frequency"
+    cfg.UNet.LOSS = CN()
+    cfg.UNet.LOSS.NAME = "DiceLoss"
+    cfg.UNet.LOSS.PARAMS = CN()
+    cfg.UNet.LOSS.PARAMS.num_classes = 81
+    cfg.UNet.LOSS.PARAMS.ignore_index = -1
+    cfg.UNet.LOSS.PARAMS.reduction = "mean"
+    cfg.UNet.LOSS.PARAMS.log_loss = True
+    cfg.UNet.LOSS.PARAMS.smooth = 0.0
+    cfg.UNet.LOSS.PARAMS.classes =   None
 
     cfg.REGULARIZATION = CN()
     cfg.REGULARIZATION.MODE = ''
