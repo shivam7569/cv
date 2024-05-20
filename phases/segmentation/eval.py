@@ -1,10 +1,9 @@
 from tqdm import tqdm
 import torch
-from datasets.classification.dataset import ClassificationDataset
 from datasets.segmentation.dataset import SegmentationDataset
 from src.gpu_devices import GPU_Support
 import torch.nn.functional as F
-from src.metrics import SegmentationMetrics
+from src.metrics import SegMetrics
 from utils.typing_utils import draw_confusion_matrix
 
 class Eval:
@@ -27,7 +26,7 @@ class Eval:
         self.async_parallel = async_parallel
         self.async_parallel_rank = async_parallel_rank
 
-        self.metrics = SegmentationMetrics(num_classes=num_classes)
+        self.metrics = SegMetrics(num_classes=num_classes)
 
     def start(self, epoch):
         self.model.eval()
@@ -58,7 +57,7 @@ class Eval:
                 data_iterator.set_postfix(loss=batch_loss, refresh=True)
                 predicted_masks = F.log_softmax(output, dim=1).exp().argmax(dim=1)
 
-                self.metrics.update(mask_batch.squeeze(1).flatten(), predicted_masks.flatten())
+                self.metrics.update(mask_batch.squeeze(1), output)
 
                 if not test_image and epoch % 2 == 0:
                     self.tb_writer.write("image")(image=SegmentationDataset._vizualizeBatch(batch=(img_batch, predicted_masks)), epoch=epoch+1, tag=f"Inference")
@@ -70,7 +69,7 @@ class Eval:
         self.epoch_metrics = self.metrics.metrics_aggregated
         self.epoch_metrics["eval_loss"] = loss
 
-        SegmentationMetrics.writeMetricsToCSV()
+        SegMetrics.writeMetricsToCSV()
         self.metrics.normalize_cm()
         self.tb_writer.write("figure")(figure=draw_confusion_matrix(self.metrics.normalized_confusion_matrix.cpu().numpy()), epoch=epoch+1, tag="Confusion Matrix")
 

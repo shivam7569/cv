@@ -1,10 +1,12 @@
-from collections import OrderedDict
 import csv
 import os
 import numpy as np
 import torch
+import torch.nn.functional as F
 from utils.global_params import Global
+from utils.logging_utils import AverageMeter
 from utils.os_utils import check_file
+from collections import OrderedDict
 
 class ClassificationMetrics:
 
@@ -147,157 +149,103 @@ class ClassificationMetrics:
 
         Global.LOGGER.info(f"Metrics written to: {csv_path}")
 
-class AverageMeter:
-    def __init__(self, name, fmt=':f'):
-        self.name = name
-        self.fmt = fmt
-        self.reset()
-
-    def reset(self):
-        self.val = 0
-        self.avg = 0
-        self.sum = 0
-        self.count = 0
-
-    def update(self, val, n=1):
-        self.val = val
-        self.sum += val * n
-        self.count += n
-        self.avg = self.sum / self.count
-
-    def __str__(self):
-        fmtstr = '{name} {val' + self.fmt + '} ({avg' + self.fmt + '})'
-        return fmtstr.format(**self.__dict__)
-    
-class ProgressMeter:
-    def __init__(self, architecture, num_batches, meters, prefix="", attention_based=False):
-        self.batch_fmtstr = self._get_batch_fmtstr(num_batches)
-        self.meters = meters
-        self.prefix = prefix
-
-        self.report_path = os.path.join(
-            Global.CFG.PATHS.BACKBONES, "attention" if attention_based else '' , architecture, "performance_report.txt"
-        )
-
-        if os.path.exists(self.report_path) and os.path.isfile(self.report_path):
-            os.remove(self.report_path)
-
-    def display(self, batch, write=False):
-        entries = [self.prefix + self.batch_fmtstr.format(batch)]
-        entries += [str(meter) for meter in self.meters]
-        print('\t'.join(entries))
-
-        if write:
-            with open(self.report_path, "a") as f:
-                f.write('\t'.join(entries) + "\n")
-
-    def _get_batch_fmtstr(self, num_batches):
-        num_digits = len(str(num_batches // 1))
-        fmt = '{:' + str(num_digits) + 'd}'
-        return '[' + fmt + '/' + fmt.format(num_batches) + ']'
-    
-class SegmentationMetrics:
+class SegMetrics:
 
     instantiate_csv = False
 
     def __init__(self, num_classes, ignore_index=-1):
+
         self.num_classes = num_classes
-        self.eps = 1e-6
+        self.eps = 1e-7
         self.confusion_matrix = torch.zeros(size=(self.num_classes, self.num_classes), dtype=torch.int64).to("cuda:0")
         self.metrics_aggregated = OrderedDict()
         self.ignore_index = ignore_index
 
-    def update(self, lbls, pred):
-        non_ignore_indices = (lbls >= 0) & (lbls < self.num_classes)
-        lbls, pred = lbls[non_ignore_indices], pred[non_ignore_indices]
+        self.tp_meter = AverageMeter("tp")
+        self.fp_meter = AverageMeter("fp")
+        self.fn_meter = AverageMeter("fn")
+        self.tn_meter = AverageMeter("tn")
 
-        indices = lbls * self.num_classes + pred
+    def update_cm(self, lbl, pred):
+        non_ignore_index_mask = lbl != self.ignore_index
+        lbl, pred = lbl[non_ignore_index_mask], pred[non_ignore_index_mask]
+
+        valid_val_indices = (lbl >= 0) & (lbl < self.num_classes)
+        lbl, pred = lbl[valid_val_indices], pred[valid_val_indices]
+
+        indices = lbl * self.num_classes + pred
         confusion_counts = torch.bincount(indices, minlength=self.num_classes**2).reshape((self.num_classes, self.num_classes))
         
         self.confusion_matrix += confusion_counts
+
+    def update(self, lbl: torch.Tensor, pred: torch.Tensor):
+        """
+        lbl: shape == (1, H, W)
+        pred: shape == (1, C, H, W)
+        """
+
+        ignore_index_mask = lbl == self.ignore_index
+        pred = F.log_softmax(pred, dim=1).exp().argmax(dim=1)
+
+        self.update_cm(lbl.flatten(), pred.flatten())
+
+        if ignore_index_mask.sum():
+            lbl[ignore_index_mask] = self.num_classes
+            pred[ignore_index_mask] = self.num_classes
+            lbl = F.one_hot(lbl, self.num_classes + 1)
+            pred = F.one_hot(pred, self.num_classes + 1)
+            lbl = lbl[...,:-1]
+            pred = pred[...,:-1]
+        else:
+            lbl = F.one_hot(lbl, self.num_classes)
+            pred = F.one_hot(pred, self.num_classes)
+
+        lbl = lbl.permute(0, 3, 1, 2)
+        pred = pred.permute(0, 3, 1, 2)
+
+        true_negative_mask = torch.add(lbl, pred)
+        true_negative_mask = true_negative_mask == 0
+        tn = torch.sum(true_negative_mask, dim=(0, 2, 3))
+        tp = torch.sum(lbl & pred, dim=(0, 2, 3))
+        fp = torch.clamp_min(pred - lbl, min=0).sum(dim=(0, 2, 3))
+        fn = torch.clamp_min(lbl - pred, min=0).sum(dim=(0, 2, 3))
+
+        self.tp_meter.update(tp)
+        self.fp_meter.update(fp)
+        self.tn_meter.update(tn)
+        self.fn_meter.update(fn)
 
     def reset(self):
         self.confusion_matrix = torch.zeros(size=(self.num_classes, self.num_classes), dtype=torch.int64).to("cuda:0")
         self.metrics_aggregated = OrderedDict()
 
-    def _get_tp_fp_tn_fn(self):
-        
-        # Don't be overwhelmed, this is logical to derive
-        """
-            tp[class_id] = confusion_matrix[class_id, class_id]
-            fp[class_id] = sum(confusion_matrix[:, class_id]) - confusion_matrix[class_id, class_id] = sum(confusion_matrix[:, class_id]) - tp[class_id]
-            fn[class_id] = sum(confusion_matrix[class_id, :]) - confusion_matrix[class_id, class_id] = sum(confusion_matrix[class_id, :]) - tp[class_id]
-            tn[class_id] = sum(confusion_matrix) - sum(confusion_matrix[:, class_id]) - sum(confusion_matrix[class_id, :]) + confusion_matrix[class_id, class_id]
-            tn[class_id] = sum(confusion_matrix) - [sum(confusion_matrix[:, class_id]) - confusion_matrix[class_id, class_id]] - [sum(confusion_matrix[class_id, :]) - confusion_matrix[class_id, class_id]] - confusion_matrix[class_id, class_id]
-            tn[class_id] = sum(confusion_matrix) - (fp[class_id] + fn[class_id] + tp[class_id])
-        """
-
-        tp = torch.diag(self.confusion_matrix)
-        fp = torch.sum(self.confusion_matrix, dim=0) - tp
-        fn = torch.sum(self.confusion_matrix, dim=1) - tp
-        tn = torch.sum(self.confusion_matrix) - (tp + fp + fn)
-        
-        return tp, fp, tn, fn
-    
-    def accuracy(self):
-        tp, fp, tn, fn = self._get_tp_fp_tn_fn()
-        accuracy = torch.clamp_min((tp + tn) / (tp + fp + tn + fn + self.eps), min=self.eps)
-
-        return torch.round(accuracy, decimals=3)
-
-    def precision(self):
-        tp, fp, _, _ = self._get_tp_fp_tn_fn()
-        precision = torch.clamp_min(tp / (tp + fp + self.eps), min=self.eps)
-
-        return torch.round(precision, decimals=3)    
-
-    def recall(self):
-        tp, _, _, fn = self._get_tp_fp_tn_fn()
-        recall = torch.clamp_min(tp / (tp + fn + self.eps), min=self.eps)
-
-        return torch.round(recall, decimals=3)
-    
-    def f1_score(self):
-        f1 = torch.clamp_min((2 * self.precision() * self.recall()) / (self.precision() + self.recall() + self.eps), min=self.eps)
-
-        return torch.round(f1, decimals=3)
-    
-    def jaccard_index(self):
-        tp, fp, _, fn = self._get_tp_fp_tn_fn()
-        iou = torch.clamp_min(tp / (tp + fp + fn + self.eps), min=self.eps)
-
-        return torch.round(iou, decimals=3)
-
-    def dice_score(self):
-        tp, fp, _, fn = self._get_tp_fp_tn_fn()
-        dice = torch.clamp_min(2*tp / (2*tp + fp + fn + self.eps), min=self.eps)
-
-        return torch.round(dice, decimals=3)
-    
-    def cohen_kappa(self):
-        tp, _, _, _ = self._get_tp_fp_tn_fn()
-        agree = tp.sum() / self.confusion_matrix.sum()
-        chanceAgree = torch.sum(self.confusion_matrix.sum(dim=0) * self.confusion_matrix.sum(dim=1)) / (self.confusion_matrix.sum() ** 2)
-
-        kappa_score = (agree - chanceAgree) / (1 - chanceAgree)
-
-        return round(kappa_score.item(), 3)
-        
     def normalize_cm(self):
         total_gts_per_class = self.confusion_matrix.sum(dim=1)[:, None]
         total_gts_per_class[total_gts_per_class == 0] = 1
 
         self.normalized_confusion_matrix = self.confusion_matrix / total_gts_per_class
-    
+
     def aggregate_metrics(self):
 
-        self.metrics_aggregated["accuracy"] = round(self.accuracy().mean().item(), 3)
-        self.metrics_aggregated["precision"] = round(self.precision().mean().item(), 3)
-        self.metrics_aggregated["recall"] = round(self.recall().mean().item(), 3)
-        self.metrics_aggregated["f1_score"] = round(self.f1_score().mean().item(), 3)
-        self.metrics_aggregated["iou"] = round(self.jaccard_index().mean().item(), 3)
-        self.metrics_aggregated["dice"] = round(self.dice_score().mean().item(), 3)
-        self.metrics_aggregated["kappa"] = self.cohen_kappa()
+        dice = 2*self.tp_meter.sum / (2*self.tp_meter.sum + self.fp_meter.sum + self.fn_meter.sum + self.eps)
+        iou = self.tp_meter.sum / (self.tp_meter.sum + self.fp_meter.sum + self.fn_meter.sum + self.eps)
+        accuracy = (self.tp_meter.sum + self.tn_meter.sum) / (self.tp_meter.sum + self.fp_meter.sum + self.tn_meter.sum + self.fn_meter.sum + self.eps)
+        precision = self.tp_meter.sum / (self.tp_meter.sum + self.fp_meter.sum + self.eps)
+        recall = self.tp_meter.sum / (self.tp_meter.sum + self.fn_meter.sum + self.eps)
+        f1_score = 2 * precision * recall / (precision + recall) 
+
+        N = self.tp_meter.sum + self.fp_meter.sum + self.tn_meter.sum + self.fn_meter.sum
+        p_o = (self.tp_meter.sum + self.tn_meter.sum) / N
+        p_e = (((self.tp_meter.sum + self.fn_meter.sum) * (self.tp_meter.sum + self.fp_meter.sum)) / (N ** 2)) + (((self.tn_meter.sum + self.fn_meter.sum) * (self.tn_meter.sum + self.fp_meter.sum)) / (N ** 2)) 
+        cohen_kappa = (p_o - p_e) / (1 - p_e)
+
+        self.metrics_aggregated["accuracy"] = round(accuracy.mean().item(), 3)
+        self.metrics_aggregated["precision"] = round(precision.mean().item(), 3)
+        self.metrics_aggregated["recall"] = round(recall.mean().item(), 3)
+        self.metrics_aggregated["f1_score"] = round(f1_score.mean().item(), 3)
+        self.metrics_aggregated["iou"] = round(iou.mean().item(), 3)
+        self.metrics_aggregated["dice"] = round(dice.mean().item(), 3)
+        self.metrics_aggregated["kappa"] = round(cohen_kappa.mean().item(), 3)
 
     def log_metrics(self, epoch, loss=None):
         if loss is not None:
@@ -324,15 +272,15 @@ class SegmentationMetrics:
         csv_path = os.path.join(Global.CFG.METRICS.PATH, Global.CFG.METRICS.NAME + ".csv")
 
         if not Global.CFG.RESUME_TRAINING:
-            if not SegmentationMetrics.instantiate_csv:
+            if not SegMetrics.instantiate_csv:
                 check_file(csv_path, remove=True)
                 csv_columns = Global.CFG.METRICS.SEG_COLUMNS
                 with open(csv_path, mode='w', newline='') as file:
                     csv_writer = csv.writer(file)
                     csv_writer.writerow(csv_columns)
-                    SegmentationMetrics.instantiate_csv = True
+                    SegMetrics.instantiate_csv = True
         else:
-            SegmentationMetrics.instantiate_csv = True
+            SegMetrics.instantiate_csv = True
         
         with open(csv_path, mode='a', newline='') as file:
             csv_writer = csv.writer(file)
@@ -351,4 +299,3 @@ class SegmentationMetrics:
             csv_writer.writerow(csv_row)
 
         Global.LOGGER.info(f"Metrics written to: {csv_path}")
-        

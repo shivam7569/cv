@@ -126,3 +126,52 @@ def start_logger(rank=0, async_parallel=False, return_=False):
     Global.LOGGER.info(f"Logger started, log file stored as: {Global.LOG_FILENAME}")
 
     if return_: return logger
+
+class AverageMeter:
+    def __init__(self, name, fmt=':f'):
+        self.name = name
+        self.fmt = fmt
+        self.reset()
+
+    def reset(self):
+        self.val = 0
+        self.avg = 0
+        self.sum = 0
+        self.count = 0
+
+    def update(self, val, n=1):
+        self.val = val
+        self.sum += val * n
+        self.count += n
+        self.avg = self.sum / self.count
+
+    def __str__(self):
+        fmtstr = '{name} {val' + self.fmt + '} ({avg' + self.fmt + '})'
+        return fmtstr.format(**self.__dict__)
+    
+class ProgressMeter:
+    def __init__(self, architecture, num_batches, meters, prefix="", attention_based=False):
+        self.batch_fmtstr = self._get_batch_fmtstr(num_batches)
+        self.meters = meters
+        self.prefix = prefix
+
+        self.report_path = os.path.join(
+            Global.CFG.PATHS.BACKBONES, "attention" if attention_based else '' , architecture, "performance_report.txt"
+        )
+
+        if os.path.exists(self.report_path) and os.path.isfile(self.report_path):
+            os.remove(self.report_path)
+
+    def display(self, batch, write=False):
+        entries = [self.prefix + self.batch_fmtstr.format(batch)]
+        entries += [str(meter) for meter in self.meters]
+        print('\t'.join(entries))
+
+        if write:
+            with open(self.report_path, "a") as f:
+                f.write('\t'.join(entries) + "\n")
+
+    def _get_batch_fmtstr(self, num_batches):
+        num_digits = len(str(num_batches // 1))
+        fmt = '{:' + str(num_digits) + 'd}'
+        return '[' + fmt + '/' + fmt.format(num_batches) + ']'
