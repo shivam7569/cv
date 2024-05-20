@@ -95,15 +95,15 @@ def FCNConfig(cfg):
     cfg.FCN.LR_SCHEDULER.PARAMS.eta_min = 1e-5
     cfg.FCN.LR_SCHEDULER.PARAMS.last_epoch = -1
     
-    cfg.UNet.LOSS = CN()
-    cfg.UNet.LOSS.NAME = "DiceLoss"
-    cfg.UNet.LOSS.PARAMS = CN()
-    cfg.UNet.LOSS.PARAMS.num_classes = 81
-    cfg.UNet.LOSS.PARAMS.ignore_index = -1
-    cfg.UNet.LOSS.PARAMS.reduction = "mean"
-    cfg.UNet.LOSS.PARAMS.log_loss = True
-    cfg.UNet.LOSS.PARAMS.smooth = 0.0
-    cfg.UNet.LOSS.PARAMS.classes =   None
+    cfg.FCN.LOSS = CN()
+    cfg.FCN.LOSS.NAME = "DiceLoss"
+    cfg.FCN.LOSS.PARAMS = CN()
+    cfg.FCN.LOSS.PARAMS.num_classes = 81
+    cfg.FCN.LOSS.PARAMS.ignore_index = -1
+    cfg.FCN.LOSS.PARAMS.reduction = "mean"
+    cfg.FCN.LOSS.PARAMS.log_loss = True
+    cfg.FCN.LOSS.PARAMS.smooth = 0.0
+    cfg.FCN.LOSS.PARAMS.classes =   None
 
     cfg.REGULARIZATION = CN()
     cfg.REGULARIZATION.MODE = ''
