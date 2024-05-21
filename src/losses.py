@@ -205,3 +205,86 @@ class DiceLoss(nn.Module):
             raise ValueError("Invalid reduction method")
 
         return loss
+
+class TverskyLoss(nn.Module):
+
+    def __init__(
+            self,
+            num_classes,
+            alpha=0.5,
+            beta=0.5,
+            gamma=1,
+            reduction="mean",
+            log_loss: bool=False,
+            smooth: float=0.0,
+            ignore_index: int=-1,
+            classes: torch.Tensor=None,
+            eps: float=1e-7
+    ):
+        
+        super(TverskyLoss, self).__init__()
+
+        self.num_classes = num_classes
+        self.log_loss = log_loss
+        self.smooth = smooth
+        self.ignore_index = ignore_index
+        self.classes = classes
+        self.reduction = reduction
+        self.alpha = alpha
+        self.beta = beta
+        self.gamma = gamma
+        self.eps = eps
+
+    def forward(self, preds: torch.Tensor, gts: torch.Tensor):
+
+        """
+        preds: shape === (B, C, H, W)
+        gts: shape === (B, 1, H, W)
+        """
+
+        if not gts.shape[0]: return 0.0
+
+        gts = gts.squeeze(1)
+
+        B, H, W = gts.size()
+
+        ignore_index_mask = gts == self.ignore_index
+        preds = F.log_softmax(preds, dim=1).exp().permute(0, 2, 3, 1)
+
+        if ignore_index_mask.sum():
+            gts[ignore_index_mask] = self.num_classes
+            gts = F.one_hot(gts, self.num_classes + 1)
+            gts = gts[...,:-1]
+        else:
+            gts = F.one_hot(gts, self.num_classes)
+        
+        if self.classes is not None:
+            indices = self.classes[None, None, None, :].expand(B, H, W, -1)
+            gts = gts.gather(dim=-1, index=indices)
+            preds = preds.gather(dim=-1, index=indices)
+
+        gts = gts.permute(0, 3, 1, 2)
+        preds = preds.permute(0, 3, 1, 2)
+
+        tp = torch.sum(gts * preds, dim=(0, 2, 3))
+        fp = torch.sum(preds * (1 - gts), dim=(0, 2, 3))
+        fn = torch.sum(gts * (1 - preds), dim=(0, 2, 3))
+
+        tversky_index = torch.clamp_min((tp + self.smooth) / (tp + self.alpha*fp + self.beta*fn + self.smooth), min=self.eps)
+
+        if self.log_loss:
+            loss = -self.gamma * tversky_index.log()
+        else:
+            loss = torch.pow(1 - tversky_index, self.gamma)
+
+        existence_class_mask = torch.sum(gts, dim=(0, 2, 3)) > 0
+        loss *= existence_class_mask
+
+        if self.reduction == "mean":
+            loss = loss.mean()
+        elif self.reduction == "sum":
+            loss = loss.sum()
+        else:
+            raise ValueError("Invalid reduction method")
+
+        return loss
