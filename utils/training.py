@@ -1,10 +1,11 @@
-from imp import is_frozen
 import math
 import torch
 import torch.nn as nn
 from copy import deepcopy
+from torch import nn, Tensor
+from beartype import beartype
+from beartype.typing import Optional
 import torch.distributed as dist
-from collections import OrderedDict
 
 from utils.global_params import Global
 
@@ -73,13 +74,6 @@ class RepeatAugSampler(torch.utils.data.Sampler):
     def set_epoch(self, epoch):
         self.epoch = epoch
 
-
-from copy import deepcopy
-from functools import partial
-import torch
-from torch import nn, Tensor
-from beartype import beartype
-from beartype.typing import Set, Optional
 
 class EMA(nn.Module):
 
@@ -204,32 +198,3 @@ class EMA(nn.Module):
 
     def forward(self, x):
         return self.ema_model(x)
-
-# class EMA(nn.Module):
-
-#     def __init__(self, model: nn.Module, decay: float, warmup: int = 10000, decay_step=5000):
-
-#         super(EMA, self).__init__()
-
-#         self.shadow = deepcopy(model)
-#         self.decay = decay
-#         self.warmup = warmup
-
-#         self.warmup_steps = 0
-#         self.decay_step = decay_step
-
-#     @torch.no_grad()
-#     def update(self, model: nn.Module):
-
-#         self.warmup_steps += 1
-#         if self.warmup_steps > self.warmup and self.warmup_steps % self.decay_step == 0:
-#             model_params = OrderedDict(model.named_parameters())
-#             shadow_params = OrderedDict(self.shadow.named_parameters())
-
-#             assert model_params.keys() == shadow_params.keys()
-
-#             for name, param in model_params.items():
-#                 shadow_params[name].lerp_(param, self.decay)
-
-#     def forward(self, x):
-#         return self.shadow(x)

@@ -50,6 +50,7 @@ class Train:
             gradient_accumulation=False,
             gradient_accumulation_batch_size=None,
             exponential_moving_average=None,
+            exponential_moving_average_step=1,
             updateStochasticDepthRate=None
     ):
         
@@ -84,6 +85,7 @@ class Train:
             self.accumulation_iter = gradient_accumulation_batch_size // self.train_loader.batch_size
 
         self.exponential_moving_average = exponential_moving_average
+        self.exponential_moving_average_step = exponential_moving_average_step
         if exponential_moving_average is not None:
             self.ema_model = EMA(
                 model=self.model.module, 
@@ -220,8 +222,6 @@ class Train:
                 batch_iteration = idx/num_iterations if self.lr_scheduler.__class__.__name__ in ["CosineAnnealingWarmRestarts", "WarmUpLinearLRScheduler"] else idx
                 self._lr_scheduling(epoch_based=False, epoch=epoch, batch_iteration=batch_iteration)
 
-            self._exponential_moving_average()
-
             if not self.async_parallel_rank: data_iterator.set_postfix(loss=loss.item(), refresh=True)
             
             if not self.lr_tb_write_per_epoch:
@@ -232,6 +232,8 @@ class Train:
         if not self.async_parallel_rank:
             epoch_loss /= len(train_loader)
             Global.LOGGER.info(f"\nTraining loss for epoch {epoch+1}: {round(epoch_loss, 3)}")
+
+        self._exponential_moving_average(epoch=epoch)
             
         if not self.async_parallel_rank: return epoch_loss
 
@@ -270,8 +272,8 @@ class Train:
         else:
             self.checkpointer.save(epoch=epoch, chkp_name="epoch_checkpoint.pth", overwrite=False)
 
-    def _exponential_moving_average(self):
-        if self.exponential_moving_average is not None:
+    def _exponential_moving_average(self, epoch):
+        if self.exponential_moving_average is not None and epoch % self.exponential_moving_average_step == 0:
             if self.async_parallel:
                 self.ema_model.update(self.model.module)
             else:
@@ -413,12 +415,16 @@ class Train:
 
     def log_train_setting(self):
 
+        if Global.CFG.REPEAT_AUGMENTATIONS:
+            Global.LOGGER.info(f"Repeated Augmentation is enable with repetitions of {Global.CFG.REPEAT_AUGMENTATIONS_NUM_REPEATS}")
+        if Global.CFG.DATA_MIXING.enabled:
+            Global.LOGGER.info(f"Advanced data augmentations of cutmix and mixup is being used")
         if self.gradient_clipping is not None:
             Global.LOGGER.info(f"Gradient clipping is enabled with type: {self.gradient_clipping[0]} and threshold: {self.gradient_clipping[1]}")
         if self.gradient_accumulation:
             Global.LOGGER.info(f"Gradient accumulation is enabled to approximate batch size of: {self.gradient_accumulation_batch_size}")
         if self.exponential_moving_average is not None:
-            Global.LOGGER.info(f"Exponential moving average is enabled while inferencing with decay of: {self.exponential_moving_average}")
+            Global.LOGGER.info(f"Exponential moving average is enabled while inferencing with decay: {self.exponential_moving_average} and step size: {self.exponential_moving_average_step}")
 
     @staticmethod
     def async_train(rank, backbone_name, world_size):
