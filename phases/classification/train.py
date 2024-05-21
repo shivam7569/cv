@@ -166,7 +166,7 @@ class Train:
 
             if Global.CFG.SAVE_FIRST_SAMPLE:
                 if (self.tb_writer is not None) and (not self.sample_batch_log) and (epoch == 0):
-                    self.tb_writer.write("image")(image=ClassificationDataset._vizualizeBatch(batch=batch), epoch=epoch+1)
+                    self.tb_writer.write("image")(image=ClassificationDataset._vizualizeBatch(batch=batch), epoch=epoch+1, tag="Training Sample")
                     self.sample_batch_log = True
 
             if not self.async_parallel:

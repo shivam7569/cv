@@ -103,7 +103,7 @@ class ConvBlock(nn.Module):
 
 class ResNet(nn.Module):
 
-    def __init__(self, num_classes, in_channels=3):
+    def __init__(self, num_classes, num_blocks=[3, 4, 6, 3], in_channels=3):
         super(ResNet, self).__init__()
 
         init_features = nn.Sequential(
@@ -117,19 +117,19 @@ class ResNet(nn.Module):
         )
 
         res_group_1 = ResidualGroup(
-            num_blocks=3, in_channels=64, channels_1x1_in=64,
+            num_blocks=num_blocks[0], in_channels=64, channels_1x1_in=64,
             channels_3x3=64, channels_1x1_out=256, bold=True
         )
         res_group_2 = ResidualGroup(
-            num_blocks=4, in_channels=256, channels_1x1_in=128,
+            num_blocks=num_blocks[1], in_channels=256, channels_1x1_in=128,
             channels_3x3=128, channels_1x1_out=512, bold=False
         )
         res_group_3 = ResidualGroup(
-            num_blocks=6, in_channels=512, channels_1x1_in=256,
+            num_blocks=num_blocks[2], in_channels=512, channels_1x1_in=256,
             channels_3x3=256, channels_1x1_out=1024, bold=False
         )
         res_group_4 = ResidualGroup(
-            num_blocks=3, in_channels=1024, channels_1x1_in=512,
+            num_blocks=num_blocks[3], in_channels=1024, channels_1x1_in=512,
             channels_3x3=512, channels_1x1_out=2048, bold=False
         )
 
@@ -156,15 +156,8 @@ class ResNet(nn.Module):
     def initializeConv(self):
         for module in self.backbone.init_features.modules():
             if isinstance(module, nn.Conv2d):
-                weight = module.weight
-                bias = module.bias
-
-                init_n = (module.kernel_size[0] ** 2) * module.out_channels
-                init_mean = 0.0
-                init_std = np.sqrt(2 / init_n)
-
-                nn.init.normal_(weight, mean=init_mean, std=init_std)
-                nn.init.constant_(bias, val=0.0)
+                nn.init.kaiming_normal_(module.weight)
+                nn.init.constant_(module.bias, val=0.0)
 
     def forward(self, x):
         x = self.backbone(x)

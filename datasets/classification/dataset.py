@@ -186,7 +186,7 @@ class ClassificationDataset(Dataset):
         font = ImageFont.truetype("/media/drive6/hqh2kor/projects/cv/utils/_files/Aileron-Black.otf", 20)
 
         for i in range(4):
-            for j in range(4):
+            for j in range(k // 4):
                 draw.text(((image_size+4) * i + 25, (image_size+4) * (j + 1) - 50), class_names[i+j*4], (0, 102, 204), font=font)
 
         canvas = pil_to_tensor(canvas)

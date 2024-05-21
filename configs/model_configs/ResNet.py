@@ -13,11 +13,12 @@ def ResNetConfig(cfg):
 
     cfg.ResNet.PARAMS = CN()
     cfg.ResNet.PARAMS.num_classes = 1000
+    cfg.ResNet.PARAMS.num_blocks = [3, 4, 23, 3]
     cfg.ResNet.PARAMS.in_channels = 3
 
     cfg.TRAIN = CN()
     cfg.TRAIN.PARAMS = CN()
-    cfg.TRAIN.PARAMS.epochs = 150
+    cfg.TRAIN.PARAMS.epochs = 300
     cfg.TRAIN.PARAMS.gradient_accumulation = True
     cfg.TRAIN.PARAMS.gradient_accumulation_batch_size = 256
 
@@ -32,7 +33,7 @@ def ResNetConfig(cfg):
     ]
 
     cfg.ResNet.DATALOADER_TRAIN_PARAMS = CN()
-    cfg.ResNet.DATALOADER_TRAIN_PARAMS.batch_size = 96
+    cfg.ResNet.DATALOADER_TRAIN_PARAMS.batch_size = 64
     cfg.ResNet.DATALOADER_TRAIN_PARAMS.shuffle = True
     cfg.ResNet.DATALOADER_TRAIN_PARAMS.num_workers = 16
     cfg.ResNet.DATALOADER_TRAIN_PARAMS.pin_memory = True
@@ -62,6 +63,7 @@ def ResNetConfig(cfg):
     cfg.ResNet.TRANSFORMS.VAL = [
         dict(name="ToPILImage", params=None),
         dict(name="CenterCrop", params=dict(size=(224, 224))),
+        dict(name="RandomHorizontalFlip", params=dict(p=0.5)),
         dict(name="ToTensor", params=None),
         dict(name="Normalize", params=dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
     ]
@@ -69,7 +71,7 @@ def ResNetConfig(cfg):
     cfg.ResNet.OPTIMIZER = CN()
     cfg.ResNet.OPTIMIZER.NAME = "SGD"
     cfg.ResNet.OPTIMIZER.PARAMS = CN()
-    cfg.ResNet.OPTIMIZER.PARAMS.lr = 0.1 * cfg.num_gpus
+    cfg.ResNet.OPTIMIZER.PARAMS.lr = 0.1
     cfg.ResNet.OPTIMIZER.PARAMS.momentum = 0.9
     cfg.ResNet.OPTIMIZER.PARAMS.weight_decay = 1e-4
 

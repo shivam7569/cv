@@ -59,7 +59,7 @@ class Eval:
                 self.metrics.update(lbl_batch.cpu().numpy(), predicted_classes.cpu().numpy())
 
                 if not test_image and epoch % 10 == 0:
-                    self.tb_writer.write("image")(image=ClassificationDataset._vizualizeBatch(batch=(img_batch, predicted_classes.cpu().numpy())), epoch=epoch+1)
+                    self.tb_writer.write("image")(image=ClassificationDataset._vizualizeBatch(batch=(img_batch, predicted_classes.cpu().numpy())), epoch=epoch+1, tag="Inference")
                     test_image = True
 
         loss /= len(self.data_loader)
