@@ -54,7 +54,7 @@ def UNetConfig(cfg):
     cfg.UNet.DATALOADER_TRAIN_PARAMS.drop_last = True
 
     cfg.UNet.DATALOADER_VAL_PARAMS = CN()
-    cfg.UNet.DATALOADER_VAL_PARAMS.batch_size = 32
+    cfg.UNet.DATALOADER_VAL_PARAMS.batch_size = 8
     cfg.UNet.DATALOADER_VAL_PARAMS.shuffle = True
     cfg.UNet.DATALOADER_VAL_PARAMS.num_workers = 8
     cfg.UNet.DATALOADER_VAL_PARAMS.pin_memory = True
