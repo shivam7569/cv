@@ -82,7 +82,7 @@ def UNetConfig(cfg):
     cfg.UNet.OPTIMIZER = CN()
     cfg.UNet.OPTIMIZER.NAME = "SGD"
     cfg.UNet.OPTIMIZER.PARAMS = CN()
-    cfg.UNet.OPTIMIZER.PARAMS.lr = 0.1
+    cfg.UNet.OPTIMIZER.PARAMS.lr = 1e-2
     cfg.UNet.OPTIMIZER.PARAMS.momentum = 0.99
     cfg.UNet.OPTIMIZER.PARAMS.weight_decay = 1e-8
 
