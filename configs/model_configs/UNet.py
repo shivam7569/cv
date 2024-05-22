@@ -91,7 +91,7 @@ def UNetConfig(cfg):
     cfg.UNet.LR_SCHEDULER.PARAMS = CN()
     cfg.UNet.LR_SCHEDULER.PARAMS.T_0 = 20
     cfg.UNet.LR_SCHEDULER.PARAMS.T_mult = 2
-    cfg.UNet.LR_SCHEDULER.PARAMS.eta_min = 1e-5
+    cfg.UNet.LR_SCHEDULER.PARAMS.eta_min = 1e-4
     cfg.UNet.LR_SCHEDULER.PARAMS.last_epoch = -1
     
     cfg.UNet.LOSS = CN()
