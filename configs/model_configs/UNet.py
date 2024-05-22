@@ -95,17 +95,14 @@ def UNetConfig(cfg):
     cfg.UNet.LR_SCHEDULER.PARAMS.last_epoch = -1
     
     cfg.UNet.LOSS = CN()
-    cfg.UNet.LOSS.NAME = "TverskyLoss"
+    cfg.UNet.LOSS.NAME = "DiceLoss"
     cfg.UNet.LOSS.PARAMS = CN()
     cfg.UNet.LOSS.PARAMS.num_classes = 81
-    cfg.UNet.LOSS.PARAMS.alpha = 1
-    cfg.UNet.LOSS.PARAMS.beta = 1
-    cfg.UNet.LOSS.PARAMS.gamma = 1.2
     cfg.UNet.LOSS.PARAMS.ignore_index = -1
     cfg.UNet.LOSS.PARAMS.reduction = "mean"
     cfg.UNet.LOSS.PARAMS.log_loss = True
     cfg.UNet.LOSS.PARAMS.smooth = 0.0
-    cfg.UNet.LOSS.PARAMS.classes =   None
+    cfg.UNet.LOSS.PARAMS.classes = None
 
     cfg.REGULARIZATION = CN()
     cfg.REGULARIZATION.MODE = ''
