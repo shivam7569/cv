@@ -194,9 +194,6 @@ class DiceLoss(nn.Module):
         else:
             loss = 1 - dice_score
 
-        existence_class_mask = torch.sum(gts, dim=(0, 2, 3)) > 0
-        loss *= existence_class_mask
-
         if self.reduction == "mean":
             loss = loss.mean()
         elif self.reduction == "sum":
@@ -276,9 +273,6 @@ class TverskyLoss(nn.Module):
             loss = -self.gamma * tversky_index.log()
         else:
             loss = torch.pow(1 - tversky_index, self.gamma)
-
-        existence_class_mask = torch.sum(gts, dim=(0, 2, 3)) > 0
-        loss *= existence_class_mask
 
         if self.reduction == "mean":
             loss = loss.mean()
