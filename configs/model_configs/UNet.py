@@ -47,14 +47,14 @@ def UNetConfig(cfg):
     ]
 
     cfg.UNet.DATALOADER_TRAIN_PARAMS = CN()
-    cfg.UNet.DATALOADER_TRAIN_PARAMS.batch_size = 8
+    cfg.UNet.DATALOADER_TRAIN_PARAMS.batch_size = 20
     cfg.UNet.DATALOADER_TRAIN_PARAMS.shuffle = True
     cfg.UNet.DATALOADER_TRAIN_PARAMS.num_workers = 8
     cfg.UNet.DATALOADER_TRAIN_PARAMS.pin_memory = True
     cfg.UNet.DATALOADER_TRAIN_PARAMS.drop_last = True
 
     cfg.UNet.DATALOADER_VAL_PARAMS = CN()
-    cfg.UNet.DATALOADER_VAL_PARAMS.batch_size = 8
+    cfg.UNet.DATALOADER_VAL_PARAMS.batch_size = 16
     cfg.UNet.DATALOADER_VAL_PARAMS.shuffle = True
     cfg.UNet.DATALOADER_VAL_PARAMS.num_workers = 8
     cfg.UNet.DATALOADER_VAL_PARAMS.pin_memory = True
@@ -66,7 +66,7 @@ def UNetConfig(cfg):
         dict(name="SegmentationToPILImage", params=dict()),
         dict(name="SegmentationElasticTransform", params=dict(p=0.05, alpha=50.0, sigma=5.0)),
         dict(name="SegmentationRandomCrop", params=dict(size=(224, 224))),
-        dict(name="SegmentationColorJitter", params=dict(brightness=0.4, contrast=0.4, saturation=0.4, p=0.15)),
+        dict(name="SegmentationColorJitter", params=dict(brightness=0.4, contrast=0.4, saturation=0.4, p=0.05)),
         dict(name="SegmentationHorizontalFlip", params=dict(p=0.5)),
         dict(name="SegmentationToTensor", params=dict()),
         dict(name="SegmentationNormalize", params=dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
@@ -96,12 +96,9 @@ def UNetConfig(cfg):
     cfg.UNet.LR_SCHEDULER.PARAMS.last_epoch = -1
     
     cfg.UNet.LOSS = CN()
-    cfg.UNet.LOSS.NAME = "TverskyLoss"
+    cfg.UNet.LOSS.NAME = "DiceLoss"
     cfg.UNet.LOSS.PARAMS = CN()
     cfg.UNet.LOSS.PARAMS.num_classes = 81
-    cfg.UNet.LOSS.PARAMS.alpha = 0.7
-    cfg.UNet.LOSS.PARAMS.beta = 0.3
-    cfg.UNet.LOSS.PARAMS.gamma = 0.75
     cfg.UNet.LOSS.PARAMS.ignore_index = -1
     cfg.UNet.LOSS.PARAMS.reduction = "mean"
     cfg.UNet.LOSS.PARAMS.log_loss = True

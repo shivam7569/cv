@@ -4,6 +4,7 @@ from datasets.segmentation.dataset import SegmentationDataset
 from src.gpu_devices import GPU_Support
 import torch.nn.functional as F
 from src.metrics import SegMetrics
+from utils import evaluation
 from utils.typing_utils import draw_confusion_matrix
 
 class Eval:
@@ -16,12 +17,17 @@ class Eval:
             tb_writer,
             async_parallel,
             async_parallel_rank,
-            num_classes=81
+            num_classes=81,
+            util_class_or_function=None
     ):
         self.model = model
         self.data_loader = data_loader
         self.loss_function = loss_function
         self.tb_writer = tb_writer
+        
+        self.util_class_or_function = util_class_or_function
+        if util_class_or_function is not None:
+            self.util_call = getattr(evaluation, util_class_or_function.NAME)(**util_class_or_function.PARAMS)
 
         self.async_parallel = async_parallel
         self.async_parallel_rank = async_parallel_rank
@@ -51,15 +57,21 @@ class Eval:
 
             with torch.no_grad():
                 output = self.model(img_batch)
-                batch_loss = self.loss_function(output, mask_batch.squeeze(1)).item()
+
+                if self.util_class_or_function is not None:
+                    self.util_call(img_batch, mask_batch, output)
+                    batch_loss = self.util_call.loss(self.loss_function)
+                    predicted_masks = self.util_call.predicted_mask()
+                    self.util_call.metric_update(self.metrics)
+                else:
+                    batch_loss = self.loss_function(output, mask_batch.squeeze(1)).item()
+                    predicted_masks = F.log_softmax(output, dim=1).exp().argmax(dim=1)
+                    self.metrics.update(mask_batch.squeeze(1), output)
+
                 loss += batch_loss
-
                 data_iterator.set_postfix(loss=batch_loss, refresh=True)
-                predicted_masks = F.log_softmax(output, dim=1).exp().argmax(dim=1)
 
-                self.metrics.update(mask_batch.squeeze(1), output)
-
-                if not test_image and epoch % 2 == 0:
+                if not test_image:
                     self.tb_writer.write("image")(image=SegmentationDataset._vizualizeBatch(batch=(img_batch, predicted_masks)), epoch=epoch+1, tag=f"Inference")
                     test_image = True
 

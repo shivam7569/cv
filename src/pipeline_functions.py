@@ -184,3 +184,8 @@ def mask_to_img_size(img, mask):
     mask = cv2.resize(mask, (width, height), interpolation=cv2.INTER_NEAREST)
 
     return mask
+
+def img_resize(img, size):
+    img = cv2.resize(img, dsize=size)
+
+    return img

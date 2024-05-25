@@ -105,3 +105,5 @@ class ModelConfigs:
             FCNConfig(cfg)
         elif model_name.lower() == "unet":
             UNetConfig(cfg)
+        elif model_name.lower() == "deeplabv1":
+            DeepLabv1Config(cfg)

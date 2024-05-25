@@ -5,9 +5,12 @@ from copy import deepcopy
 from torch import nn, Tensor
 from beartype import beartype
 from beartype.typing import Optional
+import torch.nn.functional as F
 import torch.distributed as dist
-
+from src.crf import DenseCRF
 from utils.global_params import Global
+import torch.multiprocessing as mp
+from datasets.classification.dataset import ClassificationDataset
 
 class RepeatAugSampler(torch.utils.data.Sampler):
 
@@ -198,3 +201,58 @@ class EMA(nn.Module):
 
     def forward(self, x):
         return self.ema_model(x)
+
+class ConditionalRandomFields:
+
+    def __init__(self, interpolation_params, crf_params):
+        self.crf = DenseCRF(**crf_params)
+        self.interpolation_params = interpolation_params
+
+    def process(self, img_batch, output_batch):
+
+        B, _, H, W = img_batch.shape
+
+        img_batch = ClassificationDataset.INVERSE_TRANSFORM(img_batch)
+        output_batch = F.interpolate(input=output_batch, size=(H, W), **self.interpolation_params)
+
+        processed_probmap_batch = []
+
+        for i in range(B):
+            img = (img_batch[i] * 255).to(torch.uint8).permute(1, 2, 0).detach().cpu().numpy()[:, :, ::-1]
+            prob = output_batch[i].detach().cpu().numpy()
+
+            processed_probmap = self.crf(image=img, probmap=prob)
+            processed_probmap_batch.append(torch.from_numpy(processed_probmap).to(output_batch.device))
+
+        processed_probmap_batch = torch.stack(processed_probmap_batch, dim=0)
+        
+        return output_batch, processed_probmap_batch
+    
+    def process_one(self, args):
+        idx, img, output = args
+        _, _, H, W = img.shape
+        img = ClassificationDataset.INVERSE_TRANSFORM(img)
+        output = F.interpolate(input=output, size=(H, W), **self.interpolation_params)
+
+        img = (img[0] * 255).to(torch.uint8).permute(1, 2, 0).numpy()[:, :, ::-1]
+        prob = output[0].numpy()
+
+        processed_probmap = self.crf(image=img, probmap=prob)
+        processed_probmap = torch.from_numpy(processed_probmap)
+
+        return idx, output, processed_probmap
+    
+    def mp_process(self, img_batch, output_batch):
+
+        B, _, _, _ = img_batch.shape
+        inputs = [(i, img_batch[i].unsqueeze(0).detach().cpu(), output_batch[0].unsqueeze(0).detach().cpu()) for i in range(B)]
+
+        ctx = mp.get_context('spawn')
+        with ctx.Pool(processes=mp.cpu_count()) as pool:
+            results = pool.map(self.process_one, inputs)
+
+        results = sorted(results, key=lambda x: x[0])
+        output_batch = torch.cat([i[1] for i in results], dim=0).to(img_batch.device)
+        processed_probmap_batch = torch.stack([i[2] for i in results], dim=0).to(img_batch.device)
+
+        return output_batch, processed_probmap_batch

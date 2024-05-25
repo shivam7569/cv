@@ -3,7 +3,7 @@ import numpy as np
 import torch
 from tqdm import tqdm
 import semseg
-from configs.config import setup_config
+from configs.config import CfgNode, setup_config
 from datasets.segmentation.dataset import SegmentationDataset
 from src.gpu_devices import GPU_Support
 from src.checkpoints import Checkpoint
@@ -49,7 +49,8 @@ class Train:
             gradient_accumulation=False,
             gradient_accumulation_batch_size=None,
             exponential_moving_average=None,
-            updateStochasticDepthRate=None
+            updateStochasticDepthRate=None,
+            evaluation_util_class_or_function=None
     ):
         
         self.model = model
@@ -100,7 +101,8 @@ class Train:
                 loss_function=loss_function,
                 tb_writer=tb_writer,
                 async_parallel=async_parallel,
-                async_parallel_rank=async_parallel_rank
+                async_parallel_rank=async_parallel_rank,
+                util_class_or_function=evaluation_util_class_or_function
             )
             self.checkpointer = Checkpoint(
                 model if not async_parallel else model.module, optimizer, lr_scheduler
@@ -127,7 +129,7 @@ class Train:
 
             if self.tb_writer is not None: self.tb_writer.write("scaler")(scalar_name="Loss", scalar_value=epoch_loss, step=epoch)
 
-            if not self.async_parallel_rank:
+            if not self.async_parallel_rank and epoch % Global.CFG.EVALUATION_STEPS == 0:
                 Global.METRICS["epoch"] = epoch
                 Global.METRICS["train_loss"] = epoch_loss
                 self.evaluation.start(epoch=epoch)
@@ -145,8 +147,15 @@ class Train:
 
             if self.lr_tb_write_per_epoch:
                 if self.tb_writer is not None:
-                    current_lr = self.optimizer.param_groups[0]['lr']
-                    self.tb_writer.write("scaler")(scalar_name="Learning Rate", scalar_value=current_lr, step=epoch)
+                    num_param_groups = len(self.optimizer.param_groups)
+                    if num_param_groups > 1:
+                        for i in range(num_param_groups):
+                            group_lr = self.optimizer.param_groups[i]['lr']
+                            group_name = self.optimizer.param_groups[i]['name']
+                            self.tb_writer.write("scaler")(scalar_name=f"Learning Rate - {group_name}", scalar_value=group_lr, step=epoch)
+                    else:
+                        current_lr = self.optimizer.param_groups[0]['lr']
+                        self.tb_writer.write("scaler")(scalar_name=f"Learning Rate", scalar_value=current_lr, step=epoch)
 
             if self.updateStochasticDepthRate is not None:
                 if epoch % self.updateStochasticDepthRate[0]["step_epochs"] == 0 and epoch > 0:
@@ -433,7 +442,21 @@ class Train:
 
         Global.LOGGER.info(f"Instantiating Optimizer: {cfg[semseg_model_name].OPTIMIZER.NAME}")
         try:
-            optimizer = getattr(torch.optim, cfg[semseg_model_name].OPTIMIZER.NAME)(model.parameters(), **cfg[semseg_model_name].OPTIMIZER.PARAMS)
+            if isinstance(cfg[semseg_model_name].OPTIMIZER.PARAMS.lr, float):
+                optimizer = getattr(torch.optim, cfg[semseg_model_name].OPTIMIZER.NAME)(model.parameters(), **cfg[semseg_model_name].OPTIMIZER.PARAMS)
+            if isinstance(cfg[semseg_model_name].OPTIMIZER.PARAMS.lr, CfgNode):
+                param_groups = [
+                    {
+                        "params": getattr(model.module, cfg[semseg_model_name].OPTIMIZER.PARAMS.lr.PARTITION.NAMES[i]).parameters(),
+                        "lr": cfg[semseg_model_name].OPTIMIZER.PARAMS.lr.PARTITION.LRS[i],
+                        "name": cfg[semseg_model_name].OPTIMIZER.PARAMS.lr.PARTITION.NAMES[i]
+                    }
+                    for i in range(len(cfg[semseg_model_name].OPTIMIZER.PARAMS.lr.PARTITION.NAMES))
+                ]
+                lr = cfg[semseg_model_name].OPTIMIZER.PARAMS.pop("lr")
+                optimizer = getattr(torch.optim, cfg[semseg_model_name].OPTIMIZER.NAME)(
+                    params=param_groups, lr=lr.GLOBAL, **cfg[semseg_model_name].OPTIMIZER.PARAMS
+                )
         except:
             optimizer = getattr(optimizers, cfg[semseg_model_name].OPTIMIZER.NAME)(model.parameters(), **cfg[semseg_model_name].OPTIMIZER.PARAMS)
         Global.LOGGER.info(f"Optimizer instantiated")
@@ -486,7 +509,7 @@ class Train:
         try:
             loss_function = getattr(torch.nn, cfg[semseg_model_name].LOSS.NAME)(weight=class_weights, **cfg[semseg_model_name].LOSS.PARAMS)
         except:
-            loss_function = getattr(losses, cfg[semseg_model_name].LOSS.NAME)(**cfg[semseg_model_name].LOSS.PARAMS)
+            loss_function = getattr(losses, cfg[semseg_model_name].LOSS.NAME)(weight=class_weights, **cfg[semseg_model_name].LOSS.PARAMS)
         
         Global.LOGGER.info(f"Loss Function instantiated")
 

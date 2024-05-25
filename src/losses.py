@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torchvision.transforms.functional as TF
 
 class InceptionLoss(nn.Module):
 
@@ -280,5 +281,33 @@ class TverskyLoss(nn.Module):
             loss = loss.sum()
         else:
             raise ValueError("Invalid reduction method")
+
+        return loss
+    
+class DeepLabv1Loss(nn.Module):
+
+    def __init__(self, weight=None, **kwargs):
+        super(DeepLabv1Loss, self).__init__()
+        self.loss_name = kwargs.pop("name", "dice")
+        self._lambda = kwargs.pop("lambda_", 0.5)
+        if self.loss_name == "ce":
+            self.loss = nn.CrossEntropyLoss(weight=weight, **kwargs)
+        if self.loss_name == "dice":
+            self.loss = DiceLoss(**kwargs)
+        if self.loss_name == "tversky":
+            self.loss = TverskyLoss(**kwargs)
+        if self.loss_name == "tversky_ce":
+            self.ce = nn.CrossEntropyLoss(weight=weight, **kwargs["ce_params"])
+            self.tversky = TverskyLoss(**kwargs["tversky_params"])
+
+    def forward(self, preds: torch.Tensor, gts: torch.Tensor):
+        preds = TF.resize(img=preds, size=gts.shape[-2:], interpolation=TF.InterpolationMode.BILINEAR, antialias=True)
+        
+        if self.loss_name != "tversky_ce":
+            loss = self.loss(preds, gts)
+        else:
+            ce_loss = self.ce(preds, gts)
+            tversky_loss = self.tversky(preds, gts)
+            loss = self._lambda * tversky_loss + (1 - self._lambda) * ce_loss
 
         return loss

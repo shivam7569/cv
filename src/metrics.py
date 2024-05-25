@@ -229,7 +229,7 @@ class SegMetrics:
 
         dice = 2*self.tp_meter.sum / (2*self.tp_meter.sum + self.fp_meter.sum + self.fn_meter.sum + self.eps)
         iou = self.tp_meter.sum / (self.tp_meter.sum + self.fp_meter.sum + self.fn_meter.sum + self.eps)
-        accuracy = (self.tp_meter.sum + self.tn_meter.sum) / (self.tp_meter.sum + self.fp_meter.sum + self.tn_meter.sum + self.fn_meter.sum + self.eps)
+        accuracy = self.tp_meter.sum.sum()  / (self.tp_meter.sum + self.fp_meter.sum + self.tn_meter.sum + self.fn_meter.sum + self.eps)
         precision = self.tp_meter.sum / (self.tp_meter.sum + self.fp_meter.sum + self.eps)
         recall = self.tp_meter.sum / (self.tp_meter.sum + self.fn_meter.sum + self.eps)
         f1_score = 2*self.tp_meter.sum / (2*self.tp_meter.sum + self.fp_meter.sum + self.fn_meter.sum + self.eps)
@@ -238,7 +238,7 @@ class SegMetrics:
         p_o = (self.tp_meter.sum + self.tn_meter.sum) / N
         p_e = (((self.tp_meter.sum + self.fn_meter.sum) * (self.tp_meter.sum + self.fp_meter.sum)) / (N ** 2)) + (((self.tn_meter.sum + self.fn_meter.sum) * (self.tn_meter.sum + self.fp_meter.sum)) / (N ** 2)) 
         cohen_kappa = (p_o - p_e) / (1 - p_e)
-
+    
         self.metrics_aggregated["accuracy"] = round(accuracy.mean().item(), 3)
         self.metrics_aggregated["precision"] = round(precision.mean().item(), 3)
         self.metrics_aggregated["recall"] = round(recall.mean().item(), 3)
