@@ -135,6 +135,7 @@ class DiceLoss(nn.Module):
 
     def __init__(
             self,
+            weight,
             num_classes,
             reduction="mean",
             log_loss: bool=False,
@@ -152,6 +153,7 @@ class DiceLoss(nn.Module):
         self.ignore_index = ignore_index
         self.classes = classes
         self.reduction = reduction
+        self.weights = weight
         self.eps = eps
 
     def forward(self, preds: torch.Tensor, gts: torch.Tensor):
@@ -208,6 +210,7 @@ class TverskyLoss(nn.Module):
 
     def __init__(
             self,
+            weight,
             num_classes,
             alpha=0.5,
             beta=0.5,
@@ -231,6 +234,7 @@ class TverskyLoss(nn.Module):
         self.alpha = alpha
         self.beta = beta
         self.gamma = gamma
+        self.weights = weight
         self.eps = eps
 
     def forward(self, preds: torch.Tensor, gts: torch.Tensor):
@@ -293,12 +297,12 @@ class DeepLabv1Loss(nn.Module):
         if self.loss_name == "ce":
             self.loss = nn.CrossEntropyLoss(weight=weight, **kwargs)
         if self.loss_name == "dice":
-            self.loss = DiceLoss(**kwargs)
+            self.loss = DiceLoss(weight=weight, **kwargs)
         if self.loss_name == "tversky":
-            self.loss = TverskyLoss(**kwargs)
+            self.loss = TverskyLoss(weight=weight, **kwargs)
         if self.loss_name == "tversky_ce":
             self.ce = nn.CrossEntropyLoss(weight=weight, **kwargs["ce_params"])
-            self.tversky = TverskyLoss(**kwargs["tversky_params"])
+            self.tversky = TverskyLoss(weight=weight, **kwargs["tversky_params"])
 
     def forward(self, preds: torch.Tensor, gts: torch.Tensor):
         preds = TF.resize(img=preds, size=gts.shape[-2:], interpolation=TF.InterpolationMode.BILINEAR, antialias=True)
