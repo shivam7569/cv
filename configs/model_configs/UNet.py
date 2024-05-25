@@ -37,7 +37,7 @@ def UNetConfig(cfg):
     cfg.PIPELINES = CN()
     cfg.PIPELINES.TRAIN = [
         dict(func="readImage", params=dict(uint8=True)),
-        dict(func="resizeWithAspectRatio", params=dict(size=256)),
+        dict(func="vgg16resize", params=dict(s_min=256, s_max=512)),
         dict(func="mask_to_img_size", params=dict())
     ]
     cfg.PIPELINES.VAL = [
@@ -66,6 +66,7 @@ def UNetConfig(cfg):
         dict(name="SegmentationToPILImage", params=dict()),
         dict(name="SegmentationElasticTransform", params=dict(p=0.05, alpha=50.0, sigma=5.0)),
         dict(name="SegmentationRandomCrop", params=dict(size=(224, 224))),
+        dict(name="SegmentationColorJitter", params=dict(brightness=0.4, contrast=0.4, saturation=0.4, p=0.25)),
         dict(name="SegmentationHorizontalFlip", params=dict(p=0.5)),
         dict(name="SegmentationToTensor", params=dict()),
         dict(name="SegmentationNormalize", params=dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))

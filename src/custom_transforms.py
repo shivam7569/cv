@@ -202,6 +202,21 @@ class SegmentationRandomCrop:
         mask = F.crop(mask, *crop_params)
 
         return (img, mask)
+
+class SegmentationColorJitter:
+
+    def __init__(self, brightness, contrast, saturation, p=0.5):
+        self.p = p
+        self.cj = T.ColorJitter(brightness=brightness, contrast=contrast, saturation=saturation)
+
+    def __call__(self, data):
+        if np.random.random() > self.p:
+            return data
+        
+        img, mask = data
+        img = self.cj(img)
+
+        return (img, mask)
     
 class SegmentationElasticTransform:
 
@@ -231,6 +246,17 @@ class SegmentationElasticTransform:
         img, mask = data
         img = self.image_elastic_transform(img)
         mask = self.mask_elastic_transform(mask)
+
+        return (img, mask)
+    
+class SegmentationMaskResize:
+
+    def __init__(self, mask_size):
+        self.resize = T.Resize(size=mask_size, interpolation=InterpolationMode.NEAREST)
+
+    def __call__(self, data):
+        img, mask = data
+        mask = self.resize(mask)
 
         return (img, mask)
 
