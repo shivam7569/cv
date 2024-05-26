@@ -52,12 +52,12 @@ def DeepLabv1Config(cfg):
     cfg.PIPELINES = CN()
     cfg.PIPELINES.TRAIN = [
         dict(func="readImage", params=dict(uint8=True)),
-        dict(func="vgg16resize", params=dict(s_min=324, s_max=512)),
+        dict(func="resizeWithAspectRatio", params=dict(size=256)),
         dict(func="mask_to_img_size", params=dict())
     ]
     cfg.PIPELINES.VAL = [
         dict(func="readImage", params=dict(uint8=True)),
-        dict(func="resizeWithAspectRatio", params=dict(size=324)),
+        dict(func="resizeWithAspectRatio", params=dict(size=256)),
         dict(func="mask_to_img_size", params=dict())
     ]
 
@@ -69,7 +69,7 @@ def DeepLabv1Config(cfg):
     cfg.DeepLabv1.DATALOADER_TRAIN_PARAMS.drop_last = True
 
     cfg.DeepLabv1.DATALOADER_VAL_PARAMS = CN()
-    cfg.DeepLabv1.DATALOADER_VAL_PARAMS.batch_size = 20
+    cfg.DeepLabv1.DATALOADER_VAL_PARAMS.batch_size = 32
     cfg.DeepLabv1.DATALOADER_VAL_PARAMS.shuffle = True
     cfg.DeepLabv1.DATALOADER_VAL_PARAMS.num_workers = 8
     cfg.DeepLabv1.DATALOADER_VAL_PARAMS.pin_memory = True
@@ -79,8 +79,7 @@ def DeepLabv1Config(cfg):
 
     cfg.DeepLabv1.TRANSFORMS.TRAIN = [
         dict(name="SegmentationToPILImage", params=dict()),
-        dict(name="SegmentationRandomCrop", params=dict(size=(306, 306))),
-        dict(name="SegmentationColorJitter", params=dict(brightness=0.4, contrast=0.4, saturation=0.4, p=0.05)),
+        dict(name="SegmentationRandomCrop", params=dict(size=(224, 224))),
         dict(name="SegmentationHorizontalFlip", params=dict(p=0.5)),
         dict(name="SegmentationToTensor", params=dict()),
         dict(name="SegmentationNormalize", params=dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
@@ -88,7 +87,7 @@ def DeepLabv1Config(cfg):
 
     cfg.DeepLabv1.TRANSFORMS.VAL = [
         dict(name="SegmentationToPILImage", params=dict()),
-        dict(name="SegmentationCenterCrop", params=dict(size=(306, 306))),
+        dict(name="SegmentationCenterCrop", params=dict(size=(224, 224))),
         dict(name="SegmentationHorizontalFlip", params=dict(p=0.5)),
         dict(name="SegmentationToTensor", params=dict()),
         dict(name="SegmentationNormalize", params=dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
