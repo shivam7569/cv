@@ -139,6 +139,7 @@ class DiceLoss(nn.Module):
             num_classes,
             reduction="mean",
             log_loss: bool=False,
+            normalize: bool=False,
             smooth: float=0.0,
             ignore_index: int=-1,
             classes: torch.Tensor=None,
@@ -154,6 +155,7 @@ class DiceLoss(nn.Module):
         self.classes = classes
         self.reduction = reduction
         self.weights = weight
+        self.normalize = normalize
         self.eps = eps
 
     def forward(self, preds: torch.Tensor, gts: torch.Tensor):
@@ -197,6 +199,12 @@ class DiceLoss(nn.Module):
         else:
             loss = 1 - dice_score
 
+        if self.weights is not None:
+            loss *= self.weights
+
+        if self.normalize:
+            loss /= loss.sum()
+
         if self.reduction == "mean":
             loss = loss.mean()
         elif self.reduction == "sum":
@@ -217,6 +225,7 @@ class TverskyLoss(nn.Module):
             gamma=1,
             reduction="mean",
             log_loss: bool=False,
+            normalize=False,
             smooth: float=0.0,
             ignore_index: int=-1,
             classes: torch.Tensor=None,
@@ -235,6 +244,7 @@ class TverskyLoss(nn.Module):
         self.beta = beta
         self.gamma = gamma
         self.weights = weight
+        self.normalize = normalize
         self.eps = eps
 
     def forward(self, preds: torch.Tensor, gts: torch.Tensor):
@@ -279,6 +289,12 @@ class TverskyLoss(nn.Module):
         else:
             loss = torch.pow(1 - tversky_index, self.gamma)
 
+        if self.weights is not None:
+            loss *= self.weights
+
+        if self.normalize:
+            loss /= loss.sum()
+
         if self.reduction == "mean":
             loss = loss.mean()
         elif self.reduction == "sum":
@@ -301,17 +317,22 @@ class DeepLabv1Loss(nn.Module):
         if self.loss_name == "tversky":
             self.loss = TverskyLoss(weight=weight, **kwargs)
         if self.loss_name == "tversky_ce":
-            self.ce = nn.CrossEntropyLoss(weight=weight, **kwargs["ce_params"])
-            self.tversky = TverskyLoss(weight=weight, **kwargs["tversky_params"])
+            tversky_weights = kwargs.pop("tversky_weights", False)
+            self.first_loss = nn.CrossEntropyLoss(weight=weight, **kwargs["ce_params"])
+            self.second_loss = TverskyLoss(weight=weight if tversky_weights else None, **kwargs["tversky_params"])
+        if self.loss_name == "dice_ce":
+            dice_weights = kwargs.pop("dice_weights", False)
+            self.first_loss = nn.CrossEntropyLoss(weight=weight, **kwargs["ce_params"])
+            self.second_loss = DiceLoss(weight=weight if dice_weights else None, **kwargs["dice_params"])
 
     def forward(self, preds: torch.Tensor, gts: torch.Tensor):
         preds = TF.resize(img=preds, size=gts.shape[-2:], interpolation=TF.InterpolationMode.BILINEAR, antialias=True)
         
-        if self.loss_name != "tversky_ce":
+        if self.loss_name not in ["tversky_ce", "dice_ce"]:
             loss = self.loss(preds, gts)
         else:
-            ce_loss = self.ce(preds, gts)
-            tversky_loss = self.tversky(preds, gts)
-            loss = self._lambda * tversky_loss + (1 - self._lambda) * ce_loss
+            first_lose = self.first_loss(preds, gts)
+            second_loss = self.second_loss(preds, gts)
+            loss = (1 - self._lambda) * first_lose + self._lambda * second_loss
 
         return loss
