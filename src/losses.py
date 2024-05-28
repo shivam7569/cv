@@ -401,6 +401,8 @@ class DeepLabv1Loss(nn.Module):
             dice_weights = kwargs.pop("dice_weights", False)
             self.first_loss = nn.CrossEntropyLoss(weight=weight, **kwargs["ce_params"])
             self.second_loss = DiceLoss(weight=weight if dice_weights else None, **kwargs["dice_params"])
+        if self.loss_name == "combo":
+            self.loss = ComboLoss(weight=weight, **kwargs)
 
     def forward(self, preds: torch.Tensor, gts: torch.Tensor):
         preds = TF.resize(img=preds, size=gts.shape[-2:], interpolation=TF.InterpolationMode.BILINEAR, antialias=True)
