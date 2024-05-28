@@ -85,7 +85,7 @@ def UNetConfig(cfg):
     cfg.UNet.OPTIMIZER = CN()
     cfg.UNet.OPTIMIZER.NAME = "SGD"
     cfg.UNet.OPTIMIZER.PARAMS = CN()
-    cfg.UNet.OPTIMIZER.PARAMS.lr = 1e-2
+    cfg.UNet.OPTIMIZER.PARAMS.lr = 0.1
     cfg.UNet.OPTIMIZER.PARAMS.momentum = 0.99
     cfg.UNet.OPTIMIZER.PARAMS.weight_decay = 1e-8
 
@@ -94,7 +94,7 @@ def UNetConfig(cfg):
     cfg.UNet.LR_SCHEDULER.PARAMS = CN()
     cfg.UNet.LR_SCHEDULER.PARAMS.T_0 = 20
     cfg.UNet.LR_SCHEDULER.PARAMS.T_mult = 2
-    cfg.UNet.LR_SCHEDULER.PARAMS.eta_min = 1e-4
+    cfg.UNet.LR_SCHEDULER.PARAMS.eta_min = 1e-3
     cfg.UNet.LR_SCHEDULER.PARAMS.last_epoch = -1
     
     cfg.UNet.LOSS = CN()
