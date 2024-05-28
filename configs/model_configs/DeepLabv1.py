@@ -10,7 +10,7 @@ def DeepLabv1Config(cfg):
     cfg.WRITE_TENSORBOARD_GRAPH = True
 
     cfg.PROFILING = False
-    cfg.EVALUATION_STEPS = 20
+    cfg.EVALUATION_STEPS = 10
 
     cfg.CHECKPOINT.SAVE_EPOCH_CHECKPOINTS = True
     cfg.LOGGING.NAME = "DeepLabv1"
@@ -97,10 +97,10 @@ def DeepLabv1Config(cfg):
     cfg.DeepLabv1.OPTIMIZER.NAME = "SGD"
     cfg.DeepLabv1.OPTIMIZER.PARAMS = CN()
     cfg.DeepLabv1.OPTIMIZER.PARAMS.lr = CN()
-    cfg.DeepLabv1.OPTIMIZER.PARAMS.lr.GLOBAL = 0.001
+    cfg.DeepLabv1.OPTIMIZER.PARAMS.lr.GLOBAL = 0.01
     cfg.DeepLabv1.OPTIMIZER.PARAMS.lr.PARTITION = CN() 
     cfg.DeepLabv1.OPTIMIZER.PARAMS.lr.PARTITION.NAMES = ["feature_extractor", "classifier"] 
-    cfg.DeepLabv1.OPTIMIZER.PARAMS.lr.PARTITION.LRS = [0.001, 0.01]
+    cfg.DeepLabv1.OPTIMIZER.PARAMS.lr.PARTITION.LRS = [0.01, 0.1]
     cfg.DeepLabv1.OPTIMIZER.PARAMS.momentum = 0.9
     cfg.DeepLabv1.OPTIMIZER.PARAMS.weight_decay = 0.0005
 
