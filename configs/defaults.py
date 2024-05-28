@@ -16,6 +16,7 @@ _C.DATA.COCO_VAL_ANNOTATIONS = "/media/drive6/hqh2kor/datasets/coco/annotations/
 _C.DATA.COCO_ID_TO_CORRECT_ID = "/media/drive6/hqh2kor/projects/cv/datasets/coco_files/coco_id_to_ID.json"
 _C.DATA.COCO_ID_TO_NAME = "/media/drive6/hqh2kor/projects/cv/datasets/coco_files/coco_id_to_name.json"
 _C.DATA.COCO_ID_TO_COLOR = "/media/drive6/hqh2kor/projects/cv/datasets/coco_files/color_codes.json"
+_C.DATA.COCO_EXCLUDE_IDS = "/media/drive6/hqh2kor/projects/cv/datasets/coco_files/empty_masks_train.json"
 
 _C.DATA.IMAGENET_CLASS_MAPPING = "/media/drive6/hqh2kor/datasets/imagenet/LOC_synset_mapping.txt"
 _C.DATA.IMAGENET_TRAIN_IMAGES = "/media/drive6/hqh2kor/datasets/imagenet/Data/CLS-LOC/train/"

@@ -139,6 +139,7 @@ class DiceLoss(nn.Module):
             num_classes,
             reduction="mean",
             log_loss: bool=False,
+            log_cosh: bool=False,
             normalize: bool=False,
             smooth: float=0.0,
             ignore_index: int=-1,
@@ -150,6 +151,7 @@ class DiceLoss(nn.Module):
 
         self.num_classes = num_classes
         self.log_loss = log_loss
+        self.log_cosh = log_cosh
         self.smooth = smooth
         self.ignore_index = ignore_index
         self.classes = classes
@@ -157,6 +159,9 @@ class DiceLoss(nn.Module):
         self.weights = weight
         self.normalize = normalize
         self.eps = eps
+
+        if log_cosh: assert log_loss == False
+        if log_loss: assert log_cosh == False
 
     def forward(self, preds: torch.Tensor, gts: torch.Tensor):
 
@@ -201,6 +206,9 @@ class DiceLoss(nn.Module):
 
         if self.weights is not None:
             loss *= self.weights
+
+        if self.log_cosh:
+            loss = loss.cosh().log()
 
         if self.normalize:
             loss /= loss.sum()
@@ -304,6 +312,75 @@ class TverskyLoss(nn.Module):
 
         return loss
     
+class FocalLoss(nn.Module):
+    def __init__(
+            self,
+            weight=None,
+            gamma=2,
+            ignore_index=-1,
+            reduction="none", 
+            focal_reduction="mean",
+            label_smoothing=0.0
+        ):
+
+        super(FocalLoss, self).__init__()
+
+        self.ignore_index = ignore_index
+        self.gamma = gamma
+        self.ce = nn.CrossEntropyLoss(
+            weight=weight,
+            ignore_index=ignore_index,
+            reduction=reduction,
+            label_smoothing=label_smoothing
+            )
+        self.focal_reduction = focal_reduction
+
+    @staticmethod
+    def flatten(pred, target, ignore_index):
+
+        num_class = pred.size(1)
+        pred = pred.permute(0, 2, 3, 1).contiguous()
+        
+        input_flatten = pred.view(-1, num_class)
+        target_flatten = target.view(-1)
+        
+        mask = (target_flatten != ignore_index)
+        input_flatten = input_flatten[mask]
+        target_flatten = target_flatten[mask]
+        
+        return input_flatten, target_flatten
+      
+    def forward(self, pred, target):
+        pred, target = self.flatten(pred, target, self.ignore_index)
+        input_prob = torch.gather(F.softmax(pred, dim=1), 1, target.unsqueeze(1))
+        cross_entropy = self.ce(pred, target)
+        losses = (1 - input_prob).pow_(self.gamma).squeeze_(1) * cross_entropy
+        
+        if self.focal_reduction == "mean":
+            loss = losses.mean()
+        if self.focal_reduction == "sum":
+            loss = losses.sum()
+
+        return loss
+    
+class ComboLoss(nn.Module):
+
+    def __init__(self, weight=None, _lambda=0.5, **kwargs):
+
+        super(ComboLoss, self).__init__()
+
+        self._lambda = _lambda
+        self.focal_loss = FocalLoss(weight=weight, **kwargs["focal_params"])
+        self.dice_loss = DiceLoss(weight=None, **kwargs["dice_params"])
+
+    def forward(self, preds, gts):
+        focal_loss = self.focal_loss(preds, gts)
+        dice_loss = self.dice_loss(preds, gts)
+
+        loss = self._lambda * focal_loss + (1 - self._lambda) * dice_loss
+
+        return loss
+
 class DeepLabv1Loss(nn.Module):
 
     def __init__(self, weight=None, **kwargs):

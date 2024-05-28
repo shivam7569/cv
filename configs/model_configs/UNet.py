@@ -38,6 +38,7 @@ def UNetConfig(cfg):
     cfg.PIPELINES = CN()
     cfg.PIPELINES.TRAIN = [
         dict(func="readImage", params=dict(uint8=True)),
+        dict(func="remove_bg", params=dict(threshold=5, size=256)),
         dict(func="resizeWithAspectRatio", params=dict(size=256)),
         dict(func="mask_to_img_size", params=dict())
     ]
@@ -49,7 +50,7 @@ def UNetConfig(cfg):
 
     cfg.UNet.DATALOADER_TRAIN_PARAMS = CN()
     cfg.UNet.DATALOADER_TRAIN_PARAMS.batch_size = 20
-    cfg.UNet.DATALOADER_TRAIN_PARAMS.shuffle = True
+    cfg.UNet.DATALOADER_TRAIN_PARAMS.shuffle = False
     cfg.UNet.DATALOADER_TRAIN_PARAMS.num_workers = 8
     cfg.UNet.DATALOADER_TRAIN_PARAMS.pin_memory = True
     cfg.UNet.DATALOADER_TRAIN_PARAMS.drop_last = True
@@ -97,14 +98,25 @@ def UNetConfig(cfg):
     cfg.UNet.LR_SCHEDULER.PARAMS.last_epoch = -1
     
     cfg.UNet.LOSS = CN()
-    cfg.UNet.LOSS.NAME = "DiceLoss"
+    cfg.UNet.LOSS.NAME = "ComboLoss"
     cfg.UNet.LOSS.PARAMS = CN()
-    cfg.UNet.LOSS.PARAMS.num_classes = 81
-    cfg.UNet.LOSS.PARAMS.ignore_index = -1
-    cfg.UNet.LOSS.PARAMS.reduction = "mean"
-    cfg.UNet.LOSS.PARAMS.log_loss = True
-    cfg.UNet.LOSS.PARAMS.smooth = 0.0
-    cfg.UNet.LOSS.PARAMS.classes = None
+    cfg.UNet.LOSS.PARAMS._lambda = 0.5
+    cfg.UNet.LOSS.PARAMS.focal_params = CN()
+    cfg.UNet.LOSS.PARAMS.focal_params.gamma = 2
+    cfg.UNet.LOSS.PARAMS.focal_params.focal_reduction = "mean"
+    cfg.UNet.LOSS.PARAMS.focal_params.ignore_index = -1
+    cfg.UNet.LOSS.PARAMS.focal_params.reduction = "none"
+    cfg.UNet.LOSS.PARAMS.focal_params.label_smoothing = 0.0
+    cfg.UNet.LOSS.PARAMS.dice_params = CN()
+    cfg.UNet.LOSS.PARAMS.dice_params.num_classes = 81
+    cfg.UNet.LOSS.PARAMS.dice_params.ignore_index = -1
+    cfg.UNet.LOSS.PARAMS.dice_params.reduction = "mean"
+    cfg.UNet.LOSS.PARAMS.dice_params.log_loss = False
+    cfg.UNet.LOSS.PARAMS.dice_params.log_cosh = True
+    cfg.UNet.LOSS.PARAMS.dice_params.normalize = False
+    cfg.UNet.LOSS.PARAMS.dice_params.smooth = 0.0
+    cfg.UNet.LOSS.PARAMS.dice_params.classes = None
+    cfg.UNet.LOSS.PARAMS.class_weightage_method = "inverse_frequency"
 
     cfg.REGULARIZATION = CN()
     cfg.REGULARIZATION.MODE = ''

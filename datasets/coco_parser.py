@@ -97,4 +97,10 @@ class CocoParser:
             id_vs_name = json.load(f)
 
         return id_vs_name
+    
+    @classmethod
+    def getExcludeIDs(cls):
+        with open(cls.cfg.DATA.COCO_EXCLUDE_IDS, "r") as f:
+            exclude_ids = json.load(f)
 
+        return exclude_ids

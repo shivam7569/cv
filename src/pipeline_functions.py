@@ -7,6 +7,10 @@ __MASK_PIPELINE_FUNCTIONS__ = [
     "mask_to_img_size"
 ]
 
+__COMBINED_PIPELINE_FUNCTIONS__ = [
+    "remove_bg"
+]
+
 
 def readImage(img_path, uint8):
 
@@ -27,7 +31,7 @@ def readImage(img_path, uint8):
 
     return img
 
-def resizeWithAspectRatio(img, size):
+def resizeWithAspectRatio(img, size, interpolation="bilinear"):
     # aspect_ratio = h/w
     img_h, img_w = img.shape[:2]
     aspect_ratio = img_h / img_w
@@ -45,7 +49,12 @@ def resizeWithAspectRatio(img, size):
         new_w = size
         new_h = int(new_w * aspect_ratio)
     
-    img = cv2.resize(img, (new_w, new_h))
+    if interpolation == "bilinear":
+        interpolation_method = cv2.INTER_CUBIC
+    if interpolation == "nearest":
+        interpolation_method = cv2.INTER_NEAREST
+    
+    img = cv2.resize(img, (new_w, new_h), interpolation=interpolation_method)
 
     return img
 
@@ -189,3 +198,61 @@ def img_resize(img, size):
     img = cv2.resize(img, dsize=size)
 
     return img
+
+def remove_bg(img, mask, threshold=5, size=256):
+
+    clamp = lambda x, y, z: max(min(z, x), y)
+
+    H, W = mask.shape
+    top, bottom, left, right = 0, 0, 0, 0
+    for i in range(H):
+        row = mask[i, :]
+        if np.unique(row).shape == (1,) and np.unique(row)[0] == 0:
+            top += 1
+        else:
+            break
+
+    for i in range(H-1, -1, -1):
+        row = mask[i, :]
+        if np.unique(row).shape == (1,) and np.unique(row)[0] == 0:
+            bottom += 1
+        else:
+            break
+
+    for i in range(W):
+        col = mask[:, i]
+        if np.unique(col).shape == (1,) and np.unique(col)[0] == 0:
+            left += 1
+        else:
+            break
+
+    for i in range(W-1, -1, -1):
+        col = mask[:, i]
+        if np.unique(col).shape == (1,) and np.unique(col)[0] == 0:
+            right += 1
+        else:
+            break
+
+    top = clamp(top - threshold, 0, H)
+    bottom = clamp(bottom - threshold, 0, H)
+    right = clamp(right - threshold, 0, W)
+    left = clamp(left - threshold, 0, W)
+
+    new_height = clamp(H - top - bottom, 0, H)
+    new_width = clamp(W - right - left, 0, W)
+
+    diff_height = max(0, size - new_height)
+    new_h_threshold = threshold + (diff_height // 2)
+
+    diff_width = max(0, size - new_width)
+    new_w_threshold = threshold + (diff_width // 2)
+
+    y1 = clamp(top-new_h_threshold, 0, H)
+    y2 = clamp(H-(bottom-new_h_threshold), 0, H)
+    x1 = clamp(left-new_w_threshold, 0, W)
+    x2 = clamp(W-(right-new_w_threshold), 0, W)
+
+    clean_mask = mask[y1: y2, x1: x2]
+    clean_img = img[y1: y2, x1: x2]
+
+    return clean_img, clean_mask

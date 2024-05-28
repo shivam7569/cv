@@ -22,6 +22,7 @@ class SegmentationDataset(Dataset):
         self.coco_parser = CocoParser(phase=phase)
         if phase == "train":
             self.img_dir = Global.CFG.DATA.COCO_TRAIN_IMAGES_DIR
+            self._clean()
         elif phase == "val":
             self.img_dir = Global.CFG.DATA.COCO_VAL_IMAGES_DIR
         else:
@@ -39,6 +40,10 @@ class SegmentationDataset(Dataset):
 
         if debug is not None:
             self.coco_parser.imgIds = random.sample(self.coco_parser.imgIds, k=debug)
+
+    def _clean(self):
+        exclude_ids = self.coco_parser.getExcludeIDs()
+        self.coco_parser.imgIds = [i for i in self.coco_parser.imgIds if i not in exclude_ids]
 
     def collate_fn(self, batch):
 
@@ -69,6 +74,8 @@ class SegmentationDataset(Dataset):
                     img = getattr(PF, function["func"])(img_path, **function["params"])
                 elif function["func"] in PF.__MASK_PIPELINE_FUNCTIONS__:
                     mask = getattr(PF, function["func"])(img, mask, **function["params"])
+                elif function["func"] in PF.__COMBINED_PIPELINE_FUNCTIONS__:
+                    img, mask = getattr(PF, function["func"])(img, mask, **function["params"])
                 else:
                     img = getattr(PF, function["func"])(img, **function["params"])
         else:
