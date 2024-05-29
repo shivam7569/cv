@@ -50,7 +50,6 @@ class Train:
             gradient_accumulation=False,
             gradient_accumulation_batch_size=None,
             exponential_moving_average=None,
-            exponential_moving_average_step=1,
             updateStochasticDepthRate=None
     ):
         
@@ -85,14 +84,13 @@ class Train:
             self.accumulation_iter = gradient_accumulation_batch_size // self.train_loader.batch_size
 
         self.exponential_moving_average = exponential_moving_average
-        self.exponential_moving_average_step = exponential_moving_average_step
         if exponential_moving_average is not None:
             self.ema_model = EMA(
                 model=self.model.module, 
-                beta=exponential_moving_average) \
+                **exponential_moving_average) \
                     if async_parallel else EMA(
                         model=self.model,
-                        beta=exponential_moving_average)
+                        **exponential_moving_average)
 
         if async_parallel:
             Global.LOGGER.info(f"Training asynchronously with parallel model distribution")
@@ -273,7 +271,7 @@ class Train:
             self.checkpointer.save(epoch=epoch, chkp_name="epoch_checkpoint.pth", overwrite=False)
 
     def _exponential_moving_average(self, epoch):
-        if self.exponential_moving_average is not None and epoch % self.exponential_moving_average_step == 0:
+        if self.exponential_moving_average is not None:
             if self.async_parallel:
                 self.ema_model.update(self.model.module)
             else:
@@ -424,7 +422,8 @@ class Train:
         if self.gradient_accumulation:
             Global.LOGGER.info(f"Gradient accumulation is enabled to approximate batch size of: {self.gradient_accumulation_batch_size}")
         if self.exponential_moving_average is not None:
-            Global.LOGGER.info(f"Exponential moving average is enabled while inferencing with decay: {self.exponential_moving_average} and step size: {self.exponential_moving_average_step}")
+            message = ", ".join(f"{key}: {value}" for key, value in self.exponential_moving_average.items())
+            Global.LOGGER.info(f"Exponential moving average is enabled while inferencing with: {message}")
 
     @staticmethod
     def async_train(rank, backbone_name, world_size):

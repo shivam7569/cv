@@ -61,7 +61,11 @@ def CeiTConfig(cfg):
     cfg.TRAIN.PARAMS.gradient_accumulation = True
     cfg.TRAIN.PARAMS.gradient_accumulation_batch_size = 1024
     cfg.TRAIN.PARAMS.gradient_clipping = None
-    cfg.TRAIN.PARAMS.exponential_moving_average = 0.999
+    cfg.TRAIN.PARAMS.exponential_moving_average = CN()
+    cfg.TRAIN.PARAMS.exponential_moving_average.beta = 0.999
+    cfg.TRAIN.PARAMS.exponential_moving_average.warmup_steps = 0
+    cfg.TRAIN.PARAMS.exponential_moving_average.decay_period = 1
+    cfg.TRAIN.PARAMS.exponential_moving_average.decay_method = "constant"
     cfg.TRAIN.PARAMS.updateStochasticDepthRate = None
 
     cfg.DATA_MIXING.enabled = True

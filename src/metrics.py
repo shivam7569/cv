@@ -57,7 +57,7 @@ class ClassificationMetrics:
     
     def accuracy(self):
         tp, fp, tn, fn = self._get_tp_fp_tn_fn()
-        accuracy = (tp + tn) / (tp + fp + tn + fn + self.eps)
+        accuracy = tp.sum() / (tp + fp + tn + fn + self.eps)
 
         return np.round(accuracy, decimals=3)
     

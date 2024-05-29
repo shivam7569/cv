@@ -102,7 +102,8 @@ class EMA(nn.Module):
             decay_period: int = 10,
             inv_gamma: float = 1.0,
             power: float = 2/3,
-            min_value: float = 0.0
+            min_value: float = 0.0,
+            decay_method: str="epoch_based"
     ):
         
         super(EMA, self).__init__()
@@ -129,6 +130,7 @@ class EMA(nn.Module):
 
         self.warmup_steps = warmup_steps
         self.decay_period = decay_period
+        self.decay_method = decay_method
 
         self.inv_gamma = inv_gamma
         self.power = power
@@ -160,7 +162,7 @@ class EMA(nn.Module):
     def update_moving_average(self, ma_model, current_model):
         if self.is_frozen: return
 
-        current_decay = self.get_current_decay()
+        current_decay = self.get_current_decay() if self.decay_method == "epoch_based" else self.beta
 
         for (_, current_params), (_, ma_params) in zip(self.get_params_iter(current_model), self.get_params_iter(ma_model)):
             self.inplace_lerp(ma_params.data, current_params.data, 1.0 - current_decay)
