@@ -29,8 +29,8 @@ def DeepLabv1Config(cfg):
     cfg.TRAIN = CN()
     cfg.TRAIN.PARAMS = CN()
     cfg.TRAIN.PARAMS.epochs = 500
-    cfg.TRAIN.PARAMS.gradient_accumulation = True
-    cfg.TRAIN.PARAMS.gradient_accumulation_batch_size = 128
+    cfg.TRAIN.PARAMS.gradient_accumulation = False
+    cfg.TRAIN.PARAMS.gradient_accumulation_batch_size = None
     cfg.TRAIN.PARAMS.gradient_clipping = None
     cfg.TRAIN.PARAMS.exponential_moving_average = None
     cfg.TRAIN.PARAMS.updateStochasticDepthRate = None
