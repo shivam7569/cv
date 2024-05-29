@@ -218,7 +218,7 @@ class ConditionalRandomFields:
         processed_probmap_batch = []
 
         for i in range(B):
-            img = (img_batch[i] * 255).to(torch.uint8).permute(1, 2, 0).detach().cpu().numpy()[:, :, ::-1]
+            img = (img_batch[i] * 255).to(torch.uint8).permute(1, 2, 0).detach().cpu().numpy()
             prob = output_batch[i].detach().cpu().numpy()
 
             processed_probmap = self.crf(image=img, probmap=prob)
@@ -234,7 +234,7 @@ class ConditionalRandomFields:
         img = ClassificationDataset.INVERSE_TRANSFORM(img)
         output = F.interpolate(input=output, size=(H, W), **self.interpolation_params)
 
-        img = (img[0] * 255).to(torch.uint8).permute(1, 2, 0).numpy()[:, :, ::-1]
+        img = (img[0] * 255).to(torch.uint8).permute(1, 2, 0).numpy()
         prob = output[0].numpy()
 
         processed_probmap = self.crf(image=img, probmap=prob)

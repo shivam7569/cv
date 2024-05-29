@@ -48,7 +48,7 @@ class SegmentationDataset(Dataset):
     def collate_fn(self, batch):
 
         if self.transforms is not None:
-            processed_batch = [(self.transforms((b[0][:, :, ::-1], b[1]))) for b in batch]
+            processed_batch = [(self.transforms((b[0], b[1]))) for b in batch]
         else:
             processed_batch = batch
 
@@ -131,11 +131,10 @@ class SegmentationDataset(Dataset):
 
         overlayed_batch = []
         for i in range(k):
-            img, mask = (images[i] * 255).to(torch.uint8).permute(1, 2, 0).numpy()[:, :, ::-1], masks[i].to(torch.uint8).squeeze(0).numpy()
+            img, mask = (images[i] * 255).to(torch.uint8).permute(1, 2, 0).numpy(), masks[i].to(torch.uint8).squeeze(0).numpy()
             color_mask = getColorMask(mask)
             overlay_image = getOverlay(img, color_mask)
-
-            overlayed_batch.append(torch.from_numpy(overlay_image[:, :, ::-1].copy()).permute(2, 0, 1))
+            overlayed_batch.append(torch.from_numpy(overlay_image.copy()).permute(2, 0, 1))
 
         overlayed_batch = torch.stack(overlayed_batch, dim=0)
 

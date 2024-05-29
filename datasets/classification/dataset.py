@@ -141,7 +141,7 @@ class ClassificationDataset(Dataset):
             pass
 
         if self.transforms is not None:
-            processed_batch = [(self.transforms(b[0][:, :, ::-1]), b[1]) for b in batch]
+            processed_batch = [(self.transforms(b[0]), b[1]) for b in batch]
         else:
             processed_batch = batch
 

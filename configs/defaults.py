@@ -67,4 +67,7 @@ _C.EVALUATION_STEPS = 1
 _C.SAVE_FIRST_SAMPLE = True
 _C.WRITE_TENSORBOARD_GRAPH = True
 
+_C.COCO_MEAN = [0.470, 0.447, 0.408]
+_C.COCO_STD = [0.278, 0.274, 0.289]
+
 os.environ["TORCH_HOME"] = "/media/drive6/hqh2kor/projects/cv/checkpoints/pytorch_hub/"
