@@ -15,6 +15,19 @@ from utils.mask_utils import getColorMask, getOverlay
 
 class SegmentationDataset(Dataset):
 
+    INVERSE_TRANSFORM = T.Compose(
+        [
+            T.Normalize(
+                mean=[0.0, 0.0, 0.0],
+                std=[1/0.278, 1/0.274, 1/0.289]
+            ),
+            T.Normalize(
+                mean=[-0.470, -0.447, -0.408],
+                std=[1., 1., 1.]
+            )
+        ]
+    )
+
     def __init__(self, phase, transforms, ddp, debug=None, log=True):
 
         if log: Global.LOGGER.info(f"Parsing coco segmentation data for {phase}")
@@ -96,7 +109,10 @@ class SegmentationDataset(Dataset):
             classes, class_counts = np.unique(masks.numpy(), return_counts=True)
             
             for i in range(classes.shape[0]):
-                frequencies[str(classes[i])] += class_counts[i]
+                try:
+                    frequencies[str(classes[i])] += class_counts[i]
+                except KeyError:
+                    pass
 
         if 0 in list(frequencies.values()):
             Global.LOGGER.warn(f"While calculating class frequencies, some classes were not found in dataset")
@@ -127,7 +143,7 @@ class SegmentationDataset(Dataset):
         random_indices = torch.randperm(images.size(0))
 
         images, masks = images[random_indices][:k], masks[random_indices][:k]
-        images = ClassificationDataset.INVERSE_TRANSFORM(images)
+        images = SegmentationDataset.INVERSE_TRANSFORM(images)
 
         overlayed_batch = []
         for i in range(k):

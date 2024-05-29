@@ -15,7 +15,10 @@ def getColorMask(class_mask):
     unique_classes = np.unique(class_mask)
 
     for cls_id in unique_classes:
-        color_mask[class_mask == cls_id] = coco_colors[str(cls_id)]
+        try:
+            color_mask[class_mask == cls_id] = coco_colors[str(cls_id)]
+        except:
+            color_mask[class_mask == cls_id] = [0, 0, 0]
 
     return color_mask
 

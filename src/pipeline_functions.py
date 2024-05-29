@@ -3,19 +3,22 @@ import cv2
 import numpy as np
 from PIL import Image
 
+from utils.global_params import Global
+
 __MASK_PIPELINE_FUNCTIONS__ = [
     "mask_to_img_size"
 ]
 
 __COMBINED_PIPELINE_FUNCTIONS__ = [
-    "remove_bg"
+    "remove_bg",
+    "fit_to_size"
 ]
 
 
 def readImage(img_path, uint8):
 
     img = Image.open(img_path).convert("RGB")
-    img = np.array(img)[:, :, ::-1]
+    img = np.array(img)
 
     if len(img.shape) == 2:
         height, width = img.shape
@@ -188,6 +191,14 @@ def fast_rcnn_resize(img, min_size, max_size):
 
     return img
 
+def scale_factor_resize(img, scales):
+    scale = random.choice(scales)
+
+    H, W, _ = img.shape
+    img = cv2.resize(img, (int(W*scale), int(H*scale)), interpolation=cv2.INTER_LINEAR)
+
+    return img
+
 def mask_to_img_size(img, mask):
     height, width, _ = img.shape
     mask = cv2.resize(mask, (width, height), interpolation=cv2.INTER_NEAREST)
@@ -256,3 +267,28 @@ def remove_bg(img, mask, threshold=5, size=256):
     clean_img = img[y1: y2, x1: x2]
 
     return clean_img, clean_mask
+
+def fit_to_size(img, mask, size, padding, ignore_label=-1):
+    H, W, _ = img.shape
+
+    if padding:
+        height_diff = max(0, size - H)
+        width_diff = max(0, size - W)
+
+        padding_kwargs = {
+            "top": height_diff // 2,
+            "bottom": height_diff - (height_diff // 2),
+            "left": width_diff // 2,
+            "right": width_diff - (width_diff // 2),
+            "borderType": cv2.BORDER_CONSTANT
+        }
+
+        if height_diff > 0 or width_diff > 0:
+            img = cv2.copyMakeBorder(img, value=Global.CFG.COCO_MEAN, **padding_kwargs)
+            mask = cv2.copyMakeBorder(mask, value=ignore_label, **padding_kwargs)
+
+    else:
+        img = resizeWithAspectRatio(img=img, interpolation="bilinear")
+        mask = resizeWithAspectRatio(img=mask, interpolation="nearest")
+
+    return img, mask

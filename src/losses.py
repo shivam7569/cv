@@ -405,7 +405,7 @@ class DeepLabv1Loss(nn.Module):
             self.loss = ComboLoss(weight=weight, **kwargs)
 
     def forward(self, preds: torch.Tensor, gts: torch.Tensor):
-        preds = TF.resize(img=preds, size=gts.shape[-2:], interpolation=TF.InterpolationMode.BILINEAR, antialias=True)
+        gts = TF.resize(img=gts, size=preds.shape[-2:], interpolation=TF.InterpolationMode.NEAREST, antialias=True)
         
         if self.loss_name not in ["tversky_ce", "dice_ce"]:
             loss = self.loss(preds, gts)
