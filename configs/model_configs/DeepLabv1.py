@@ -10,7 +10,7 @@ def DeepLabv1Config(cfg):
     cfg.WRITE_TENSORBOARD_GRAPH = True
 
     cfg.PROFILING = False
-    cfg.EVALUATION_STEPS = 15
+    cfg.EVALUATION_STEPS = 20
 
     cfg.CHECKPOINT.SAVE_EPOCH_CHECKPOINTS = True
     cfg.LOGGING.NAME = "DeepLabv1"
@@ -71,7 +71,7 @@ def DeepLabv1Config(cfg):
     cfg.DeepLabv1.DATALOADER_TRAIN_PARAMS.drop_last = True
 
     cfg.DeepLabv1.DATALOADER_VAL_PARAMS = CN()
-    cfg.DeepLabv1.DATALOADER_VAL_PARAMS.batch_size = 8
+    cfg.DeepLabv1.DATALOADER_VAL_PARAMS.batch_size = 12
     cfg.DeepLabv1.DATALOADER_VAL_PARAMS.shuffle = True
     cfg.DeepLabv1.DATALOADER_VAL_PARAMS.num_workers = 8
     cfg.DeepLabv1.DATALOADER_VAL_PARAMS.pin_memory = True
