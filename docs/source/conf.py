@@ -26,3 +26,4 @@ exclude_patterns = []
 
 html_theme = 'renku'
 html_static_path = ['_static']
+html_show_sphinx = False
