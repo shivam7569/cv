@@ -52,6 +52,7 @@ def DeepLabv1Config(cfg):
     cfg.PIPELINES = CN()
     cfg.PIPELINES.TRAIN = [
         dict(func="readImage", params=dict(uint8=True)),
+        dict(func="remove_bg", params=dict(threshold=1, size=400)),
         dict(func="scale_factor_resize", params=dict(scales=[0.5, 0.75, 1.0, 1.25, 1.5])),
         dict(func="mask_to_img_size", params=dict()),
         dict(func="fit_to_size", params=dict(size=400, padding=True, ignore_label=255))
@@ -64,7 +65,7 @@ def DeepLabv1Config(cfg):
 
 
     cfg.DeepLabv1.DATALOADER_TRAIN_PARAMS = CN()
-    cfg.DeepLabv1.DATALOADER_TRAIN_PARAMS.batch_size = 8
+    cfg.DeepLabv1.DATALOADER_TRAIN_PARAMS.batch_size = 12
     cfg.DeepLabv1.DATALOADER_TRAIN_PARAMS.shuffle = True
     cfg.DeepLabv1.DATALOADER_TRAIN_PARAMS.num_workers = 8
     cfg.DeepLabv1.DATALOADER_TRAIN_PARAMS.pin_memory = True
