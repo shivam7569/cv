@@ -11,11 +11,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v3
-      - name: List repository contents
-        run: ls -R
       - name: Install dependencies
         run: |
           pip install sphinx sphinx_rtd_theme myst_parser
+      - name: Install theme
+        run: |
+          pip install renku-sphinx-theme
       - name: Sphinx build
         run: |
           sphinx-build docs/source/ docs/build/
