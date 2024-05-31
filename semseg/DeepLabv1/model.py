@@ -5,15 +5,16 @@ from src.checkpoints import Checkpoint
 
 class DeepLabv1(nn.Module):
 
-    def __init__(self, num_classes, backbone_params, dropout_rate=0.5):
+    def __init__(self, num_classes, backbone_params, load_weights, dropout_rate=0.5):
         
         super(DeepLabv1, self).__init__()
 
         backbone = VGG16(**backbone_params)
-        backbone = Checkpoint.load(
-            model=backbone,
-            name="VGG16"
-        )
+        if load_weights:
+            backbone = Checkpoint.load(
+                model=backbone,
+                name="VGG16"
+            )
 
         for name, module in backbone.feature_extractor.named_modules():
             if "pool" in name:
