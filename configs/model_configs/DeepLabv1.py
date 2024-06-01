@@ -120,7 +120,7 @@ def DeepLabv1Config(cfg):
     cfg.DeepLabv1.LOSS.NAME = "DeepLabv1Loss"
     cfg.DeepLabv1.LOSS.PARAMS = CN()
     cfg.DeepLabv1.LOSS.PARAMS.name = "combo"
-    cfg.DeepLabv1.LOSS.PARAMS._lambda = 0.5
+    cfg.DeepLabv1.LOSS.PARAMS.lambda_ = 0.5
     cfg.DeepLabv1.LOSS.PARAMS.focal_params = CN()
     cfg.DeepLabv1.LOSS.PARAMS.focal_params.gamma = 2
     cfg.DeepLabv1.LOSS.PARAMS.focal_params.focal_reduction = "mean"
@@ -136,7 +136,7 @@ def DeepLabv1Config(cfg):
     cfg.DeepLabv1.LOSS.PARAMS.dice_params.normalize = False
     cfg.DeepLabv1.LOSS.PARAMS.dice_params.smooth = 0.0
     cfg.DeepLabv1.LOSS.PARAMS.dice_params.classes = None
-    cfg.DeepLabv1.LOSS.PARAMS.class_weightage_method = "inverse_frequency"
+    # cfg.DeepLabv1.LOSS.PARAMS.class_weightage_method = "inverse_frequency"
 
     cfg.REGULARIZATION = CN()
     cfg.REGULARIZATION.MODE = ''
