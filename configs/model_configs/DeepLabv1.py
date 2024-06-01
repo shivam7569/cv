@@ -136,7 +136,7 @@ def DeepLabv1Config(cfg):
     cfg.DeepLabv1.LOSS.PARAMS.dice_params.normalize = False
     cfg.DeepLabv1.LOSS.PARAMS.dice_params.smooth = 0.0
     cfg.DeepLabv1.LOSS.PARAMS.dice_params.classes = None
-    # cfg.DeepLabv1.LOSS.PARAMS.class_weightage_method = "inverse_frequency"
+    cfg.DeepLabv1.LOSS.PARAMS.class_weightage_method = "inverse_frequency"
 
     cfg.REGULARIZATION = CN()
     cfg.REGULARIZATION.MODE = ''
