@@ -21,7 +21,7 @@ def DeepLabv1Config(cfg):
 
     cfg.DeepLabv1.PARAMS = CN()
     cfg.DeepLabv1.PARAMS.num_classes = 81
-    cfg.DeepLabv1.PARAMS.load_weights = False
+    cfg.DeepLabv1.PARAMS.load_weights = True
     cfg.DeepLabv1.PARAMS.dropout_rate = 0.5
     cfg.DeepLabv1.PARAMS.backbone_params = CN()
     cfg.DeepLabv1.PARAMS.backbone_params.num_classes = 1000
@@ -53,14 +53,14 @@ def DeepLabv1Config(cfg):
     cfg.PIPELINES = CN()
     cfg.PIPELINES.TRAIN = [
         dict(func="readImage", params=dict(uint8=True)),
-        dict(func="remove_bg", params=dict(threshold=1, size=400)),
+        dict(func="remove_bg", params=dict(threshold=5, size=256)),
         dict(func="scale_factor_resize", params=dict(scales=[0.5, 0.75, 1.0, 1.25, 1.5])),
         dict(func="mask_to_img_size", params=dict()),
-        dict(func="fit_to_size", params=dict(size=400, padding=True, ignore_label=255))
+        dict(func="fit_to_size", params=dict(size=256, padding=True, ignore_label=255))
     ]
     cfg.PIPELINES.VAL = [
         dict(func="readImage", params=dict(uint8=True)),
-        dict(func="resizeWithAspectRatio", params=dict(size=400)),
+        dict(func="resizeWithAspectRatio", params=dict(size=256)),
         dict(func="mask_to_img_size", params=dict())
     ]
 
@@ -83,7 +83,7 @@ def DeepLabv1Config(cfg):
 
     cfg.DeepLabv1.TRANSFORMS.TRAIN = [
         dict(name="SegmentationToPILImage", params=dict()),
-        dict(name="SegmentationRandomCrop", params=dict(size=(361, 361))),
+        dict(name="SegmentationRandomCrop", params=dict(size=(256, 256))),
         dict(name="SegmentationHorizontalFlip", params=dict(p=0.5)),
         dict(name="SegmentationToTensor", params=dict()),
         dict(name="SegmentationNormalize", params=dict(mean=cfg.COCO_MEAN, std=cfg.COCO_STD))
@@ -91,7 +91,7 @@ def DeepLabv1Config(cfg):
 
     cfg.DeepLabv1.TRANSFORMS.VAL = [
         dict(name="SegmentationToPILImage", params=dict()),
-        dict(name="SegmentationCenterCrop", params=dict(size=(361, 361))),
+        dict(name="SegmentationCenterCrop", params=dict(size=(256, 256))),
         dict(name="SegmentationHorizontalFlip", params=dict(p=0.5)),
         dict(name="SegmentationToTensor", params=dict()),
         dict(name="SegmentationNormalize", params=dict(mean=cfg.COCO_MEAN, std=cfg.COCO_STD))
@@ -117,13 +117,24 @@ def DeepLabv1Config(cfg):
     cfg.DeepLabv1.LR_SCHEDULER.PARAMS.last_epoch = -1
 
     cfg.DeepLabv1.LOSS = CN()
-    cfg.DeepLabv1.LOSS.NAME = "DeepLabv1Loss"
+    cfg.DeepLabv1.LOSS.NAME = "ComboLoss"
     cfg.DeepLabv1.LOSS.PARAMS = CN()
-    cfg.DeepLabv1.LOSS.PARAMS.name = "ce"
-    cfg.DeepLabv1.LOSS.PARAMS.size_average = None
-    cfg.DeepLabv1.LOSS.PARAMS.ignore_index = 255
-    cfg.DeepLabv1.LOSS.PARAMS.reduce = None
-    cfg.DeepLabv1.LOSS.PARAMS.reduction = "mean"
+    cfg.DeepLabv1.LOSS.PARAMS._lambda = 0.5
+    cfg.DeepLabv1.LOSS.PARAMS.focal_params = CN()
+    cfg.DeepLabv1.LOSS.PARAMS.focal_params.gamma = 2
+    cfg.DeepLabv1.LOSS.PARAMS.focal_params.focal_reduction = "mean"
+    cfg.DeepLabv1.LOSS.PARAMS.focal_params.ignore_index = -1
+    cfg.DeepLabv1.LOSS.PARAMS.focal_params.reduction = "none"
+    cfg.DeepLabv1.LOSS.PARAMS.focal_params.label_smoothing = 0.0
+    cfg.DeepLabv1.LOSS.PARAMS.dice_params = CN()
+    cfg.DeepLabv1.LOSS.PARAMS.dice_params.num_classes = 81
+    cfg.DeepLabv1.LOSS.PARAMS.dice_params.ignore_index = -1
+    cfg.DeepLabv1.LOSS.PARAMS.dice_params.reduction = "mean"
+    cfg.DeepLabv1.LOSS.PARAMS.dice_params.log_loss = False
+    cfg.DeepLabv1.LOSS.PARAMS.dice_params.log_cosh = True
+    cfg.DeepLabv1.LOSS.PARAMS.dice_params.normalize = False
+    cfg.DeepLabv1.LOSS.PARAMS.dice_params.smooth = 0.0
+    cfg.DeepLabv1.LOSS.PARAMS.dice_params.classes = None
     cfg.DeepLabv1.LOSS.PARAMS.class_weightage_method = "inverse_frequency"
 
     cfg.REGULARIZATION = CN()

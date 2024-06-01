@@ -11,10 +11,13 @@ class DeepLabv1(nn.Module):
 
         backbone = VGG16(**backbone_params)
         if load_weights:
-            backbone = Checkpoint.load(
+            checkpoint = Checkpoint.load(
                 model=backbone,
-                name="VGG16"
+                name="VGG16",
+                return_checkpoint=True
             )
+            feature_extractor_weights = {k.replace("feature_extractor.", ''): v for k, v in checkpoint["model_state_dict"].items() if "feature_extractor" in k and "_1" not in k and "_2" not in k}
+            backbone.feature_extractor.load_state_dict(feature_extractor_weights)
 
         for name, module in backbone.feature_extractor.named_modules():
             if "pool" in name:
