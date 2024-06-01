@@ -66,14 +66,14 @@ def DeepLabv1Config(cfg):
 
 
     cfg.DeepLabv1.DATALOADER_TRAIN_PARAMS = CN()
-    cfg.DeepLabv1.DATALOADER_TRAIN_PARAMS.batch_size = 12
+    cfg.DeepLabv1.DATALOADER_TRAIN_PARAMS.batch_size = 32
     cfg.DeepLabv1.DATALOADER_TRAIN_PARAMS.shuffle = True
     cfg.DeepLabv1.DATALOADER_TRAIN_PARAMS.num_workers = 8
     cfg.DeepLabv1.DATALOADER_TRAIN_PARAMS.pin_memory = True
     cfg.DeepLabv1.DATALOADER_TRAIN_PARAMS.drop_last = True
 
     cfg.DeepLabv1.DATALOADER_VAL_PARAMS = CN()
-    cfg.DeepLabv1.DATALOADER_VAL_PARAMS.batch_size = 12
+    cfg.DeepLabv1.DATALOADER_VAL_PARAMS.batch_size = 16
     cfg.DeepLabv1.DATALOADER_VAL_PARAMS.shuffle = True
     cfg.DeepLabv1.DATALOADER_VAL_PARAMS.num_workers = 8
     cfg.DeepLabv1.DATALOADER_VAL_PARAMS.pin_memory = True
