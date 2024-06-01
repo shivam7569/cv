@@ -83,7 +83,7 @@ def DeepLabv1Config(cfg):
 
     cfg.DeepLabv1.TRANSFORMS.TRAIN = [
         dict(name="SegmentationToPILImage", params=dict()),
-        dict(name="SegmentationRandomCrop", params=dict(size=(256, 256))),
+        dict(name="SegmentationRandomCrop", params=dict(size=(224, 224))),
         dict(name="SegmentationHorizontalFlip", params=dict(p=0.5)),
         dict(name="SegmentationToTensor", params=dict()),
         dict(name="SegmentationNormalize", params=dict(mean=cfg.COCO_MEAN, std=cfg.COCO_STD))
@@ -91,7 +91,7 @@ def DeepLabv1Config(cfg):
 
     cfg.DeepLabv1.TRANSFORMS.VAL = [
         dict(name="SegmentationToPILImage", params=dict()),
-        dict(name="SegmentationCenterCrop", params=dict(size=(256, 256))),
+        dict(name="SegmentationCenterCrop", params=dict(size=(224, 224))),
         dict(name="SegmentationHorizontalFlip", params=dict(p=0.5)),
         dict(name="SegmentationToTensor", params=dict()),
         dict(name="SegmentationNormalize", params=dict(mean=cfg.COCO_MEAN, std=cfg.COCO_STD))
@@ -117,18 +117,19 @@ def DeepLabv1Config(cfg):
     cfg.DeepLabv1.LR_SCHEDULER.PARAMS.last_epoch = -1
 
     cfg.DeepLabv1.LOSS = CN()
-    cfg.DeepLabv1.LOSS.NAME = "ComboLoss"
+    cfg.DeepLabv1.LOSS.NAME = "DeepLabv1Loss"
     cfg.DeepLabv1.LOSS.PARAMS = CN()
+    cfg.DeepLabv1.LOSS.PARAMS.name = "combo"
     cfg.DeepLabv1.LOSS.PARAMS._lambda = 0.5
     cfg.DeepLabv1.LOSS.PARAMS.focal_params = CN()
     cfg.DeepLabv1.LOSS.PARAMS.focal_params.gamma = 2
     cfg.DeepLabv1.LOSS.PARAMS.focal_params.focal_reduction = "mean"
-    cfg.DeepLabv1.LOSS.PARAMS.focal_params.ignore_index = -1
+    cfg.DeepLabv1.LOSS.PARAMS.focal_params.ignore_index = 255
     cfg.DeepLabv1.LOSS.PARAMS.focal_params.reduction = "none"
     cfg.DeepLabv1.LOSS.PARAMS.focal_params.label_smoothing = 0.0
     cfg.DeepLabv1.LOSS.PARAMS.dice_params = CN()
     cfg.DeepLabv1.LOSS.PARAMS.dice_params.num_classes = 81
-    cfg.DeepLabv1.LOSS.PARAMS.dice_params.ignore_index = -1
+    cfg.DeepLabv1.LOSS.PARAMS.dice_params.ignore_index = 255
     cfg.DeepLabv1.LOSS.PARAMS.dice_params.reduction = "mean"
     cfg.DeepLabv1.LOSS.PARAMS.dice_params.log_loss = False
     cfg.DeepLabv1.LOSS.PARAMS.dice_params.log_cosh = True
