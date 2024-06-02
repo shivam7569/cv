@@ -120,10 +120,10 @@ def DeepLabv1Config(cfg):
     cfg.DeepLabv1.LOSS.NAME = "DeepLabv1Loss"
     cfg.DeepLabv1.LOSS.PARAMS = CN()
     cfg.DeepLabv1.LOSS.PARAMS.name = "ce"
-    cfg.DeepLabv1.LOSS.PARAMS = CN()
+    cfg.DeepLabv1.LOSS.PARAMS.size_average = None
     cfg.DeepLabv1.LOSS.PARAMS.ignore_index = 255
+    cfg.DeepLabv1.LOSS.PARAMS.reduce = None
     cfg.DeepLabv1.LOSS.PARAMS.reduction = "mean"
-    cfg.DeepLabv1.LOSS.PARAMS.label_smoothing = 0.0
     cfg.DeepLabv1.LOSS.PARAMS.class_weightage_method = "inverse_frequency"
 
     cfg.REGULARIZATION = CN()
