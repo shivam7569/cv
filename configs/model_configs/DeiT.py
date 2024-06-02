@@ -109,7 +109,7 @@ def DeiTConfig(cfg):
     cfg.DeiT.OPTIMIZER = CN()
     cfg.DeiT.OPTIMIZER.NAME = "AdamW"
     cfg.DeiT.OPTIMIZER.PARAMS = CN()
-    cfg.DeiT.OPTIMIZER.PARAMS.lr = 3e-3 * cfg.num_gpus * (cfg.DeiT.DATALOADER_TRAIN_PARAMS.batch_size / 512)
+    cfg.DeiT.OPTIMIZER.PARAMS.lr = 3e-3
     cfg.DeiT.OPTIMIZER.PARAMS.betas = (0.9, 0.999)
     cfg.DeiT.OPTIMIZER.PARAMS.weight_decay = 0.05
 
