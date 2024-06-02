@@ -30,7 +30,7 @@ def DeiTConfig(cfg):
     cfg.DeiT.PARAMS.num_encoder_blocks = 12
     cfg.DeiT.PARAMS.dropout = 0.1
     cfg.DeiT.PARAMS.encoder_dropout = 0.1
-    cfg.DeiT.PARAMS.encoder_attention_dropout = None
+    cfg.DeiT.PARAMS.encoder_attention_dropout = 0.0
     cfg.DeiT.PARAMS.patchify_technique = "linear"
     cfg.DeiT.PARAMS.stochastic_depth = True
     cfg.DeiT.PARAMS.stochastic_depth_mp = 0.1
