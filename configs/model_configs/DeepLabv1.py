@@ -21,7 +21,7 @@ def DeepLabv1Config(cfg):
 
     cfg.DeepLabv1.PARAMS = CN()
     cfg.DeepLabv1.PARAMS.num_classes = 81
-    cfg.DeepLabv1.PARAMS.load_weights = True
+    cfg.DeepLabv1.PARAMS.load_weights = False
     cfg.DeepLabv1.PARAMS.dropout_rate = 0.5
     cfg.DeepLabv1.PARAMS.backbone_params = CN()
     cfg.DeepLabv1.PARAMS.backbone_params.num_classes = 1000
