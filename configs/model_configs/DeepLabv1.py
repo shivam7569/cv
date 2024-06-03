@@ -10,7 +10,7 @@ def DeepLabv1Config(cfg):
     cfg.WRITE_TENSORBOARD_GRAPH = True
 
     cfg.PROFILING = False
-    cfg.EVALUATION_STEPS = 10
+    cfg.EVALUATION_STEPS = 18
 
     cfg.CHECKPOINT.SAVE_EPOCH_CHECKPOINTS = True
     cfg.LOGGING.NAME = "DeepLabv1"
