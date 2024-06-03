@@ -54,6 +54,8 @@ class Eval:
                 loss += batch_loss
 
                 data_iterator.set_postfix(loss=batch_loss, refresh=True)
+
+                if isinstance(output, (list, tuple)): output = output[0]
                 predicted_classes = torch.argmax(F.softmax(output, dim=1), dim=1)
 
                 self.metrics.update(lbl_batch.cpu().numpy(), predicted_classes.cpu().numpy())
