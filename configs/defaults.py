@@ -52,6 +52,8 @@ _C.PROFILER.PATH = "/media/drive6/hqh2kor/projects/cv/profiler/"
 _C.PATHS = CN()
 _C.PATHS.BACKBONES = "/media/drive6/hqh2kor/projects/cv/backbones/"
 
+_C.FONT_PATH = "/media/drive6/hqh2kor/projects/cv/utils/_files/Aileron-Black.otf"
+
 _C.DATA_MIXING = CN()
 _C.DATA_MIXING.enabled = False
 _C.DATA_MIXING.one_hot_targets = False

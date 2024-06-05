@@ -183,7 +183,7 @@ class ClassificationDataset(Dataset):
         canvas = T.ToPILImage()(out)
 
         draw = ImageDraw.Draw(canvas)
-        font = ImageFont.truetype("/media/drive6/hqh2kor/projects/cv/utils/_files/Aileron-Black.otf", 20)
+        font = ImageFont.truetype(Global.CFG.FONT_PATH, 20)
 
         for i in range(4):
             for j in range(k // 4):
