@@ -8,51 +8,53 @@ torch.backends.cudnn.benchmark = True
 
 _C = CN()
 
+project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 _C.DATA = CN()
 _C.DATA.COCO_TRAIN_IMAGES_DIR = "/media/drive6/hqh2kor/datasets/coco/train2017/"
 _C.DATA.COCO_VAL_IMAGES_DIR = "/media/drive6/hqh2kor/datasets/coco/val2017/"
 _C.DATA.COCO_TRAIN_ANNOTATIONS = "/media/drive6/hqh2kor/datasets/coco/annotations/instances_train2017.json"
 _C.DATA.COCO_VAL_ANNOTATIONS = "/media/drive6/hqh2kor/datasets/coco/annotations/instances_val2017.json"
-_C.DATA.COCO_ID_TO_CORRECT_ID = "/media/drive6/hqh2kor/projects/cv/datasets/coco_files/coco_id_to_ID.json"
-_C.DATA.COCO_ID_TO_NAME = "/media/drive6/hqh2kor/projects/cv/datasets/coco_files/coco_id_to_name.json"
-_C.DATA.COCO_ID_TO_COLOR = "/media/drive6/hqh2kor/projects/cv/datasets/coco_files/color_codes.json"
-_C.DATA.COCO_EXCLUDE_IDS = "/media/drive6/hqh2kor/projects/cv/datasets/coco_files/empty_masks_train.json"
+_C.DATA.COCO_ID_TO_CORRECT_ID = f"{project_dir}/datasets/coco_files/coco_id_to_ID.json"
+_C.DATA.COCO_ID_TO_NAME = f"{project_dir}/datasets/coco_files/coco_id_to_name.json"
+_C.DATA.COCO_ID_TO_COLOR = f"{project_dir}/datasets/coco_files/color_codes.json"
+_C.DATA.COCO_EXCLUDE_IDS = f"{project_dir}/datasets/coco_files/empty_masks_train.json"
 
 _C.DATA.IMAGENET_CLASS_MAPPING = "/media/drive6/hqh2kor/datasets/imagenet/LOC_synset_mapping.txt"
 _C.DATA.IMAGENET_TRAIN_IMAGES = "/media/drive6/hqh2kor/datasets/imagenet/Data/CLS-LOC/train/"
 _C.DATA.IMAGENET_VAL_IMAGES = "/media/drive6/hqh2kor/datasets/imagenet/Data/CLS-LOC/val/"
 _C.DATA.IMAGENET_TRAIN_ANNOTATIONS = "/media/drive6/hqh2kor/datasets/imagenet/Annotations/CLS-LOC/train/"
 _C.DATA.IMAGENET_VAL_ANNOTATIONS = "/media/drive6/hqh2kor/datasets/imagenet/Annotations/CLS-LOC/val/"
-_C.DATA.IMAGENET_TRAIN_TXT = "/media/drive6/hqh2kor/projects/cv/datasets/classification/imagenet_txts/train.txt"
-_C.DATA.IMAGENET_VAL_TXT = "/media/drive6/hqh2kor/projects/cv/datasets/classification/imagenet_txts/val.txt"
-_C.DATA.IMAGENET_CLASS_VS_ID_TXT = "/media/drive6/hqh2kor/projects/cv/datasets/classification/imagenet_txts/class_vs_id.txt"
-_C.DATA.IMAGENET_CLASS_VS_NAME_TXT = "/media/drive6/hqh2kor/projects/cv/datasets/classification/imagenet_txts/class_vs_name.txt"
+_C.DATA.IMAGENET_TRAIN_TXT = f"{project_dir}/datasets/classification/imagenet_txts/train.txt"
+_C.DATA.IMAGENET_VAL_TXT = f"{project_dir}/datasets/classification/imagenet_txts/val.txt"
+_C.DATA.IMAGENET_CLASS_VS_ID_TXT = f"{project_dir}/datasets/classification/imagenet_txts/class_vs_id.txt"
+_C.DATA.IMAGENET_CLASS_VS_NAME_TXT = f"{project_dir}/datasets/classification/imagenet_txts/class_vs_name.txt"
 
 _C.LOGGING = CN()
 _C.LOGGING.LEVEL = logging.INFO
 _C.LOGGING.NAME = "Process"
-_C.LOGGING.PATH = "/media/drive6/hqh2kor/projects/cv/logs/"
+_C.LOGGING.PATH = f"{project_dir}/logs/"
 
 _C.METRICS = CN()
 _C.METRICS.NAME = "Process"
-_C.METRICS.PATH = "/media/drive6/hqh2kor/projects/cv/metrics/"
+_C.METRICS.PATH = f"{project_dir}/metrics/"
 _C.METRICS.COLUMNS = ["epoch", "train_loss", "eval_loss", "eval_accuracy", "eval_precision", "eval_recall", "eval_f1_score"]
 _C.METRICS.SEG_COLUMNS = ["epoch", "train_loss", "eval_loss", "eval_accuracy", "eval_precision", "eval_recall", "eval_f1_score", "eval_iou_score", "eval_dice_score", "eval_kappa_score"]
 
 _C.CHECKPOINT = CN()
 _C.CHECKPOINT.TREE = False
-_C.CHECKPOINT.PATH = "/media/drive6/hqh2kor/projects/cv/checkpoints/"
+_C.CHECKPOINT.PATH = f"{project_dir}/checkpoints/"
 
 _C.TENSORBOARD = CN()
-_C.TENSORBOARD.PATH = "/media/drive6/hqh2kor/projects/cv/tensorboard/"
+_C.TENSORBOARD.PATH = f"{project_dir}/tensorboard/"
 
 _C.PROFILER = CN()
-_C.PROFILER.PATH = "/media/drive6/hqh2kor/projects/cv/profiler/"
+_C.PROFILER.PATH = f"{project_dir}/profiler/"
 
 _C.PATHS = CN()
-_C.PATHS.BACKBONES = "/media/drive6/hqh2kor/projects/cv/backbones/"
+_C.PATHS.BACKBONES = f"{project_dir}/backbones/"
 
-_C.FONT_PATH = "/media/drive6/hqh2kor/projects/cv/utils/_files/Aileron-Black.otf"
+_C.FONT_PATH = f"{project_dir}/utils/_files/Aileron-Black.otf"
 
 _C.DATA_MIXING = CN()
 _C.DATA_MIXING.enabled = False
@@ -73,4 +75,4 @@ _C.WRITE_TENSORBOARD_GRAPH = True
 _C.COCO_MEAN = [0.470, 0.447, 0.408]
 _C.COCO_STD = [0.278, 0.274, 0.289]
 
-os.environ["TORCH_HOME"] = "/media/drive6/hqh2kor/projects/cv/checkpoints/pytorch_hub/"
+os.environ["TORCH_HOME"] = f"{project_dir}/checkpoints/pytorch_hub/"
