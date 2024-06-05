@@ -451,6 +451,10 @@ class Train:
                 strict=True
             )
 
+        if cfg.USE_SYNC_BN:
+            Global.LOGGER.info(f"Converting BatchNorm layers to SyncBatchNorm")
+            model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
+
         model.to(device=rank)
 
         model = DDP(model, device_ids=[rank])
