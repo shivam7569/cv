@@ -63,7 +63,7 @@ def VGG16Config(cfg):
     cfg.VGG16.OPTIMIZER = CN()
     cfg.VGG16.OPTIMIZER.NAME = "SGD"
     cfg.VGG16.OPTIMIZER.PARAMS = CN()
-    cfg.VGG16.OPTIMIZER.PARAMS.lr = 0.01 * cfg.num_gpus 
+    cfg.VGG16.OPTIMIZER.PARAMS.lr = 0.01
     cfg.VGG16.OPTIMIZER.PARAMS.momentum = 0.9
     cfg.VGG16.OPTIMIZER.PARAMS.weight_decay = 0.0005
 
