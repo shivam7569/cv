@@ -435,6 +435,10 @@ class Train:
         Global.LOGGER.info(f"Instantiating {cfg.LOGGING.NAME} Architecture for segmentation on 81 classes")
         model = getattr(semseg, semseg_model_name)(**cfg[semseg_model_name].PARAMS)
 
+        if cfg.USE_SYNC_BN:
+            Global.LOGGER.info(f"Converting BatchNorm layers to SyncBatchNorm")
+            model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
+
         model.to(device=rank)
 
         model = DDP(model, device_ids=[rank])
