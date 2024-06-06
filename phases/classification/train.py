@@ -132,6 +132,8 @@ class Train:
             if not self.async_parallel_rank:
                 Global.METRICS["epoch"] = epoch
                 Global.METRICS["train_loss"] = epoch_loss
+                
+                if Global.CFG.SCHEDULE_FREE_TRAINING: self.optimizer.eval()
                 self.evaluation.start(epoch=epoch)
 
                 if self.evaluation.epoch_metrics["f1_score"] > f1_score:
@@ -157,6 +159,9 @@ class Train:
     def train_for_one_epoch(self, train_loader, epoch):
 
         self.model.train()
+
+        if Global.CFG.SCHEDULE_FREE_TRAINING: self.optimizer.train()
+
         num_iterations = len(train_loader)
         data_iterator = tqdm(train_loader, desc=f"Training: Epoch {epoch+1}", unit="batch") if not self.async_parallel_rank else train_loader
         
@@ -499,13 +504,17 @@ class Train:
         )
         Global.LOGGER.info(f"Data loaders instantiated")
 
-        Global.LOGGER.info(f"Instantiating Learning Rate Scheduler: {cfg[backbone_name].LR_SCHEDULER.NAME}")
-        lr_scheduler = Train.get_lr_scheduler(
-            scheduler_name=cfg[backbone_name].LR_SCHEDULER.NAME,
-            optimizer=optimizer,
-            scheduler_params=cfg[backbone_name].LR_SCHEDULER.PARAMS
-        )
-        Global.LOGGER.info(f"Learning Rate Scheduler instantiated")
+        try:
+            Global.LOGGER.info(f"Instantiating Learning Rate Scheduler: {cfg[backbone_name].LR_SCHEDULER.NAME}")
+            lr_scheduler = Train.get_lr_scheduler(
+                scheduler_name=cfg[backbone_name].LR_SCHEDULER.NAME,
+                optimizer=optimizer,
+                scheduler_params=cfg[backbone_name].LR_SCHEDULER.PARAMS
+            )
+            Global.LOGGER.info(f"Learning Rate Scheduler instantiated")
+        except:
+            Global.LOGGER.info(f"No Learning Rate Scheduler specified")
+            lr_scheduler = None
 
         if Global.CFG.RESUME_TRAINING:
             Global.LOGGER.info(f"Loading state of lr scheduler from checkpoint")

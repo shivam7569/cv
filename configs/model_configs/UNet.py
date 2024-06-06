@@ -10,7 +10,8 @@ def UNetConfig(cfg):
     cfg.WRITE_TENSORBOARD_GRAPH = True
 
     cfg.PROFILING = False
-    cfg.EVALUATION_STEPS = 10
+    cfg.EVALUATION_STEPS = 20
+    cfg.SCHEDULE_FREE_TRAINING = True
 
     cfg.CHECKPOINT.SAVE_EPOCH_CHECKPOINTS = True
     cfg.LOGGING.NAME = "UNet"
@@ -82,20 +83,27 @@ def UNetConfig(cfg):
         dict(name="SegmentationNormalize", params=dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
     ]
 
+    # cfg.UNet.OPTIMIZER = CN()
+    # cfg.UNet.OPTIMIZER.NAME = "SGD"
+    # cfg.UNet.OPTIMIZER.PARAMS = CN()
+    # cfg.UNet.OPTIMIZER.PARAMS.lr = 0.1
+    # cfg.UNet.OPTIMIZER.PARAMS.momentum = 0.99
+    # cfg.UNet.OPTIMIZER.PARAMS.weight_decay = 1e-8
+
     cfg.UNet.OPTIMIZER = CN()
-    cfg.UNet.OPTIMIZER.NAME = "SGD"
+    cfg.UNet.OPTIMIZER.NAME = "SGDScheduleFree"
     cfg.UNet.OPTIMIZER.PARAMS = CN()
     cfg.UNet.OPTIMIZER.PARAMS.lr = 0.1
     cfg.UNet.OPTIMIZER.PARAMS.momentum = 0.99
     cfg.UNet.OPTIMIZER.PARAMS.weight_decay = 1e-8
 
-    cfg.UNet.LR_SCHEDULER = CN()
-    cfg.UNet.LR_SCHEDULER.NAME = "CosineAnnealingWarmRestarts"
-    cfg.UNet.LR_SCHEDULER.PARAMS = CN()
-    cfg.UNet.LR_SCHEDULER.PARAMS.T_0 = 20
-    cfg.UNet.LR_SCHEDULER.PARAMS.T_mult = 2
-    cfg.UNet.LR_SCHEDULER.PARAMS.eta_min = 1e-3
-    cfg.UNet.LR_SCHEDULER.PARAMS.last_epoch = -1
+    # cfg.UNet.LR_SCHEDULER = CN()
+    # cfg.UNet.LR_SCHEDULER.NAME = "CosineAnnealingWarmRestarts"
+    # cfg.UNet.LR_SCHEDULER.PARAMS = CN()
+    # cfg.UNet.LR_SCHEDULER.PARAMS.T_0 = 20
+    # cfg.UNet.LR_SCHEDULER.PARAMS.T_mult = 2
+    # cfg.UNet.LR_SCHEDULER.PARAMS.eta_min = 1e-3
+    # cfg.UNet.LR_SCHEDULER.PARAMS.last_epoch = -1
     
     cfg.UNet.LOSS = CN()
     cfg.UNet.LOSS.NAME = "ComboLoss"
