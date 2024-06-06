@@ -9,6 +9,7 @@ torch.backends.cudnn.benchmark = True
 _C = CN()
 
 project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+project_dir = "/media/drive6/hqh2kor/projects/cv"
 
 _C.DATA = CN()
 _C.DATA.COCO_TRAIN_IMAGES_DIR = "/media/drive6/hqh2kor/datasets/coco/train2017/"
