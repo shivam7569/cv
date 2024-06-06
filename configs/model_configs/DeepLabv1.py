@@ -10,7 +10,7 @@ def DeepLabv1Config(cfg):
     cfg.WRITE_TENSORBOARD_GRAPH = True
 
     cfg.PROFILING = False
-    cfg.EVALUATION_STEPS = 18
+    cfg.EVALUATION_STEPS = 25
 
     cfg.CHECKPOINT.SAVE_EPOCH_CHECKPOINTS = True
     cfg.LOGGING.NAME = "DeepLabv1"
@@ -109,10 +109,9 @@ def DeepLabv1Config(cfg):
     cfg.DeepLabv1.OPTIMIZER.PARAMS.weight_decay = 0.0005
 
     cfg.DeepLabv1.LR_SCHEDULER = CN()
-    cfg.DeepLabv1.LR_SCHEDULER.NAME = "CosineAnnealingWarmRestarts"
+    cfg.DeepLabv1.LR_SCHEDULER.NAME = "CosineAnnealingLR"
     cfg.DeepLabv1.LR_SCHEDULER.PARAMS = CN()
-    cfg.DeepLabv1.LR_SCHEDULER.PARAMS.T_0 = 20
-    cfg.DeepLabv1.LR_SCHEDULER.PARAMS.T_mult = 2
+    cfg.DeepLabv1.LR_SCHEDULER.PARAMS.T_max = 500
     cfg.DeepLabv1.LR_SCHEDULER.PARAMS.eta_min = 1e-4
     cfg.DeepLabv1.LR_SCHEDULER.PARAMS.last_epoch = -1
 
