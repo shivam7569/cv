@@ -11,21 +11,24 @@ _C = CN()
 project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 project_dir = "/media/drive6/hqh2kor/projects/cv"
 
+coco_data_dir = "/media/drive6/hqh2kor/datasets/coco"
+imagenet_data_dir = "/media/drive6/hqh2kor/datasets/imagenet"
+
 _C.DATA = CN()
-_C.DATA.COCO_TRAIN_IMAGES_DIR = "/media/drive6/hqh2kor/datasets/coco/train2017/"
-_C.DATA.COCO_VAL_IMAGES_DIR = "/media/drive6/hqh2kor/datasets/coco/val2017/"
-_C.DATA.COCO_TRAIN_ANNOTATIONS = "/media/drive6/hqh2kor/datasets/coco/annotations/instances_train2017.json"
-_C.DATA.COCO_VAL_ANNOTATIONS = "/media/drive6/hqh2kor/datasets/coco/annotations/instances_val2017.json"
+_C.DATA.COCO_TRAIN_IMAGES_DIR = f"{coco_data_dir}/train2017/"
+_C.DATA.COCO_VAL_IMAGES_DIR = f"{coco_data_dir}/val2017/"
+_C.DATA.COCO_TRAIN_ANNOTATIONS = f"{coco_data_dir}/annotations/instances_train2017.json"
+_C.DATA.COCO_VAL_ANNOTATIONS = f"{coco_data_dir}/annotations/instances_val2017.json"
 _C.DATA.COCO_ID_TO_CORRECT_ID = f"{project_dir}/datasets/coco_files/coco_id_to_ID.json"
 _C.DATA.COCO_ID_TO_NAME = f"{project_dir}/datasets/coco_files/coco_id_to_name.json"
 _C.DATA.COCO_ID_TO_COLOR = f"{project_dir}/datasets/coco_files/color_codes.json"
 _C.DATA.COCO_EXCLUDE_IDS = f"{project_dir}/datasets/coco_files/empty_masks_train.json"
 
-_C.DATA.IMAGENET_CLASS_MAPPING = "/media/drive6/hqh2kor/datasets/imagenet/LOC_synset_mapping.txt"
-_C.DATA.IMAGENET_TRAIN_IMAGES = "/media/drive6/hqh2kor/datasets/imagenet/Data/CLS-LOC/train/"
-_C.DATA.IMAGENET_VAL_IMAGES = "/media/drive6/hqh2kor/datasets/imagenet/Data/CLS-LOC/val/"
-_C.DATA.IMAGENET_TRAIN_ANNOTATIONS = "/media/drive6/hqh2kor/datasets/imagenet/Annotations/CLS-LOC/train/"
-_C.DATA.IMAGENET_VAL_ANNOTATIONS = "/media/drive6/hqh2kor/datasets/imagenet/Annotations/CLS-LOC/val/"
+_C.DATA.IMAGENET_CLASS_MAPPING = f"{imagenet_data_dir}/LOC_synset_mapping.txt"
+_C.DATA.IMAGENET_TRAIN_IMAGES = f"{imagenet_data_dir}/Data/CLS-LOC/train/"
+_C.DATA.IMAGENET_VAL_IMAGES = f"{imagenet_data_dir}/Data/CLS-LOC/val/"
+_C.DATA.IMAGENET_TRAIN_ANNOTATIONS = f"{imagenet_data_dir}/Annotations/CLS-LOC/train/"
+_C.DATA.IMAGENET_VAL_ANNOTATIONS = f"{imagenet_data_dir}/Annotations/CLS-LOC/val/"
 _C.DATA.IMAGENET_TRAIN_TXT = f"{project_dir}/datasets/classification/imagenet_txts/train.txt"
 _C.DATA.IMAGENET_VAL_TXT = f"{project_dir}/datasets/classification/imagenet_txts/val.txt"
 _C.DATA.IMAGENET_CLASS_VS_ID_TXT = f"{project_dir}/datasets/classification/imagenet_txts/class_vs_id.txt"
