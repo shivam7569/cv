@@ -16,7 +16,7 @@ def ResNetConfig(cfg):
 
     cfg.ResNet.PARAMS = CN()
     cfg.ResNet.PARAMS.num_classes = 1000
-    cfg.ResNet.PARAMS.num_blocks = [3, 4, 23, 3]
+    cfg.ResNet.PARAMS.num_blocks = [3, 4, 6, 3]
     cfg.ResNet.PARAMS.in_channels = 3
 
     cfg.TRAIN = CN()
@@ -53,7 +53,7 @@ def ResNetConfig(cfg):
     ]
 
     cfg.ResNet.DATALOADER_TRAIN_PARAMS = CN()
-    cfg.ResNet.DATALOADER_TRAIN_PARAMS.batch_size = 64
+    cfg.ResNet.DATALOADER_TRAIN_PARAMS.batch_size = 128
     cfg.ResNet.DATALOADER_TRAIN_PARAMS.shuffle = True
     cfg.ResNet.DATALOADER_TRAIN_PARAMS.num_workers = 8
     cfg.ResNet.DATALOADER_TRAIN_PARAMS.pin_memory = True
@@ -102,7 +102,7 @@ def ResNetConfig(cfg):
     cfg.ResNet.LR_SCHEDULER.PARAMS.after_scheduler.NAME = "CosineAnnealingWarmRestarts"
     cfg.ResNet.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS = CN()
     cfg.ResNet.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_0 = 15
-    cfg.ResNet.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_mult = 4
+    cfg.ResNet.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_mult = 3
     cfg.ResNet.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.eta_min = 1e-8
     cfg.ResNet.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.last_epoch = -1
 
