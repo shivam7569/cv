@@ -29,9 +29,9 @@ def UNetConfig(cfg):
 
     cfg.TRAIN = CN()
     cfg.TRAIN.PARAMS = CN()
-    cfg.TRAIN.PARAMS.epochs = 500
+    cfg.TRAIN.PARAMS.epochs = 600
     cfg.TRAIN.PARAMS.gradient_accumulation = False
-    cfg.TRAIN.PARAMS.gradient_accumulation_batch_size = 64
+    cfg.TRAIN.PARAMS.gradient_accumulation_batch_size = None
     cfg.TRAIN.PARAMS.gradient_clipping = None
     cfg.TRAIN.PARAMS.exponential_moving_average = None
     cfg.TRAIN.PARAMS.updateStochasticDepthRate = None
@@ -39,7 +39,7 @@ def UNetConfig(cfg):
     cfg.PIPELINES = CN()
     cfg.PIPELINES.TRAIN = [
         dict(func="readImage", params=dict(uint8=True)),
-        dict(func="remove_bg", params=dict(threshold=5, size=256)),
+        dict(func="remove_bg", params=dict(threshold=2, size=256)),
         dict(func="resizeWithAspectRatio", params=dict(size=256)),
         dict(func="mask_to_img_size", params=dict())
     ]
@@ -72,7 +72,7 @@ def UNetConfig(cfg):
         dict(name="SegmentationColorJitter", params=dict(brightness=0.4, contrast=0.4, saturation=0.4, p=0.05)),
         dict(name="SegmentationHorizontalFlip", params=dict(p=0.5)),
         dict(name="SegmentationToTensor", params=dict()),
-        dict(name="SegmentationNormalize", params=dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
+        dict(name="SegmentationNormalize", params=dict(mean=cfg.COCO_MEAN, std=cfg.COCO_STD))
     ]
 
     cfg.UNet.TRANSFORMS.VAL = [
@@ -80,30 +80,22 @@ def UNetConfig(cfg):
         dict(name="SegmentationCenterCrop", params=dict(size=(224, 224))),
         dict(name="SegmentationHorizontalFlip", params=dict(p=0.5)),
         dict(name="SegmentationToTensor", params=dict()),
-        dict(name="SegmentationNormalize", params=dict(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]))
+        dict(name="SegmentationNormalize", params=dict(mean=cfg.COCO_MEAN, std=cfg.COCO_STD))
     ]
 
-    # cfg.UNet.OPTIMIZER = CN()
-    # cfg.UNet.OPTIMIZER.NAME = "SGD"
-    # cfg.UNet.OPTIMIZER.PARAMS = CN()
-    # cfg.UNet.OPTIMIZER.PARAMS.lr = 0.1
-    # cfg.UNet.OPTIMIZER.PARAMS.momentum = 0.99
-    # cfg.UNet.OPTIMIZER.PARAMS.weight_decay = 1e-8
-
     cfg.UNet.OPTIMIZER = CN()
-    cfg.UNet.OPTIMIZER.NAME = "SGDScheduleFree"
+    cfg.UNet.OPTIMIZER.NAME = "SGD"
     cfg.UNet.OPTIMIZER.PARAMS = CN()
     cfg.UNet.OPTIMIZER.PARAMS.lr = 0.1
     cfg.UNet.OPTIMIZER.PARAMS.momentum = 0.99
     cfg.UNet.OPTIMIZER.PARAMS.weight_decay = 1e-8
 
-    # cfg.UNet.LR_SCHEDULER = CN()
-    # cfg.UNet.LR_SCHEDULER.NAME = "CosineAnnealingWarmRestarts"
-    # cfg.UNet.LR_SCHEDULER.PARAMS = CN()
-    # cfg.UNet.LR_SCHEDULER.PARAMS.T_0 = 20
-    # cfg.UNet.LR_SCHEDULER.PARAMS.T_mult = 2
-    # cfg.UNet.LR_SCHEDULER.PARAMS.eta_min = 1e-3
-    # cfg.UNet.LR_SCHEDULER.PARAMS.last_epoch = -1
+    cfg.UNet.LR_SCHEDULER = CN()
+    cfg.UNet.LR_SCHEDULER.NAME = "CosineAnnealingLR"
+    cfg.UNet.LR_SCHEDULER.PARAMS = CN()
+    cfg.UNet.LR_SCHEDULER.PARAMS.T_max = 600
+    cfg.UNet.LR_SCHEDULER.PARAMS.eta_min = 1e-4
+    cfg.UNet.LR_SCHEDULER.PARAMS.last_epoch = -1
     
     cfg.UNet.LOSS = CN()
     cfg.UNet.LOSS.NAME = "ComboLoss"
