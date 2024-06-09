@@ -10,7 +10,7 @@ def UNetConfig(cfg):
     cfg.WRITE_TENSORBOARD_GRAPH = True
 
     cfg.PROFILING = False
-    cfg.EVALUATION_STEPS = 20
+    cfg.EVALUATION_STEPS = 10
     cfg.SCHEDULE_FREE_TRAINING = True
 
     cfg.CHECKPOINT.SAVE_EPOCH_CHECKPOINTS = True
