@@ -11,6 +11,7 @@ def UNetConfig(cfg):
 
     cfg.PROFILING = False
     cfg.SCHEDULE_FREE_TRAINING = True
+    cfg.EVALUATION_STEPS = 5
 
     cfg.CHECKPOINT.SAVE_EPOCH_CHECKPOINTS = True
     cfg.LOGGING.NAME = "UNet"
