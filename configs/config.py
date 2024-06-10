@@ -107,3 +107,5 @@ class ModelConfigs:
             UNetConfig(cfg)
         elif model_name.lower() == "deeplabv1":
             DeepLabv1Config(cfg)
+        elif model_name.lower() == "segnet":
+            SegNetConfig(cfg)

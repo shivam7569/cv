@@ -28,3 +28,4 @@ from configs.model_configs.FasterRCNN import FasterRCNNConfig
 from configs.model_configs.FCN import FCNConfig
 from configs.model_configs.UNet import UNetConfig
 from configs.model_configs.DeepLabv1 import DeepLabv1Config
+from configs.model_configs.SegNet import SegNetConfig
