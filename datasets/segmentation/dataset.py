@@ -97,7 +97,7 @@ class SegmentationDataset(Dataset):
         return img, mask
     
     @staticmethod
-    def get_class_weights(loader, method, rank):
+    def get_class_weights(loader, method, rank, normalize=True):
 
         loader_iter = tqdm(loader, desc=f"Calculating {method.split('_')[0]} class frequencies", unit="batch") if not rank else loader
 
@@ -122,11 +122,11 @@ class SegmentationDataset(Dataset):
 
         if method == "inverse_frequency":
             weights = 1 / total_class_frequencies
-            weights /= np.sum(weights)
+            if normalize: weights /= np.sum(weights)
         elif method == "median_frequency":
             class_median = np.median(total_class_frequencies)
             weights = class_median / total_class_frequencies
-            weights /= np.sum(weights)
+            if normalize: weights /= np.sum(weights)
 
         weights = torch.from_numpy(weights).to(torch.float32)
         
