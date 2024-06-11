@@ -10,7 +10,8 @@ def SegNetConfig(cfg):
     cfg.WRITE_TENSORBOARD_GRAPH = True
 
     cfg.PROFILING = False
-    cfg.EVALUATION_STEPS = 1
+    cfg.DEBUG = 2000
+    cfg.EVALUATION_STEPS = 10
 
     cfg.CHECKPOINT.SAVE_EPOCH_CHECKPOINTS = True
     cfg.LOGGING.NAME = "SegNet"
@@ -89,7 +90,7 @@ def SegNetConfig(cfg):
     cfg.SegNet.LR_SCHEDULER = CN()
     cfg.SegNet.LR_SCHEDULER.NAME = "CosineAnnealingLR"
     cfg.SegNet.LR_SCHEDULER.PARAMS = CN()
-    cfg.SegNet.LR_SCHEDULER.PARAMS.T_max = 100
+    cfg.SegNet.LR_SCHEDULER.PARAMS.T_max = 150
     cfg.SegNet.LR_SCHEDULER.PARAMS.eta_min = 1e-4
     cfg.SegNet.LR_SCHEDULER.PARAMS.last_epoch = -1
 
