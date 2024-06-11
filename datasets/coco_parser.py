@@ -1,4 +1,5 @@
 import json
+import random
 import numpy as np
 from configs.config import get_cfg
 from utils.global_params import Global
@@ -31,6 +32,8 @@ class CocoParser:
         self.cat_id_to_name = {}
         for i in coco_dict["categories"]:
             self.cat_id_to_name[i["id"]] = i["name"]
+
+        random.shuffle(self.imgIds)
     
     def getDetectionAnnotation(self, img_id):
         assert img_id in self.imgIds, Global.LOGGER.error(f"Image id {img_id} is invalid")
