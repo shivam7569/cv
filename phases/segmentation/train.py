@@ -291,7 +291,9 @@ class Train:
             if self.lr_scheduler.__class__.__name__ == "MultiplicativeLR":
                 self.lr_scheduler.step()
             if self.lr_scheduler.__class__.__name__ == "WarmUpCosineLRScheduler":
-                self.lr_scheduler.step()                
+                self.lr_scheduler.step()        
+            if self.lr_scheduler.__class__.__name__ == "CosineAnnealingLR":
+                self.lr_scheduler.step()
         else:
             if self.lr_scheduler.__class__.__name__ == "CyclicLR":
                 self.lr_scheduler.step()
