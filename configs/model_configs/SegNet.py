@@ -10,8 +10,7 @@ def SegNetConfig(cfg):
     cfg.WRITE_TENSORBOARD_GRAPH = True
 
     cfg.PROFILING = False
-    cfg.DEBUG = 2000
-    cfg.EVALUATION_STEPS = 10
+    cfg.EVALUATION_STEPS = 15
 
     cfg.CHECKPOINT.SAVE_EPOCH_CHECKPOINTS = True
     cfg.LOGGING.NAME = "SegNet"
@@ -26,7 +25,7 @@ def SegNetConfig(cfg):
 
     cfg.TRAIN = CN()
     cfg.TRAIN.PARAMS = CN()
-    cfg.TRAIN.PARAMS.epochs = 500
+    cfg.TRAIN.PARAMS.epochs = 600
     cfg.TRAIN.PARAMS.gradient_accumulation = False
     cfg.TRAIN.PARAMS.gradient_accumulation_batch_size = None
     cfg.TRAIN.PARAMS.gradient_clipping = None
@@ -85,13 +84,13 @@ def SegNetConfig(cfg):
     cfg.SegNet.OPTIMIZER.PARAMS = CN()
     cfg.SegNet.OPTIMIZER.PARAMS.lr = 0.1
     cfg.SegNet.OPTIMIZER.PARAMS.momentum = 0.9
-    cfg.SegNet.OPTIMIZER.PARAMS.weight_decay = 0.0005
+    cfg.SegNet.OPTIMIZER.PARAMS.weight_decay = 1e-8
 
     cfg.SegNet.LR_SCHEDULER = CN()
     cfg.SegNet.LR_SCHEDULER.NAME = "CosineAnnealingLR"
     cfg.SegNet.LR_SCHEDULER.PARAMS = CN()
-    cfg.SegNet.LR_SCHEDULER.PARAMS.T_max = 150
-    cfg.SegNet.LR_SCHEDULER.PARAMS.eta_min = 1e-4
+    cfg.SegNet.LR_SCHEDULER.PARAMS.T_max = 600
+    cfg.SegNet.LR_SCHEDULER.PARAMS.eta_min = 1e-5
     cfg.SegNet.LR_SCHEDULER.PARAMS.last_epoch = -1
 
     cfg.SegNet.LOSS = CN()
