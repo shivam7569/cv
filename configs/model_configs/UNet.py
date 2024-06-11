@@ -29,7 +29,7 @@ def UNetConfig(cfg):
 
     cfg.TRAIN = CN()
     cfg.TRAIN.PARAMS = CN()
-    cfg.TRAIN.PARAMS.epochs = 600
+    cfg.TRAIN.PARAMS.epochs = 500
     cfg.TRAIN.PARAMS.gradient_accumulation = False
     cfg.TRAIN.PARAMS.gradient_accumulation_batch_size = None
     cfg.TRAIN.PARAMS.gradient_clipping = None
@@ -93,7 +93,7 @@ def UNetConfig(cfg):
     cfg.UNet.LR_SCHEDULER = CN()
     cfg.UNet.LR_SCHEDULER.NAME = "CosineAnnealingLR"
     cfg.UNet.LR_SCHEDULER.PARAMS = CN()
-    cfg.UNet.LR_SCHEDULER.PARAMS.T_max = 600
+    cfg.UNet.LR_SCHEDULER.PARAMS.T_max = 500
     cfg.UNet.LR_SCHEDULER.PARAMS.eta_min = 1e-4
     cfg.UNet.LR_SCHEDULER.PARAMS.last_epoch = -1
     
@@ -116,7 +116,7 @@ def UNetConfig(cfg):
     cfg.UNet.LOSS.PARAMS.dice_params.normalize = False
     cfg.UNet.LOSS.PARAMS.dice_params.smooth = 0.0
     cfg.UNet.LOSS.PARAMS.dice_params.classes = None
-    cfg.UNet.LOSS.PARAMS.class_weightage_method = "inverse_frequency"
+    cfg.UNet.LOSS.PARAMS.class_weightage_method = "median_frequency"
 
     cfg.REGULARIZATION = CN()
     cfg.REGULARIZATION.MODE = ''

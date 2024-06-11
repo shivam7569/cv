@@ -1,5 +1,8 @@
+import matplotlib
 import matplotlib.pyplot as plt
 from sklearn.metrics import ConfusionMatrixDisplay
+
+matplotlib.use('Agg')
 
 class ClassRegistry(type):
 
