@@ -16,9 +16,6 @@ from utils.pytorch_utils import async_cleanup, setup_gpu_devices
 
 if __name__ == "__main__":
     try:
-
-        import os
-        os.environ["TORCH_DISTRIBUTED_DEBUG"] = "DETAIL"
         cfg = setup_config()
 
         if cfg.ASYNC_TRAINING:
