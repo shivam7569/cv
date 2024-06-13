@@ -325,7 +325,6 @@ class FocalLoss(nn.Module):
 
         super(FocalLoss, self).__init__()
 
-        self.ignore_index = ignore_index
         self.gamma = gamma
         self.ce = nn.CrossEntropyLoss(
             weight=weight,
@@ -347,7 +346,7 @@ class FocalLoss(nn.Module):
         return input_flatten, target_flatten
       
     def forward(self, pred, target):
-        pred, target = self.flatten(pred, target, self.ignore_index)
+        pred, target = self.flatten(pred, target)
         input_prob = torch.gather(F.softmax(pred, dim=1), 1, target.unsqueeze(1))
         cross_entropy = self.ce(pred, target)
         losses = (1 - input_prob).pow_(self.gamma).squeeze_(1) * cross_entropy
