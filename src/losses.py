@@ -320,12 +320,15 @@ class FocalLoss(nn.Module):
             ignore_index=-1,
             reduction="none", 
             focal_reduction="mean",
-            label_smoothing=0.0
+            label_smoothing=0.0,
+            normalize=False
         ):
 
         super(FocalLoss, self).__init__()
 
         self.gamma = gamma
+        self.normalize = normalize
+        self.ignore_index = ignore_index
         self.ce = nn.CrossEntropyLoss(
             weight=weight,
             ignore_index=ignore_index,
@@ -335,21 +338,28 @@ class FocalLoss(nn.Module):
         self.focal_reduction = focal_reduction
 
     @staticmethod
-    def flatten(pred, target):
+    def flatten(pred, target, ignore_index):
 
         num_class = pred.size(1)
         pred = pred.permute(0, 2, 3, 1).contiguous()
         
         input_flatten = pred.view(-1, num_class)
         target_flatten = target.view(-1)
+
+        mask = (target_flatten != ignore_index)
+        input_flatten = input_flatten[mask]
+        target_flatten = target_flatten[mask]
         
         return input_flatten, target_flatten
       
     def forward(self, pred, target):
-        pred, target = self.flatten(pred, target)
+        pred, target = self.flatten(pred, target, self.ignore_index)
         input_prob = torch.gather(F.softmax(pred, dim=1), 1, target.unsqueeze(1))
         cross_entropy = self.ce(pred, target)
         losses = (1 - input_prob).pow_(self.gamma).squeeze_(1) * cross_entropy
+
+        if self.normalize:
+            losses /= losses.sum()
         
         if self.focal_reduction == "mean":
             loss = losses.mean()
@@ -360,11 +370,18 @@ class FocalLoss(nn.Module):
     
 class ComboLoss(nn.Module):
 
-    def __init__(self, weight=None, _lambda=0.5, **kwargs):
+    def __init__(self, weight=None, _lambda=0.5, dynamic_weighting=False, alpha=0.99, **kwargs):
 
         super(ComboLoss, self).__init__()
 
         self._lambda = _lambda
+        self.alpha = alpha
+    
+        self.dynamic_weighting = dynamic_weighting
+        if self.dynamic_weighting:
+            self.running_avg1 = 1.0
+            self.running_avg2 = 1.0
+
         self.focal_loss = FocalLoss(weight=weight, **kwargs["focal_params"])
         self.dice_loss = DiceLoss(weight=None, **kwargs["dice_params"])
 
@@ -372,7 +389,19 @@ class ComboLoss(nn.Module):
         focal_loss = self.focal_loss(preds, gts)
         dice_loss = self.dice_loss(preds, gts)
 
-        loss = self._lambda * focal_loss + (1 - self._lambda) * dice_loss
+        if not self.dynamic_weighting:
+            loss = self._lambda * focal_loss + (1 - self._lambda) * dice_loss
+        else:
+            self.running_avg1 = self.alpha * self.running_avg1 + (1 - self.alpha) * focal_loss.item()
+            self.running_avg2 = self.alpha * self.running_avg2 + (1 - self.alpha) * dice_loss.item()
+
+            weight1 = 1.0 / (self.running_avg1 + 1e-8)
+            weight2 = 1.0 / (self.running_avg2 + 1e-8)
+            weight_sum = weight1 + weight2
+            weight1 /= weight_sum
+            weight2 /= weight_sum
+
+            loss = weight1 * focal_loss + weight2 * dice_loss
 
         return loss
 
