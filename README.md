@@ -72,7 +72,7 @@
 
 - [x] [FCNet](https://arxiv.org/abs/1411.4038.pdf)
 - [x] [U-Net](https://arxiv.org/abs/1505.04597)
-- [ ] [SegNet](https://arxiv.org/abs/1511.00561.pdf)
+- [x] [SegNet](https://arxiv.org/abs/1511.00561.pdf)
 - [ ] [DilatedNet](https://arxiv.org/pdf/1511.07122.pdf)
 - [x] [DeepLab](https://arxiv.org/abs/1606.00915)
 - [ ] [E-Net](https://arxiv.org/abs/1606.02147.pdf)
