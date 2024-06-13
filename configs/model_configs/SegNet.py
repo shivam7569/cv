@@ -94,13 +94,24 @@ def SegNetConfig(cfg):
     cfg.SegNet.LR_SCHEDULER.PARAMS.last_epoch = -1
 
     cfg.SegNet.LOSS = CN()
-    cfg.SegNet.LOSS.NAME = "CrossEntropyLoss"
+    cfg.SegNet.LOSS.NAME = "ComboLoss"
     cfg.SegNet.LOSS.PARAMS = CN()
-    cfg.SegNet.LOSS.PARAMS.size_average = None
-    cfg.SegNet.LOSS.PARAMS.ignore_index = 255
-    cfg.SegNet.LOSS.PARAMS.reduce = None
-    cfg.SegNet.LOSS.PARAMS.reduction = "mean"
-    cfg.SegNet.LOSS.PARAMS.label_smoothing = 0.0
+    cfg.SegNet.LOSS.PARAMS._lambda = 0.5
+    cfg.SegNet.LOSS.PARAMS.focal_params = CN()
+    cfg.SegNet.LOSS.PARAMS.focal_params.gamma = 2
+    cfg.SegNet.LOSS.PARAMS.focal_params.focal_reduction = "mean"
+    cfg.SegNet.LOSS.PARAMS.focal_params.ignore_index = -1
+    cfg.SegNet.LOSS.PARAMS.focal_params.reduction = "none"
+    cfg.SegNet.LOSS.PARAMS.focal_params.label_smoothing = 0.0
+    cfg.SegNet.LOSS.PARAMS.dice_params = CN()
+    cfg.SegNet.LOSS.PARAMS.dice_params.num_classes = 81
+    cfg.SegNet.LOSS.PARAMS.dice_params.ignore_index = -1
+    cfg.SegNet.LOSS.PARAMS.dice_params.reduction = "mean"
+    cfg.SegNet.LOSS.PARAMS.dice_params.log_loss = False
+    cfg.SegNet.LOSS.PARAMS.dice_params.log_cosh = True
+    cfg.SegNet.LOSS.PARAMS.dice_params.normalize = False
+    cfg.SegNet.LOSS.PARAMS.dice_params.smooth = 0.0
+    cfg.SegNet.LOSS.PARAMS.dice_params.classes = None
     cfg.SegNet.LOSS.PARAMS.class_weightage_method = "median_frequency"
 
     cfg.REGULARIZATION = CN()
