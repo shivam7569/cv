@@ -96,8 +96,8 @@ def SegNetConfig(cfg):
     cfg.SegNet.LOSS = CN()
     cfg.SegNet.LOSS.NAME = "ComboLoss"
     cfg.SegNet.LOSS.PARAMS = CN()
-    cfg.SegNet.LOSS.PARAMS.alpha = 0.99
-    cfg.SegNet.LOSS.PARAMS.dynamic_weighting = True
+    cfg.SegNet.LOSS.PARAMS._lambda = 0.3
+    cfg.SegNet.LOSS.PARAMS.dynamic_weighting = False
     cfg.SegNet.LOSS.PARAMS.focal_params = CN()
     cfg.SegNet.LOSS.PARAMS.focal_params.gamma = 2
     cfg.SegNet.LOSS.PARAMS.focal_params.focal_reduction = "mean"
