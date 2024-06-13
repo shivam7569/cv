@@ -100,12 +100,12 @@ def SegNetConfig(cfg):
     cfg.SegNet.LOSS.PARAMS.focal_params = CN()
     cfg.SegNet.LOSS.PARAMS.focal_params.gamma = 2
     cfg.SegNet.LOSS.PARAMS.focal_params.focal_reduction = "mean"
-    cfg.SegNet.LOSS.PARAMS.focal_params.ignore_index = -1
+    cfg.SegNet.LOSS.PARAMS.focal_params.ignore_index = 255
     cfg.SegNet.LOSS.PARAMS.focal_params.reduction = "none"
     cfg.SegNet.LOSS.PARAMS.focal_params.label_smoothing = 0.0
     cfg.SegNet.LOSS.PARAMS.dice_params = CN()
     cfg.SegNet.LOSS.PARAMS.dice_params.num_classes = 81
-    cfg.SegNet.LOSS.PARAMS.dice_params.ignore_index = -1
+    cfg.SegNet.LOSS.PARAMS.dice_params.ignore_index = 255
     cfg.SegNet.LOSS.PARAMS.dice_params.reduction = "mean"
     cfg.SegNet.LOSS.PARAMS.dice_params.log_loss = False
     cfg.SegNet.LOSS.PARAMS.dice_params.log_cosh = True
