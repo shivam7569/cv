@@ -47,10 +47,10 @@ def getCurrentDateTime() -> str:
 
     return dt_string
 
-def prepare_log_dir(cfg):
+def prepare_log_dir(cfg, torchrun=False):
     log_dir = os.path.join(cfg.LOGGING.PATH, cfg.LOGGING.NAME)
     if os.path.exists(log_dir):
-        shutil.rmtree(log_dir)
+        if not torchrun: shutil.rmtree(log_dir)
 
 class LogLevelFilter(logging.Filter):
 

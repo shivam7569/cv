@@ -28,6 +28,6 @@ if __name__ == "__main__":
         os.environ['LOCAL_RANK'] = '0'
 
     cfg = setup_config(args)
-    prepare_log_dir(cfg)
+    prepare_log_dir(cfg, torchrun=True)
     world_size = setup_gpu_devices(args, log=False)
     Train.async_train(args=args, world_size=world_size, torchrun=True)
