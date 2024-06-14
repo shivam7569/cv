@@ -410,7 +410,7 @@ class DeepLabv1Loss(nn.Module):
     def __init__(self, weight=None, **kwargs):
         super(DeepLabv1Loss, self).__init__()
         self.loss_name = kwargs.pop("name", "dice")
-        self._lambda = kwargs.pop("lambda_", 0.5)
+        self._lambda = kwargs.pop("_lambda", 0.5)
         if self.loss_name == "ce":
             self.loss = nn.CrossEntropyLoss(weight=weight, **kwargs)
         if self.loss_name == "dice":
