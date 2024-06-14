@@ -435,7 +435,7 @@ class Train:
 
         try:
             rank = args[0]
-        except KeyError:
+        except IndexError:
             rank = int(os.environ["LOCAL_RANK"])
         finally:
             try:
