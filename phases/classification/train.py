@@ -431,10 +431,22 @@ class Train:
             Global.LOGGER.info(f"Exponential moving average is enabled while inferencing with: {message}")
 
     @staticmethod
-    def async_train(rank, backbone_name, world_size):
+    def async_train(*args, **kwargs):
 
-        async_parallel_setup(rank=rank, world_size=world_size)
-        cfg = setup_config()
+        try:
+            rank = args[0]
+        except KeyError:
+            rank = int(os.environ["LOCAL_RANK"])
+        finally:
+            try:
+                world_size = kwargs.pop("world_size")
+            except:
+                world_size = args[2]
+            parsed_args = kwargs.pop("args", None)
+            backbone_name = parsed_args.model_name if parsed_args is not None else args[1]
+        
+        async_parallel_setup(rank=rank, world_size=world_size, torchrun=kwargs.pop("torchrun", False))
+        cfg = setup_config(args=parsed_args)
         Global.setConfiguration(cfg)
         logger = start_logger(rank=rank, async_parallel=True, return_=True)
         Global.LOGGER = logger

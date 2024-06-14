@@ -25,7 +25,7 @@ class GPU_Support:
             raise ValueError(f"Incompatible entry for gpu devices")
         
         try:
-            gpus = os.environ["CUDA_VISIBLE_DEVICES"]
+            _ = os.environ["CUDA_VISIBLE_DEVICES"]
             num_gpus = torch.cuda.device_count()
         except:
             num_gpus = 0

@@ -29,13 +29,13 @@ def get_cfg() -> CfgNode:
 
     return _C.clone()
 
-def setup_config(default=False):
+def setup_config(args=None, default=False):
 
     cfg = get_cfg()
     
     if default: return cfg
 
-    args = get_parser().parse_args()
+    if args is None: args = get_parser().parse_args()
     cfg.num_gpus = len(args.gpu_devices.split(","))
 
     ModelConfigs.addModelConfigs(cfg, args.model_name)

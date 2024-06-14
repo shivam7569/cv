@@ -20,7 +20,10 @@ def initialize_logger(rank, async_parallel):
 
     check_dir(Global.CFG.LOGGING.PATH, create=True)
     if async_parallel:
-        check_dir(log_filepath, create=True, forcedCreate=False)
+        try:
+            check_dir(log_filepath, create=True, forcedCreate=False)
+        except:
+            pass
     else:
         check_dir(log_filepath, create=True, forcedCreate=True)
 

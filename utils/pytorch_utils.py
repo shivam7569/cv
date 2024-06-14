@@ -37,24 +37,32 @@ def findOptimalNumWorkers(dataset, phase, batch_size):
     optimal_num_workers = dict(sorted(num_workers_time.items(), key=lambda x: x[1], reverse=False))
     return list(optimal_num_workers.keys())[0]
 
-def setup_gpu_devices(log=True):
-    args = get_parser().parse_args()
+def setup_gpu_devices(args=None, log=True):
+    if args is None: args = get_parser().parse_args()
     GPU_Support.set_gpu_devices(args.gpu_devices, log=log)
+
+    return GPU_Support.support_gpu
 
 def numpy2tensor(array):
     return torch.from_numpy(array)
 
-def async_parallel_setup(rank, world_size):
-    os.environ["MASTER_ADDR"] = "localhost"
-    os.environ["MASTER_PORT"] = "12351"
-    os.environ["WORLD_SIZE"] = str(world_size)
-    os.environ["RANK"] = str(rank)
+def async_parallel_setup(rank, world_size, torchrun=False):
+    if torchrun:
+        dist.init_process_group(
+            backend="nccl"
+        )
+        torch.cuda.set_device(int(os.environ["LOCAL_RANK"]))
+    else:
+        os.environ["MASTER_ADDR"] = "localhost"
+        os.environ["MASTER_PORT"] = "12332"
+        os.environ["WORLD_SIZE"] = str(world_size)
+        os.environ["RANK"] = str(rank)
 
-    dist.init_process_group(
-        backend="nccl",
-        rank=rank,
-        world_size=world_size
-    )
+        dist.init_process_group(
+            backend="nccl",
+            rank=rank,
+            world_size=world_size
+        )
 
 def async_cleanup():
     dist.destroy_process_group()
