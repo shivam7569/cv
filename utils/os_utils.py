@@ -9,13 +9,19 @@ def check_dir(path, create=True, forcedCreate=False, tree=False):
         if tree:
             os.makedirs(path, exist_ok=True)
         else:
-            os.mkdir(path)
+            try:
+                os.mkdir(path)
+            except FileNotFoundError:
+                os.makedirs(path, exist_ok=True)
     if exists and forcedCreate:
         shutil.rmtree(path)
         if tree:
             os.makedirs(path, exist_ok=True)
         else:
-            os.mkdir(path)
+            try:
+                os.mkdir(path)
+            except FileNotFoundError:
+                os.makedirs(path, exist_ok=True)
 
     return exists
 
