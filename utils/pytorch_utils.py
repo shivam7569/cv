@@ -46,7 +46,7 @@ def numpy2tensor(array):
 
 def async_parallel_setup(rank, world_size):
     os.environ["MASTER_ADDR"] = "localhost"
-    os.environ["MASTER_PORT"] = "12331"
+    os.environ["MASTER_PORT"] = "12351"
     os.environ["WORLD_SIZE"] = str(world_size)
     os.environ["RANK"] = str(rank)
 
