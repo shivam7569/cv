@@ -31,14 +31,14 @@ def VGG16Config(cfg):
     ]
 
     cfg.VGG16.DATALOADER_TRAIN_PARAMS = CN()
-    cfg.VGG16.DATALOADER_TRAIN_PARAMS.batch_size = 32
+    cfg.VGG16.DATALOADER_TRAIN_PARAMS.batch_size = 128
     cfg.VGG16.DATALOADER_TRAIN_PARAMS.shuffle = True
     cfg.VGG16.DATALOADER_TRAIN_PARAMS.num_workers = 8
     cfg.VGG16.DATALOADER_TRAIN_PARAMS.pin_memory = True
     cfg.VGG16.DATALOADER_TRAIN_PARAMS.drop_last = True
 
     cfg.VGG16.DATALOADER_VAL_PARAMS = CN()
-    cfg.VGG16.DATALOADER_VAL_PARAMS.batch_size = 32
+    cfg.VGG16.DATALOADER_VAL_PARAMS.batch_size = 128
     cfg.VGG16.DATALOADER_VAL_PARAMS.shuffle = True
     cfg.VGG16.DATALOADER_VAL_PARAMS.num_workers = 8
     cfg.VGG16.DATALOADER_VAL_PARAMS.pin_memory = True
@@ -65,7 +65,7 @@ def VGG16Config(cfg):
     cfg.VGG16.OPTIMIZER.PARAMS = CN()
     cfg.VGG16.OPTIMIZER.PARAMS.lr = 0.01
     cfg.VGG16.OPTIMIZER.PARAMS.momentum = 0.9
-    cfg.VGG16.OPTIMIZER.PARAMS.weight_decay = 0.0005
+    cfg.VGG16.OPTIMIZER.PARAMS.weight_decay = 1e-4
 
     cfg.VGG16.LR_SCHEDULER = CN()
     cfg.VGG16.LR_SCHEDULER.NAME = "StepLR"
