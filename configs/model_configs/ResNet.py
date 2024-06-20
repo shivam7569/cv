@@ -16,14 +16,14 @@ def ResNetConfig(cfg):
 
     cfg.ResNet.PARAMS = CN()
     cfg.ResNet.PARAMS.num_classes = 1000
-    cfg.ResNet.PARAMS.num_blocks = [3, 4, 6, 3]
+    cfg.ResNet.PARAMS.num_blocks = [3, 4, 23, 3]
     cfg.ResNet.PARAMS.in_channels = 3
 
     cfg.TRAIN = CN()
     cfg.TRAIN.PARAMS = CN()
-    cfg.TRAIN.PARAMS.epochs = 700
-    cfg.TRAIN.PARAMS.gradient_accumulation = False
-    cfg.TRAIN.PARAMS.gradient_accumulation_batch_size = None
+    cfg.TRAIN.PARAMS.epochs = 600
+    cfg.TRAIN.PARAMS.gradient_accumulation = True
+    cfg.TRAIN.PARAMS.gradient_accumulation_batch_size = 512
     cfg.TRAIN.PARAMS.exponential_moving_average = CN()
     cfg.TRAIN.PARAMS.exponential_moving_average.beta = 0.99998
     cfg.TRAIN.PARAMS.exponential_moving_average.warmup_steps = 0
@@ -53,16 +53,16 @@ def ResNetConfig(cfg):
     ]
 
     cfg.ResNet.DATALOADER_TRAIN_PARAMS = CN()
-    cfg.ResNet.DATALOADER_TRAIN_PARAMS.batch_size = 512
+    cfg.ResNet.DATALOADER_TRAIN_PARAMS.batch_size = 64
     cfg.ResNet.DATALOADER_TRAIN_PARAMS.shuffle = True
-    cfg.ResNet.DATALOADER_TRAIN_PARAMS.num_workers = 16
+    cfg.ResNet.DATALOADER_TRAIN_PARAMS.num_workers = 8
     cfg.ResNet.DATALOADER_TRAIN_PARAMS.pin_memory = True
     cfg.ResNet.DATALOADER_TRAIN_PARAMS.drop_last = True
 
     cfg.ResNet.DATALOADER_VAL_PARAMS = CN()
-    cfg.ResNet.DATALOADER_VAL_PARAMS.batch_size = 512
+    cfg.ResNet.DATALOADER_VAL_PARAMS.batch_size = 64
     cfg.ResNet.DATALOADER_VAL_PARAMS.shuffle = True
-    cfg.ResNet.DATALOADER_VAL_PARAMS.num_workers = 16
+    cfg.ResNet.DATALOADER_VAL_PARAMS.num_workers = 8
     cfg.ResNet.DATALOADER_VAL_PARAMS.pin_memory = True
     cfg.ResNet.DATALOADER_VAL_PARAMS.drop_last = True
 
@@ -101,7 +101,7 @@ def ResNetConfig(cfg):
     cfg.ResNet.LR_SCHEDULER.PARAMS.after_scheduler = CN()
     cfg.ResNet.LR_SCHEDULER.PARAMS.after_scheduler.NAME = "CosineAnnealingLR"
     cfg.ResNet.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS = CN()
-    cfg.ResNet.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_max = 695
+    cfg.ResNet.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_max = 595
     cfg.ResNet.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.eta_min = 1e-8
     cfg.ResNet.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.last_epoch = -1
 
