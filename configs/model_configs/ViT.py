@@ -39,7 +39,7 @@ def ViTConfig(cfg):
 
     cfg.TRAIN = CN()
     cfg.TRAIN.PARAMS = CN()
-    cfg.TRAIN.PARAMS.epochs = 1000
+    cfg.TRAIN.PARAMS.epochs = 600
     cfg.TRAIN.PARAMS.gradient_accumulation = True
     cfg.TRAIN.PARAMS.gradient_accumulation_batch_size = 2048
     cfg.TRAIN.PARAMS.gradient_clipping = ("norm", 1)
@@ -114,7 +114,7 @@ def ViTConfig(cfg):
     cfg.ViT.OPTIMIZER = CN()
     cfg.ViT.OPTIMIZER.NAME = "Lamb"
     cfg.ViT.OPTIMIZER.PARAMS = CN()
-    cfg.ViT.OPTIMIZER.PARAMS.lr = 3e-3 * cfg.num_gpus 
+    cfg.ViT.OPTIMIZER.PARAMS.lr = 3e-3
     cfg.ViT.OPTIMIZER.PARAMS.betas = (0.9, 0.999)
     cfg.ViT.OPTIMIZER.PARAMS.weight_decay = 0.05
 
@@ -126,10 +126,9 @@ def ViTConfig(cfg):
     cfg.ViT.LR_SCHEDULER.PARAMS.warmup_epochs = 5
     cfg.ViT.LR_SCHEDULER.PARAMS.warmup_method = "linear"
     cfg.ViT.LR_SCHEDULER.PARAMS.after_scheduler = CN()
-    cfg.ViT.LR_SCHEDULER.PARAMS.after_scheduler.NAME = "CosineAnnealingWarmRestarts"
+    cfg.ViT.LR_SCHEDULER.PARAMS.after_scheduler.NAME = "CosineAnnealingLR"
     cfg.ViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS = CN()
-    cfg.ViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_0 = 15
-    cfg.ViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_mult = 3
+    cfg.ViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.T_max = 595
     cfg.ViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.eta_min = 1e-8
     cfg.ViT.LR_SCHEDULER.PARAMS.after_scheduler.PARAMS.last_epoch = -1
     
