@@ -147,7 +147,8 @@ class EMA(nn.Module):
         step = self.step.item()
         self.step += 1
 
-        if step % self.decay_period != 0: return
+        if step != Global.CFG.TRAIN.PARAMS.epochs - 1:
+            if step % self.decay_period != 0: return
         if step <= self.warmup_steps:
             self.copy_params_from_model_to_ema(network)
             return
