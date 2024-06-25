@@ -106,7 +106,7 @@ def DeepLabv1Config(cfg):
     cfg.DeepLabv1.OPTIMIZER.PARAMS.lr.PARTITION.NAMES = ["feature_extractor", "classifier"] 
     cfg.DeepLabv1.OPTIMIZER.PARAMS.lr.PARTITION.LRS = [0.001, 00.1]
     cfg.DeepLabv1.OPTIMIZER.PARAMS.momentum = 0.9
-    cfg.DeepLabv1.OPTIMIZER.PARAMS.weight_decay = 0.0005
+    cfg.DeepLabv1.OPTIMIZER.PARAMS.weight_decay = 1e-8
 
     cfg.DeepLabv1.LR_SCHEDULER = CN()
     cfg.DeepLabv1.LR_SCHEDULER.NAME = "CosineAnnealingLR"

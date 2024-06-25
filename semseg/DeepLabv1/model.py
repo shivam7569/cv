@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 from backbones import VGG16
 from src.checkpoints import Checkpoint
@@ -61,6 +62,13 @@ class DeepLabv1(nn.Module):
 
         self.feature_extractor = backbone.feature_extractor
         self.classifier = backbone.classifier
+
+        ch = torch.load("/media/drive6/hqh2kor/projects/cv/archives/checkpoints/DeepLabv1/epoch_checkpoint.pth")["model_state_dict"]
+        f_ch = {k.replace("feature_extractor.", ''):v for k, v in ch.items() if "feature_extractor" in k}
+        c_ch = {k.replace("classifier.", ''):v for k, v in ch.items() if "classifier" in k}
+
+        self.feature_extractor.load_state_dict(f_ch)
+        self.classifier.load_state_dict(c_ch)
 
     def forward(self, x):
         x = self.feature_extractor(x)
