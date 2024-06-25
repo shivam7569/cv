@@ -236,7 +236,7 @@ class Train:
             epoch_loss /= len(train_loader)
             Global.LOGGER.info(f"\nTraining loss for epoch {epoch+1}: {round(epoch_loss, 3)}")
 
-        self._exponential_moving_average(epoch=epoch)
+        self._exponential_moving_average()
             
         if not self.async_parallel_rank: return epoch_loss
 
@@ -275,7 +275,7 @@ class Train:
         else:
             self.checkpointer.save(epoch=epoch, chkp_name="epoch_checkpoint.pth", overwrite=False)
 
-    def _exponential_moving_average(self, epoch):
+    def _exponential_moving_average(self):
         if self.exponential_moving_average is not None:
             if self.async_parallel:
                 self.ema_model.update(self.model.module)
