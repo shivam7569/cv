@@ -6,6 +6,7 @@ from configs.model_configs.DenseNet import DenseNetConfig
 from configs.model_configs.ResNet import ResNetConfig
 from configs.model_configs.Inceptionv2 import Inceptionv2Config
 from configs.model_configs.Inceptionv3 import Inceptionv3Config
+from configs.model_configs.Inceptionv4 import Inceptionv4Config
 from configs.model_configs.ResNeXt import ResNeXtConfig
 from configs.model_configs.MobileNet import MobileNetConfig
 from configs.model_configs.MobileNetv2 import MobileNetv2Config

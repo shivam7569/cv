@@ -63,6 +63,8 @@ class ModelConfigs:
             Inceptionv2Config(cfg)
         elif model_name.lower() == "inceptionv3":
             Inceptionv3Config(cfg)
+        elif model_name.lower() == "inceptionv4":
+            Inceptionv4Config(cfg)
         elif model_name.lower() == "resnext":
             ResNeXtConfig(cfg)
         elif model_name.lower() == "mobilenet":
