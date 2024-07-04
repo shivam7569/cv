@@ -4,7 +4,7 @@ def Inceptionv4Config(cfg):
     cfg.Inceptionv4 = CN()
 
     cfg.ASYNC_TRAINING = True
-    cfg.DEBUG = 200
+    cfg.DEBUG = None
     cfg.PROFILING = False
 
     cfg.CHECKPOINT.SAVE_EPOCH_CHECKPOINTS = True
