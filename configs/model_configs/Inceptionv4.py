@@ -22,6 +22,14 @@ def Inceptionv4Config(cfg):
     cfg.TRAIN.PARAMS = CN()
     cfg.TRAIN.PARAMS.epochs = 150
     cfg.TRAIN.PARAMS.lr_scheduler_step = 2
+    cfg.TRAIN.PARAMS.gradient_accumulation = True
+    cfg.TRAIN.PARAMS.gradient_accumulation_batch_size = 256
+    cfg.TRAIN.PARAMS.gradient_clipping = None
+    cfg.TRAIN.PARAMS.exponential_moving_average = CN()
+    cfg.TRAIN.PARAMS.exponential_moving_average.beta = 0.999
+    cfg.TRAIN.PARAMS.exponential_moving_average.warmup_steps = 0
+    cfg.TRAIN.PARAMS.exponential_moving_average.decay_period = 8
+    cfg.TRAIN.PARAMS.exponential_moving_average.decay_method = "constant"
 
     cfg.PIPELINES = CN()
     cfg.PIPELINES.TRAIN = [
@@ -34,7 +42,7 @@ def Inceptionv4Config(cfg):
     ]
 
     cfg.Inceptionv4.DATALOADER_TRAIN_PARAMS = CN()
-    cfg.Inceptionv4.DATALOADER_TRAIN_PARAMS.batch_size = 32
+    cfg.Inceptionv4.DATALOADER_TRAIN_PARAMS.batch_size = 64
     cfg.Inceptionv4.DATALOADER_TRAIN_PARAMS.shuffle = True
     cfg.Inceptionv4.DATALOADER_TRAIN_PARAMS.num_workers = 8
     cfg.Inceptionv4.DATALOADER_TRAIN_PARAMS.pin_memory = True
