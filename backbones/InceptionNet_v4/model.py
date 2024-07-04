@@ -226,16 +226,15 @@ class ConvBlock(nn.Module):
         self.bn = nn.BatchNorm2d(num_features=out_channels)
         self.relu = nn.ReLU(inplace=True)
 
-        self.init(self.conv)
+        self.init()
 
-    def init(self, convLayer):
+    def init(self):
 
-        init_n = (convLayer.kernel_size[0] ** 2) * convLayer.out_channels
-        init_mean = 0.0
-        init_std = np.sqrt(2 / init_n)
+        nn.init.xavier_normal_(self.conv.weight)
+        nn.init.constant_(self.conv.bias, val=0.0)
 
-        nn.init.normal_(convLayer.weight, mean=init_mean, std=init_std)
-        nn.init.constant_(convLayer.bias, val=0.0)
+        nn.init.constant_(self.bn.weight, 1)
+        nn.init.constant_(self.bn.bias, 0)
 
     def forward(self, x):
         x = self.conv(x)
