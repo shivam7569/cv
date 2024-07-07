@@ -25,11 +25,6 @@ def Inceptionv4Config(cfg):
     cfg.TRAIN.PARAMS.gradient_accumulation = True
     cfg.TRAIN.PARAMS.gradient_accumulation_batch_size = 240
     cfg.TRAIN.PARAMS.gradient_clipping = None
-    cfg.TRAIN.PARAMS.exponential_moving_average = CN()
-    cfg.TRAIN.PARAMS.exponential_moving_average.beta = 0.999
-    cfg.TRAIN.PARAMS.exponential_moving_average.warmup_steps = 0
-    cfg.TRAIN.PARAMS.exponential_moving_average.decay_period = 8
-    cfg.TRAIN.PARAMS.exponential_moving_average.decay_method = "constant"
 
     cfg.PIPELINES = CN()
     cfg.PIPELINES.TRAIN = [
