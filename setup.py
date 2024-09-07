@@ -9,7 +9,7 @@ setup(
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/shivam7569/cv",
-    packages=find_packages(),
+    packages=find_packages(exclude=["tests", "workshop"]),
     install_requires=[
         "requests",
     ],

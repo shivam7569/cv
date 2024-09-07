@@ -1,7 +1,7 @@
 AlexNet
 ========
 
-.. automodule:: backbones.AlexNet.model
+.. automodule:: cv.backbones.AlexNet.model
    :members:
    :undoc-members:
    :show-inheritance:

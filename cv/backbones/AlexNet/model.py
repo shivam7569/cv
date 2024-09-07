@@ -12,6 +12,10 @@ class AlexNet(nn.Module, metaclass=MetaWrapper):
         return "Model Class for AlexNet architecture from paper on: ImageNet Classification with Deep Convolutional Neural Networks"
     
     def __init__(self, num_classes, in_channels=3):
+
+        """
+        AlexNet Model
+        """
         
         super(AlexNet, self).__init__()
 
