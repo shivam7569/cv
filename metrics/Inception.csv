@@ -1,0 +1,2 @@
+epoch,train_loss,eval_loss,eval_accuracy,eval_precision,eval_recall,eval_f1_score
+0,11.127562204996744,6.911,0.003,0.0,0.001,0.0

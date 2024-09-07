@@ -1,0 +1,2 @@
+epoch,train_loss,eval_loss,eval_accuracy,eval_precision,eval_recall,eval_f1_score,eval_iou_score,eval_dice_score,eval_kappa_score
+0,1.0121703495581944,1.141,0.976,0.013,0.011,0.004,0.002,0.004,0.0
