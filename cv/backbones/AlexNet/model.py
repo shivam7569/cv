@@ -14,20 +14,18 @@ class AlexNet(nn.Module, metaclass=MetaWrapper):
     usage, and any other pertinent details.
 
     Attributes:
-        attribute1 (int): Description of the attribute1.
-        attribute2 (str): Description of the attribute2.
+        num_classes (int): Description of the attribute1.
+        in_channels (str): Description of the attribute2.
 
     Methods:
         __init__(self, attribute1, attribute2):
             Initializes MyClass with attribute1 and attribute2.
-        method1(self):
+        forward(self):
             Description of method1.
-        method2(self, param):
-            Description of method2 and its parameters.
 
     Example:
         >>> obj = MyClass(10, "example")
-        >>> obj.method1()
+        >>> obj.forward()
     """
 
 
