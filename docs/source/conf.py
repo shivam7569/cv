@@ -17,7 +17,7 @@ release = '0.0.1'
 
 # a = os.path.abspath("backbones")
 
-sys.path.insert(0, os.path.abspath("/media/drive6/hqh2kor/projects/cv"))
+sys.path.insert(0, os.path.abspath("../.."))
 # sys.path.insert(0, os.path.abspath("../../backbones"))
 # sys.path.insert(0, os.path.abspath("backbones/LeNet"))
 # sys.path.insert(0, os.path.abspath("backbones/AlexNet"))
