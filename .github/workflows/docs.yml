@@ -19,7 +19,7 @@ jobs:
           pip install sphinx-material
       - name: Sphinx build
         run: |
-          sphinx-build docs/source/ docs/build/html
+          sphinx-build -b html docs/source/ docs/build/html
       - name: List build directory files
         run: ls -R docs/build/
       - name: Deploy to GitHub Pages
