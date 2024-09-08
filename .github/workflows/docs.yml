@@ -12,8 +12,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v3
       - name: List build directory files
-        run: pwd
-             ls -R ./
+        run: ls ${pwd}
       - name: Install dependencies
         run: |
           pip install sphinx sphinx_rtd_theme myst_parser torch fvcore numpy
