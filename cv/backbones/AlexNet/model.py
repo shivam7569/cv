@@ -4,11 +4,10 @@ from collections import OrderedDict
 
 from cv.utils import MetaWrapper
 
-
 class AlexNet(nn.Module, metaclass=MetaWrapper):
 
     """
-    A brief summary of what this class does.
+    Model definition class for AlexNet model from `paper <https://proceedings.neurips.cc/paper_files/paper/2012/file/c399862d3b9d6b76c8436e924a68c45b-Paper.pdf>`_
 
     A more detailed description of the class, including its purpose,
     usage, and any other pertinent details.
