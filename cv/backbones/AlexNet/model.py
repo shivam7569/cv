@@ -7,6 +7,30 @@ from cv.utils import MetaWrapper
 
 class AlexNet(nn.Module, metaclass=MetaWrapper):
 
+    """
+    A brief summary of what this class does.
+
+    A more detailed description of the class, including its purpose,
+    usage, and any other pertinent details.
+
+    Attributes:
+        attribute1 (int): Description of the attribute1.
+        attribute2 (str): Description of the attribute2.
+
+    Methods:
+        __init__(self, attribute1, attribute2):
+            Initializes MyClass with attribute1 and attribute2.
+        method1(self):
+            Description of method1.
+        method2(self, param):
+            Description of method2 and its parameters.
+
+    Example:
+        >>> obj = MyClass(10, "example")
+        >>> obj.method1()
+    """
+
+
     @classmethod
     def __class_repr__(cls):
         return "Model Class for AlexNet architecture from paper on: ImageNet Classification with Deep Convolutional Neural Networks"
@@ -14,7 +38,11 @@ class AlexNet(nn.Module, metaclass=MetaWrapper):
     def __init__(self, num_classes, in_channels=3):
 
         """
-        AlexNet Model
+        Initializes MyClass with attribute1 and attribute2.
+
+        Args:
+            attribute1 (int): Description of the attribute1 parameter.
+            attribute2 (str): Description of the attribute2 parameter.
         """
         
         super(AlexNet, self).__init__()
