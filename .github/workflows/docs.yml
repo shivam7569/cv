@@ -22,7 +22,7 @@ jobs:
           rm -rf docs/build/*
           sphinx-build -b html -v docs/source/ docs/build/html
       - name: List build directory files
-        run: ls -R docs/build/html
+        run: pwd
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
