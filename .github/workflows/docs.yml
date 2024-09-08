@@ -13,7 +13,7 @@ jobs:
       - uses: actions/setup-python@v3
       - name: Install dependencies
         run: |
-          pip install sphinx sphinx_rtd_theme myst_parser insegel
+          pip install sphinx sphinx_rtd_theme myst_parser
       - name: Install theme
         run: |
           pip install sphinx-material
