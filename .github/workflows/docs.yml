@@ -19,7 +19,7 @@ jobs:
           pip install .
       - name: Install theme
         run: |
-          pip install sphinx-material
+          pip install sphinx-pdj-theme
       - name: Sphinx build
         run: |
           rm -rf docs/build/*

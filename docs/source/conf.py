@@ -8,6 +8,7 @@
 
 import os
 import sys
+import sphinx_pdj_theme
 
 project = 'cv'
 copyright = '2024, Shivam Chaudhary'
@@ -39,7 +40,8 @@ master_doc = 'index'
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = "sphinx_material"
+html_theme = 'sphinx_pdj_theme'
+html_theme_path = [sphinx_pdj_theme.get_html_theme_path()]
 
 html_static_path = ['_static']
 html_show_sphinx = False
