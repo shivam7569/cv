@@ -7,24 +7,24 @@ from cv.utils import MetaWrapper
 class AlexNet(nn.Module, metaclass=MetaWrapper):
 
     """
-    Model definition class for AlexNet model from `paper <https://proceedings.neurips.cc/paper_files/paper/2012/file/c399862d3b9d6b76c8436e924a68c45b-Paper.pdf>`_
+    AlexNet model for image classification based on the `paper <https://proceedings.neurips.cc/paper_files/paper/2012/file/c399862d3b9d6b76c8436e924a68c45b-Paper.pdf>`_.
 
-    A more detailed description of the class, including its purpose,
-    usage, and any other pertinent details.
+    This class defines the AlexNet architecture, which consists of convolutional layers for feature extraction 
+    and fully connected layers for classification.
 
     Attributes:
-        num_classes (int): Description of the attribute1.
-        in_channels (str): Description of the attribute2.
+        feature_extractor (nn.Sequential): A sequential model comprising convolutional layers for feature extraction.
+        classifier (nn.Sequential): A sequential model comprising fully connected layers for image classification.
 
     Methods:
-        __init__(self, attribute1, attribute2):
-            Initializes MyClass with attribute1 and attribute2.
-        forward(self):
-            Description of method1.
+        __init__(self, num_classes, in_channels=3):
+            Initializes the AlexNet model with the number of classes for classification and input channels.
+        forward(self, x):
+            Defines the forward pass of the AlexNet model, applying feature extraction followed by classification.
 
     Example:
-        >>> obj = MyClass(10, "example")
-        >>> obj.forward()
+        >>> model = AlexNet(num_classes=1000, in_channels=3)
+        >>> output = model(torch.randn(1, 3, 224, 224))  # Example input tensor of shape (batch_size, channels, height, width)
     """
 
 
@@ -35,11 +35,15 @@ class AlexNet(nn.Module, metaclass=MetaWrapper):
     def __init__(self, num_classes, in_channels=3):
 
         """
-        Initializes MyClass with attribute1 and attribute2.
+        Initializes the AlexNet model.
 
         Args:
-            attribute1 (int): Description of the attribute1 parameter.
-            attribute2 (str): Description of the attribute2 parameter.
+            num_classes (int): The number of output classes for classification.
+            in_channels (int, optional): The number of input channels for the images. Default is 3 for RGB images.
+
+        Example:
+            >>> model = AlexNet(num_classes=1000, in_channels=3)
+
         """
         
         super(AlexNet, self).__init__()
@@ -83,6 +87,24 @@ class AlexNet(nn.Module, metaclass=MetaWrapper):
         self.classifier = nn.Sequential(self.classifier_layers)
 
     def forward(self, x):
+
+        """
+        Defines the forward pass of the AlexNet model.
+
+        The input tensor passes through the feature extractor (convolutional layers), 
+        then is flattened and passed through the classifier (fully connected layers).
+
+        Args:
+            x (torch.Tensor): Input tensor of shape (batch_size, in_channels, height, width).
+
+        Returns:
+            torch.Tensor: Output tensor after passing through the model, with shape (batch_size, num_classes).
+
+        Example:
+            >>> output = model(torch.randn(1, 3, 224, 224))
+
+        """
+            
         x = self.feature_extractor(x)
         x = torch.flatten(x, start_dim=1)
         x = self.classifier(x)
