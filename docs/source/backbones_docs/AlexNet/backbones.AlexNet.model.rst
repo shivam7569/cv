@@ -6,3 +6,4 @@ AlexNet
    :undoc-members:
    :show-inheritance:
    :exclude-members:
+   :no-index:
