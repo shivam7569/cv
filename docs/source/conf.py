@@ -43,3 +43,11 @@ html_theme = "sphinx_rtd_theme"
 
 html_static_path = ['_static']
 html_show_sphinx = False
+
+def skip_class(app, what, name, obj, skip, options):
+    if what == "class" and name in ["BoT_ViTParams", "ResidualGroup", "ResidualBlock", "ConvBlock"]:
+        return True  # Skip this class
+    return skip
+
+def setup(app):
+    app.connect("autodoc-skip-class", skip_class)
