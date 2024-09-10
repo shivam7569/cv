@@ -11,6 +11,7 @@ CV
    :caption: Contents:
 
    ./backbones_docs/AlexNet/backbones.AlexNet.model
+   ./backbones_docs/AlexNet/backbones.BoT_ViT.model
 
 
 Indices and tables

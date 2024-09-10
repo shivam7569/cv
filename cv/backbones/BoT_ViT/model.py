@@ -139,11 +139,52 @@ class ConvBlock(nn.Module):
 
 class BoT_ViT(nn.Module, metaclass=MetaWrapper):
 
+    """
+    BoT-ViT (Bottleneck Transformers for Visual Recognition) model architecture from `paper <https://arxiv.org/abs/2101.11605.pdf>`_.
+
+    This class implements the BoT-ViT model, combining convolutional and bottleneck transformer blocks for 
+    feature extraction and classification. The model processes input images through multiple residual groups 
+    and a final classification layer.
+
+    Attributes:
+        init_features (nn.Sequential): Initial convolutional block for feature extraction.
+        res_group_1 (ResidualGroup): First residual group with bottleneck convolutional layers.
+        res_group_2 (ResidualGroup): Second residual group with downsampling and convolutional layers.
+        res_group_3 (ResidualGroup): Third residual group with further downsampling and convolutional layers.
+        res_group_4 (ResidualGroup): Final residual group with bottleneck MHSA layers.
+        classifier (nn.Sequential): Fully connected layers for classification.
+
+    Methods:
+        initializeConv(self):
+            Initializes the weights and biases of the convolutional layers.
+        forward(self, x):
+            Defines the forward pass through the BoT-ViT architecture.
+
+    Example:
+        >>> model = BoT_ViT(mhsa_num_heads=8, attention_dropout=0.1, num_classes=1000)
+        >>> output = model(torch.randn(1, 3, 224, 224))  # Example input tensor of shape (batch_size, channels, height, width)
+    """
+
     @classmethod
     def __class_repr__(cls):
         return "Model Class for BoT-ViT architecture from paper on: Bottleneck Transformers for Visual Recognition"
 
     def __init__(self, mhsa_num_heads, attention_dropout=0.0, num_classes=1000, in_channels=3):
+
+        """
+        Initializes the BoT-ViT model with the number of multi-head self-attention (MHSA) heads, dropout rate, 
+        number of output classes, and input channels.
+
+        Args:
+            mhsa_num_heads (int): The number of heads for the multi-head self-attention layer.
+            attention_dropout (float, optional): Dropout rate for attention layers. Default is 0.0.
+            num_classes (int, optional): Number of output classes for classification. Default is 1000.
+            in_channels (int, optional): Number of input channels for the images. Default is 3 for RGB images.
+
+        Example:
+            >>> model = BoT_ViT(mhsa_num_heads=8, attention_dropout=0.1, num_classes=1000)
+        """
+
         super(BoT_ViT, self).__init__()
 
         BoT_ViTParams.MHSA_NUM_HEADS = mhsa_num_heads
@@ -198,6 +239,22 @@ class BoT_ViT(nn.Module, metaclass=MetaWrapper):
                 nn.init.constant_(bias, val=0.0)
 
     def forward(self, x):
+        """
+        Defines the forward pass through the BoT-ViT model.
+
+        The input tensor passes through the initial convolutional layers, followed by multiple residual groups, 
+        and is then processed through the classifier for final classification.
+
+        Args:
+            x (torch.Tensor): Input tensor of shape (batch_size, in_channels, height, width).
+
+        Returns:
+            torch.Tensor: Output tensor after passing through the model, with shape (batch_size, num_classes).
+
+        Example:
+            >>> output = model(torch.randn(1, 3, 224, 224))
+        """
+
         x = self.init_features(x)
         x = self.res_group_1(x)
         x = self.res_group_2(x)

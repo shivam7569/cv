@@ -17,9 +17,6 @@ jobs:
           pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
           python setup.py sdist bdist_wheel
           pip install .
-      - name: Install theme
-        run: |
-          pip install sphinx-pdj-theme
       - name: Sphinx build
         run: |
           rm -rf docs/build/*
