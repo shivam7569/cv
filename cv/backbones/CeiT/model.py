@@ -205,14 +205,10 @@ class CeiT(nn.Module, metaclass=MetaWrapper):
         8. Classification of the final token output using the classifier.
 
         Args:
-            x (torch.Tensor): The input tensor representing a batch of images. The tensor should have the shape 
-                            (batch_size, in_channels, image_height, image_width). The dimensions are expected 
-                            to be consistent with the model's configuration.
+            x (torch.Tensor): Input tensor of shape (batch_size, in_channels, height, width).
 
         Returns:
-            torch.Tensor: The output tensor containing the class predictions. The tensor has the shape 
-                        (batch_size, num_classes), where `num_classes` is the number of classes defined for 
-                        classification. Each element in the tensor represents the predicted score for a class.
+            torch.Tensor: Output tensor after passing through the model, with shape (batch_size, num_classes).
 
         Notes:
             - The `i2t_module` first processes the input images, extracting initial features through convolutional layers followed by max pooling.
