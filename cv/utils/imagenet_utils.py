@@ -33,22 +33,44 @@ class ImagenetData(metaclass=MetaWrapper):
     @classmethod
     def getClassVsName(cls):
         class_vs_name = {}
-        with open(cls.cfg.DATA.IMAGENET_CLASS_VS_NAME_TXT, "r") as f:
-            for line in f.readlines():
-                class_id = line.strip().split(" ")[0]
-                class_name = line.strip().split(" ")[1]
-                class_vs_name[class_id] = class_name
+        
+        try:
+            with open(cls.cfg.DATA.IMAGENET_CLASS_VS_NAME_TXT, "r") as f:
+                for line in f.readlines():
+                    class_id = line.strip().split(" ")[0]
+                    class_name = line.strip().split(" ")[1]
+                    class_vs_name[class_id] = class_name
+        except:
+            from cv.datasets.classification import imagenet_txts
+            import importlib.resources as pkg_resources
+
+            with pkg_resources.open_text(imagenet_txts, 'class_vs_name.txt') as f:
+                for line in f.readlines():
+                    class_id = line.strip().split(" ")[0]
+                    class_name = line.strip().split(" ")[1]
+                    class_vs_name[class_id] = class_name
 
         return class_vs_name
     
     @classmethod
     def getIdVsName(cls):
         id_vs_name = {}
-        with open(cls.cfg.DATA.IMAGENET_CLASS_VS_ID_TXT, "r") as f:
-            for line in f.readlines():
-                class_id, class_int = line.strip().split(" ")
-                class_name = cls.getClassVsName()[class_id]
-                id_vs_name[class_int] = class_name
+
+        try:
+            with open(cls.cfg.DATA.IMAGENET_CLASS_VS_ID_TXT, "r") as f:
+                for line in f.readlines():
+                    class_id, class_int = line.strip().split(" ")
+                    class_name = cls.getClassVsName()[class_id]
+                    id_vs_name[class_int] = class_name
+        except:
+            from cv.datasets.classification import imagenet_txts
+            import importlib.resources as pkg_resources
+
+            with pkg_resources.open_text(imagenet_txts, 'class_vs_id.txt') as f:
+                for line in f.readlines():
+                    class_id, class_int = line.strip().split(" ")
+                    class_name = cls.getClassVsName()[class_id]
+                    id_vs_name[class_int] = class_name
 
         return id_vs_name
 

@@ -1,0 +1,2 @@
+include cv/datasets/classification/imagenet_txts/class_vs_id.txt
+include cv/datasets/classification/imagenet_txts/class_vs_name.txt

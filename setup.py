@@ -19,4 +19,8 @@ setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.9',
+    include_package_data=True,
+    package_data={
+        'cv.datasets.classification.imagenet_txts': ['class_vs_id.txt', 'class_vs_name.txt'],
+    }
 )
