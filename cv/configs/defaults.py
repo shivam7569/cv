@@ -8,7 +8,7 @@ torch.backends.cudnn.benchmark = True
 
 _C = CN()
 
-project_dir = os.getenv("PROJECT_DIR", default="../..")
+project_dir = os.getenv("PROJECT_DIR", default=os.path.abspath(os.path.join(__file__, "../../..")))
 
 coco_data_dir = os.getenv("COCO_DIR", default="/media/drive6/hqh2kor/datasets/coco")
 imagenet_data_dir = os.getenv("IMAGENET_DIR", default="/media/drive6/hqh2kor/datasets/imagenet")

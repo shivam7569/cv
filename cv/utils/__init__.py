@@ -5,7 +5,4 @@ class MetaWrapper(type):
         else:
             return super(MetaWrapper, cls).__repr__()
 
-try:
-    from cv.utils.global_params import Global
-except:
-    pass
+from cv.utils.global_params import Global
