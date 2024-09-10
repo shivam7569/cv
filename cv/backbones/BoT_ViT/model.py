@@ -154,7 +154,6 @@ class BoT_ViT(nn.Module, metaclass=MetaWrapper):
 
     Example:
         >>> model = BoT_ViT(mhsa_num_heads=8, attention_dropout=0.1, num_classes=1000)
-        >>> output = model(torch.randn(1, 3, 224, 224))  # Example input tensor of shape (batch_size, channels, height, width)
     """
 
     @classmethod
@@ -266,7 +265,7 @@ class BoT_ViT(nn.Module, metaclass=MetaWrapper):
             torch.Tensor: Output tensor after passing through the model, with shape (batch_size, num_classes).
 
         Example:
-            >>> output = model(torch.randn(1, 3, 224, 224))
+            >>> output = model(torch.randn(1, 3, 224, 224))  # Example input tensor of shape (batch_size, channels, height, width)
         """
 
         x = self.init_features(x)

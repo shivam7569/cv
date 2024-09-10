@@ -53,7 +53,6 @@ class CeiT(nn.Module, metaclass=MetaWrapper):
 
     Example:
         >>> model = CeiT()
-        >>> output = model(torch.randn(1, 3, 224, 224))  # Example input tensor of shape (batch_size, channels, height, width)
     """
 
     @classmethod
@@ -216,16 +215,16 @@ class CeiT(nn.Module, metaclass=MetaWrapper):
                         classification. Each element in the tensor represents the predicted score for a class.
 
         Notes:
-            - The `i2t_module` first processes the input images, extracting initial features through convolutional 
-            layers followed by max pooling.
-            - The `patchify` method converts the feature maps into a sequence of patches suitable for the transformer 
-            encoder.
-            - Positional embeddings and class tokens are added to the sequence of patches to incorporate positional 
-            information and a class-specific token.
+            - The `i2t_module` first processes the input images, extracting initial features through convolutional layers followed by max pooling.
+            - The `patchify` method converts the feature maps into a sequence of patches suitable for the transformer encoder.
+            - Positional embeddings and class tokens are added to the sequence of patches to incorporate positional information and a class-specific token.
             - Dropout is applied to prevent overfitting during training.
             - The transformer encoder processes the sequence of patches, producing an encoded representation.
             - LCA attention is applied to the encoded representation to enhance the feature representation.
             - Finally, the class token is passed through a classifier to obtain the predicted class scores.
+
+        Example:
+            >>> output = model(torch.randn(1, 3, 224, 224))  # Example input tensor of shape (batch_size, channels, height, width)
         """
 
         x = self.i2t_module(x)

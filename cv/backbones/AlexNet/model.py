@@ -18,7 +18,6 @@ class AlexNet(nn.Module, metaclass=MetaWrapper):
 
     Example:
         >>> model = AlexNet(num_classes=1000, in_channels=3)
-        >>> output = model(torch.randn(1, 3, 224, 224))  # Example input tensor of shape (batch_size, channels, height, width)
     """
 
 
@@ -83,7 +82,7 @@ class AlexNet(nn.Module, metaclass=MetaWrapper):
             torch.Tensor: Output tensor after passing through the model, with shape (batch_size, num_classes).
 
         Example:
-            >>> output = model(torch.randn(1, 3, 224, 224))
+            >>> output = model(torch.randn(1, 3, 224, 224))  # Example input tensor of shape (batch_size, channels, height, width)
 
         """
             
