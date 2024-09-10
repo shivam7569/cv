@@ -6,6 +6,56 @@ from cv.attention.transformers import ViTEncoder, TransformerBlock
 
 class CeiT(nn.Module, metaclass=MetaWrapper):
 
+    """
+    The `CeiT` class implements the CeiT (Convolutional Enhanced Image Transformer) architecture,
+    as described in the `paper <https://arxiv.org/abs/2103.11816.pdf>`_.
+
+    This model combines convolutional layers with transformer-based image processing, providing 
+    a powerful approach for image classification tasks.
+
+    Args:
+        image_size (int, optional): The size of the input image (height and width). Defaults to 224.
+        d_model (int, optional): The dimensionality of the model's feature space. Defaults to 768.
+        patch_size (int, optional): The size of the image patches to be extracted. Defaults to 4.
+        dropout (float, optional): The dropout rate applied to the inputs and outputs of the dropout layers. Defaults to 0.0.
+        encoder_num_heads (int, optional): Number of attention heads in the encoder layers. Defaults to 12.
+        num_encoder_blocks (int, optional): Number of encoder blocks in the transformer. Defaults to 12.
+        encoder_dropout (float, optional): Dropout rate applied in the encoder layers. Defaults to 0.0.
+        encoder_attention_dropout (float, optional): Dropout rate applied to the attention weights in the encoder. Defaults to 0.0.
+        encoder_projection_dropout (float, optional): Dropout rate applied to the projection layers in the encoder. Defaults to 0.0.
+        classifier_mlp_d (int, optional): Dimensionality of the hidden layer in the classifier's MLP. Defaults to 2048.
+        i2t_out_channels (int, optional): Number of output channels in the initial convolutional layer. Defaults to 32.
+        i2t_conv_kernel_size (int, optional): Size of the kernel in the initial convolutional layer. Defaults to 7.
+        i2t_conv_stride (int, optional): Stride of the convolution in the initial layer. Defaults to 2.
+        i2t_max_pool_kernel_size (int, optional): Kernel size of the max pooling layer. Defaults to 3.
+        i2t_max_pool_stride (int, optional): Stride of the max pooling layer. Defaults to 2.
+        leff_expand_ratio (int, optional): Expansion ratio for the Locally Enhanced Feed Forward (LEFF) module. Defaults to 4.
+        leff_depthwise_kernel (int, optional): Kernel size for the depthwise convolution in LEFF. Defaults to 3.
+        leff_depthwise_stride (int, optional): Stride for the depthwise convolution in LEFF. Defaults to 1.
+        leff_depthwise_padding (int, optional): Padding for the depthwise convolution in LEFF. Defaults to 1.
+        leff_depthwise_separable (bool, optional): Whether to use depthwise separable convolutions in LEFF. Defaults to True.
+        lca_encoder_expansion_ratio (int, optional): Expansion ratio for the LCA encoder module. Defaults to 4.
+        lca_encoder_num_heads (int, optional): Number of attention heads in the LCA encoder. Defaults to 12.
+        lca_encoder_dropout (float, optional): Dropout rate in the LCA encoder. Defaults to 0.0.
+        lca_encoder_attention_dropout (float, optional): Dropout rate for attention weights in the LCA encoder. Defaults to 0.0.
+        lca_encoder_projection_dropout (float, optional): Dropout rate for projection layers in the LCA encoder. Defaults to 0.0.
+        lca_encoder_ln_order (str, optional): The order of Layer Normalization in the LCA encoder. Defaults to "post".
+        lca_encoder_stodepth_prob (float, optional): Probability for stochastic depth in the LCA encoder. Defaults to 0.0.
+        lca_encoder_layer_scale (float, optional): Layer scaling factor in the LCA encoder. Defaults to None.
+        lca_encoder_qkv_bias (bool, optional): Whether to use bias in the QKV projections in the LCA encoder. Defaults to False.
+        patchify_technique (str, optional): Technique used for patch extraction ("linear" or "conv"). Defaults to "linear".
+        stochastic_depth (bool, optional): Whether to use stochastic depth in the model. Defaults to False.
+        stochastic_depth_mp (float, optional): Stochastic depth max probability. Defaults to None.
+        layer_scale (float, optional): Scaling factor for the layers. Defaults to None.
+        ln_order (str, optional): The order of Layer Normalization in the model. Defaults to "post".
+        num_classes (int, optional): Number of classes for the classification task. Defaults to 1000.
+        in_channels (int, optional): Number of input channels in the images. Defaults to 3.
+
+    Example:
+        >>> model = CeiT()
+        >>> output = model(torch.randn(1, 3, 224, 224))  # Example input tensor of shape (batch_size, channels, height, width)
+    """
+
     @classmethod
     def __class_repr__(cls):
         return "Model Class for CeiT architecture from paper on: Incorporating Convolution Designs into Visual Transformers"
@@ -140,6 +190,43 @@ class CeiT(nn.Module, metaclass=MetaWrapper):
         return conv_projection
 
     def forward(self, x):
+
+        """
+        Forward pass through the CeiT model.
+
+        This method performs a forward pass of the input tensor through the CeiT model. It includes the following steps:
+
+        1. Initial feature extraction using the `i2t_module` (i2t: image-to-tokens).
+        2. Transformation of the extracted features into patches using the `patchify` method.
+        3. Linear projection of the patchified features.
+        4. Addition of positional embeddings and class tokens.
+        5. Application of dropout.
+        6. Processing of the features through the transformer encoder.
+        7. Application of LCA attention to the encoder's output.
+        8. Classification of the final token output using the classifier.
+
+        Args:
+            x (torch.Tensor): The input tensor representing a batch of images. The tensor should have the shape 
+                            (batch_size, in_channels, image_height, image_width). The dimensions are expected 
+                            to be consistent with the model's configuration.
+
+        Returns:
+            torch.Tensor: The output tensor containing the class predictions. The tensor has the shape 
+                        (batch_size, num_classes), where `num_classes` is the number of classes defined for 
+                        classification. Each element in the tensor represents the predicted score for a class.
+
+        Notes:
+            - The `i2t_module` first processes the input images, extracting initial features through convolutional 
+            layers followed by max pooling.
+            - The `patchify` method converts the feature maps into a sequence of patches suitable for the transformer 
+            encoder.
+            - Positional embeddings and class tokens are added to the sequence of patches to incorporate positional 
+            information and a class-specific token.
+            - Dropout is applied to prevent overfitting during training.
+            - The transformer encoder processes the sequence of patches, producing an encoded representation.
+            - LCA attention is applied to the encoded representation to enhance the feature representation.
+            - Finally, the class token is passed through a classifier to obtain the predicted class scores.
+        """
 
         x = self.i2t_module(x)
         x = self.patchify(x)
