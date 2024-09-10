@@ -223,32 +223,36 @@ class BoT_ViT(nn.Module, metaclass=MetaWrapper):
         Initialize convolutional layers with specific weight and bias initialization.
 
         This method initializes the weights and biases of convolutional layers using a specific strategy:
-        - **Weights**: Initialized with a normal distribution where the mean is 0.0 and the standard deviation
+        - **Weights**: Initialized with a normal distribution where the mean is `0.0` and the standard deviation
         is computed based on the number of input units and output channels.
-        - **Biases**: Initialized to 0.0.
+        - **Biases**: Initialized to `0.0`.
 
         The standard deviation for weight initialization is calculated using the formula:
-        $$
-        \text{std} = \sqrt{\frac{2}{n_{\text{in}}}}
-        $$
+
+        .. math::
+
+            \\text{std} = \\sqrt{\\frac{2}{n_{\\text{in}}}}
+
         where:
-        - $n_{\text{in}}$ is the number of input units, computed as:
-        $$
-        n_{\text{in}} = \text{kernel\_size[0]}^2 \times \text{out\_channels}
-        $$
+
+        .. math::
+
+            n_{\\text{in}} = \\text{kernel\_size[0]}^2 \\times \\text{out\_channels}
 
         The weight initialization is performed as follows:
-        $$
-        \text{weight} \sim \mathcal{N}(\text{mean}=0.0, \text{std})
-        $$
+
+        .. math::
+
+            \\text{weight} \\sim \\mathcal{N}(\\text{mean}=0.0, \\text{std})
 
         Biases are initialized with:
-        $$
-        \text{bias} = 0.0
-        $$
+
+        .. math::
+
+            \\text{bias} = 0.0
 
         Where:
-        - $\mathcal{N}(\mu, \sigma^2)$ denotes a normal distribution with mean $\mu$ and variance $\sigma^2$.
+        - `\\mathcal{N}(\\mu, \\sigma^2)` denotes a normal distribution with mean `\\mu` and variance `\\sigma^2`.
         - `kernel_size[0]` is the height of the kernel, and `out_channels` is the number of output channels.
 
         This initialization helps in stabilizing the learning process and improving the convergence rate.
