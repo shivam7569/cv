@@ -10,8 +10,7 @@ CV
    :maxdepth: 2
    :caption: Contents:
 
-   ./backbones_docs/AlexNet/backbones.AlexNet.model
-   ./backbones_docs/BoT_ViT/backbones.BoT_ViT.model
+   ./subpackages/backbones
 
 
 Indices and tables
