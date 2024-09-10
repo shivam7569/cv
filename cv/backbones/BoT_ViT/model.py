@@ -146,11 +146,11 @@ class BoT_ViT(nn.Module, metaclass=MetaWrapper):
     feature extraction and classification. The model processes input images through multiple residual groups 
     and a final classification layer.
 
-    Methods:
-        initializeConv(self):
-            Initializes the weights and biases of the convolutional layers.
-        forward(self, x):
-            Defines the forward pass through the BoT-ViT architecture.
+    Args:
+        mhsa_num_heads (int): The number of heads for the multi-head self-attention layer.
+        attention_dropout (float, optional): Dropout rate for attention layers. Default is 0.0.
+        num_classes (int, optional): Number of output classes for classification. Default is 1000.
+        in_channels (int, optional): Number of input channels for the images. Default is 3 for RGB images.
 
     Example:
         >>> model = BoT_ViT(mhsa_num_heads=8, attention_dropout=0.1, num_classes=1000)
@@ -162,20 +162,6 @@ class BoT_ViT(nn.Module, metaclass=MetaWrapper):
         return "Model Class for BoT-ViT architecture from paper on: Bottleneck Transformers for Visual Recognition"
 
     def __init__(self, mhsa_num_heads, attention_dropout=0.0, num_classes=1000, in_channels=3):
-
-        """
-        Initializes the BoT-ViT model with the number of multi-head self-attention (MHSA) heads, dropout rate, 
-        number of output classes, and input channels.
-
-        Args:
-            mhsa_num_heads (int): The number of heads for the multi-head self-attention layer.
-            attention_dropout (float, optional): Dropout rate for attention layers. Default is 0.0.
-            num_classes (int, optional): Number of output classes for classification. Default is 1000.
-            in_channels (int, optional): Number of input channels for the images. Default is 3 for RGB images.
-
-        Example:
-            >>> model = BoT_ViT(mhsa_num_heads=8, attention_dropout=0.1, num_classes=1000)
-        """
 
         super(BoT_ViT, self).__init__()
 

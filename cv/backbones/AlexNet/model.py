@@ -12,11 +12,9 @@ class AlexNet(nn.Module, metaclass=MetaWrapper):
     This class defines the AlexNet architecture, which consists of convolutional layers for feature extraction 
     and fully connected layers for classification.
 
-    Methods:
-        __init__(self, num_classes, in_channels=3):
-            Initializes the AlexNet model with the number of classes for classification and input channels.
-        forward(self, x):
-            Defines the forward pass of the AlexNet model, applying feature extraction followed by classification.
+    Args:
+        num_classes (int): The number of output classes for classification.
+        in_channels (int, optional): The number of input channels for the images. Default is 3 for RGB images.
 
     Example:
         >>> model = AlexNet(num_classes=1000, in_channels=3)
@@ -29,18 +27,6 @@ class AlexNet(nn.Module, metaclass=MetaWrapper):
         return "Model Class for AlexNet architecture from paper on: ImageNet Classification with Deep Convolutional Neural Networks"
     
     def __init__(self, num_classes, in_channels=3):
-
-        """
-        Initializes the AlexNet model.
-
-        Args:
-            num_classes (int): The number of output classes for classification.
-            in_channels (int, optional): The number of input channels for the images. Default is 3 for RGB images.
-
-        Example:
-            >>> model = AlexNet(num_classes=1000, in_channels=3)
-
-        """
         
         super(AlexNet, self).__init__()
 
