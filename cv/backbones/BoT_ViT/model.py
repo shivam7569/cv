@@ -146,14 +146,6 @@ class BoT_ViT(nn.Module, metaclass=MetaWrapper):
     feature extraction and classification. The model processes input images through multiple residual groups 
     and a final classification layer.
 
-    Attributes:
-        init_features (nn.Sequential): Initial convolutional block for feature extraction.
-        res_group_1 (ResidualGroup): First residual group with bottleneck convolutional layers.
-        res_group_2 (ResidualGroup): Second residual group with downsampling and convolutional layers.
-        res_group_3 (ResidualGroup): Third residual group with further downsampling and convolutional layers.
-        res_group_4 (ResidualGroup): Final residual group with bottleneck MHSA layers.
-        classifier (nn.Sequential): Fully connected layers for classification.
-
     Methods:
         initializeConv(self):
             Initializes the weights and biases of the convolutional layers.

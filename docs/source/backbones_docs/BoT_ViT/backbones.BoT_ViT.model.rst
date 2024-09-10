@@ -5,5 +5,5 @@ Bottleneck ViT
    :members:
    :undoc-members:
    :show-inheritance:
-   :exclude-members:
+   :exclude-members: BoT_ViTParams.*, ResidualGroup.*, ResidualBlock.*, ConvBlock.*
    :no-index:

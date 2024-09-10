@@ -12,10 +12,6 @@ class AlexNet(nn.Module, metaclass=MetaWrapper):
     This class defines the AlexNet architecture, which consists of convolutional layers for feature extraction 
     and fully connected layers for classification.
 
-    Attributes:
-        feature_extractor (nn.Sequential): A sequential model comprising convolutional layers for feature extraction.
-        classifier (nn.Sequential): A sequential model comprising fully connected layers for image classification.
-
     Methods:
         __init__(self, num_classes, in_channels=3):
             Initializes the AlexNet model with the number of classes for classification and input channels.
