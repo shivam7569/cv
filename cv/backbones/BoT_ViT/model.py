@@ -237,7 +237,7 @@ class BoT_ViT(nn.Module, metaclass=MetaWrapper):
 
         .. math::
 
-            n_{\\text{in}} = \\text{kernel\_size[0]}^2 \\times \\text{out\_channels}
+            n_{\\text{in}} = \\text{kernel_size[0]}^2 \\times \\text{out_channels}
 
         The weight initialization is performed as follows:
 
@@ -250,10 +250,6 @@ class BoT_ViT(nn.Module, metaclass=MetaWrapper):
         .. math::
 
             \\text{bias} = 0.0
-
-        Where:
-        - `\\mathcal{N}(\\mu, \\sigma^2)` denotes a normal distribution with mean `\\mu` and variance `\\sigma^2`.
-        - `kernel_size[0]` is the height of the kernel, and `out_channels` is the number of output channels.
 
         This initialization helps in stabilizing the learning process and improving the convergence rate.
         """
