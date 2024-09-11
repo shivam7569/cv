@@ -11,11 +11,11 @@ class ConViT(nn.Module, metaclass=MetaWrapper):
     """
     Model class for `ConViT` architecture as described in the `paper <https://arxiv.org/abs/2103.10697.pdf>`_.
 
-    ConViT is a hybrid architecture that combines vision transformers (ViT) with convolutional inductive biases, enabling the model to better capture local 
-    features in images. This is achieved through gated transformer blocks, 
-    allowing flexibility in balancing local and global feature extraction.
+    ConViT is a hybrid architecture that combines vision transformers (ViT) with convolutional
+    inductive biases, enabling the model to better capture local features in images. This is
+    achieved through gated transformer blocks, allowing flexibility in balancing local and global feature extraction.
 
-    Attributes:
+    Args:
         d_model (int): Dimension of the model (embedding size).
         image_size (int): Height and width of the input image.
         patch_size (int): Size of the patches extracted from the image.
@@ -170,16 +170,18 @@ class ConViT(nn.Module, metaclass=MetaWrapper):
         """
         Forward pass of the ConViT model.
 
-        The input tensor `x` is first patchified, then linearly projected into the 
-        transformer space. It is passed through a transformer encoder with both 
-        global and gated blocks to capture local and global features. The final class 
-        token is used for classification.
+        The input tensor `x` is first patchified, then linearly projected into the transformer space.
+        It is passed through a transformer encoder with both global and gated blocks to capture local
+        and global features. The final class token is used for classification.
 
         Args:
             x (torch.Tensor): The input tensor representing a batch of images, with shape (batch_size, in_channels, height, width).
 
         Returns:
             torch.Tensor: The classification output with shape (batch_size, num_classes), representing the predicted class probabilities for each image.
+
+        Example:
+            >>> output = model(torch.randn(1, 3, 224, 224))  # Example input tensor of shape (batch_size, channels, height, width)
         """
 
         x = self.patchify(x)
