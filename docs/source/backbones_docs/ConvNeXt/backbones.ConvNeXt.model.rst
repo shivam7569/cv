@@ -5,5 +5,5 @@ AlexNet
    :members:
    :undoc-members:
    :show-inheritance:
-   :exclude-members: ConvNeXtParams.setParams, ConvNeXtGroup, ConvNeXtBlock, ConvBlock
+   :exclude-members: ConvNeXtParams, ConvNeXtGroup, ConvNeXtBlock, ConvBlock
    :no-index:
