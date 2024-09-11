@@ -122,7 +122,7 @@ class AuxiliaryClassifier(nn.Module):
 class Inception(nn.Module, metaclass=MetaWrapper):
 
     """
-    Inception-v1 model class based on the architecture proposed in the 
+    Inception-v1 model class based on the architecture proposed in the `paper <https://arxiv.org/abs/1409.4842.pdf>`_.
 
     This class implements the Inception architecture, including several Inception modules and 
     auxiliary classifiers to improve training performance. It processes input data through

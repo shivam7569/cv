@@ -5,7 +5,7 @@
 - [x] [LeNet](http://vision.stanford.edu/cs598_spring07/papers/Lecun98.pdf)
 - [x] [AlexNet](https://shivam7569.github.io/cv/backbones_docs/AlexNet/backbones.AlexNet.model.html)
 - [x] [VGG](https://arxiv.org/abs/1409.1556)
-- [x] [Inception](https://arxiv.org/abs/1409.4842)
+- [x] [Inception](https://shivam7569.github.io/cv/backbones_docs/Inception/backbones.Inception.model.html)
 - [x] [Inception-v2/v3](https://arxiv.org/abs/1512.00567.pdf)
 - [x] [Inception-v4](https://arxiv.org/abs/1602.07261.pdf)
 - [x] [ResNet](https://arxiv.org/abs/1512.03385)
