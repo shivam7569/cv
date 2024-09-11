@@ -6,6 +6,23 @@ from cv.utils.layers import ConvLayerNorm, DropPath, LayerScale
 
 class ConvNeXtParams:
 
+    """
+    A parameter class to define the configuration settings for the ConvNeXt model.
+
+    Args:
+        NUM_CLASSES (int): The number of output classes for classification. Default is 1000.
+        IN_CHANNELS (int): The number of input channels in the input image. Default is 3 for RGB.
+        STEM_OUT_CHANNELS (int): The number of output channels from the initial stem convolution. Default is 96.
+        STEM_KERNEL_SIZE (int): The kernel size for the stem convolution. Default is 4.
+        STEM_KERNEL_STRIDE (int): The stride for the stem convolution. Default is 4.
+        NUM_BLOCKS (list[int]): The number of blocks in each ConvNeXt stage. Default is [3, 3, 9, 3].
+        EXPANSION_RATE (int): The expansion rate for the number of channels in the block. Default is 4.
+        DEPTHWISE_CONV_KERNEL_SIZE (int): The kernel size for the depthwise convolution. Default is 7.
+        LAYER_SCALE (float): The initial value for LayerScale. Default is 1e-6.
+        STOCHASTIC_DEPTH_MP (float): The maximum probability for stochastic depth dropout. Default is 0.1.
+    """
+
+
     NUM_CLASSES: int = 1000
     IN_CHANNELS: int = 3
     STEM_OUT_CHANNELS: int = 96
@@ -31,6 +48,23 @@ class ConvNeXtParams:
         cls.STOCHASTIC_DEPTH_MP = kwargs["stochastic_depth_mp"]
 
 class ConvNeXt(nn.Module, metaclass=MetaWrapper):
+
+    """
+    `ConvNeXt` model architecture, adapted from the `paper <https://arxiv.org/abs/2201.03545.pdf>`_.
+    
+    This class implements the ConvNeXt architecture, which is a modernized version of the traditional convolutional network (ConvNet). The model consists of four main stages (or groups) of ConvNeXt blocks, with a stem at the beginning for initial feature extraction and a classifier at the end for final prediction.
+
+    Each group consists of multiple ConvNeXt blocks, with optional downsampling at the start of some groups to progressively reduce the spatial dimensions and increase the feature channels. The model can dynamically adjust its configuration through the `ConvNeXtParams` class, which stores hyperparameters such as the number of blocks per stage, expansion rate, and stochastic depth probability.
+
+    The model also applies techniques like Layer Scaling, Stochastic Depth, and ConvLayerNorm for better training stability and generalization.
+
+    Args:
+        **kwargs: Optional keyword arguments to override default ConvNeXt parameters (such as `num_classes`, `in_channels`, etc.). 
+                  These values are set via the `ConvNeXtParams` class.
+    
+    Example:
+        >>> model = ConvNeXt(**kwargs)
+    """
 
     @classmethod
     def __class_repr__(cls):
@@ -83,6 +117,16 @@ class ConvNeXt(nn.Module, metaclass=MetaWrapper):
         )
 
     def forward(self, x):
+        """
+        Defines the forward pass of the ConvNeXt model.
+
+        Args:
+            x (torch.Tensor): Input tensor of shape (batch_size, in_channels, height, width).
+
+        Returns:
+            torch.Tensor: Output logits of shape (batch_size, num_classes).
+        """
+        
         x = self.stem(x)
         x = self.convnext_group_1(x)
         x = self.convnext_group_2(x)
