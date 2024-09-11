@@ -5,11 +5,27 @@ import torch.nn as nn
 
 from cv.utils import MetaWrapper
 
-"""
-The code has nested classes, which I later realised is not a good practice
-"""
 
 class DenseNet(nn.Module, metaclass=MetaWrapper):
+    """
+    Implements the DenseNet model as described in the `paper <https://arxiv.org/abs/1608.06993.pdf>`_.
+    DenseNet is a type of convolutional neural network where each layer is connected to every other layer 
+    in a feed-forward fashion. It uses dense connections to improve gradient flow and enhance feature reuse.
+
+    Args:
+        num_classes (int): Number of output classes for classification.
+        dense_block_num_layers (list of int): List specifying the number of layers in each dense block (default: [6, 12, 24, 16]).
+        in_channels (int): Number of input channels in the image, typically 3 for RGB (default: 3).
+        growth_rate (int): Growth rate of the network. Determines the number of output channels of each dense layer (default:32).
+        compression_factor (float): Compression factor for transition layers to reduce feature map size (default: 0.5).
+        dense_block_dropouts (list of float or None): Dropout rates for dense blocks. If None, dropout is not applied (default: None).
+
+    Example:
+        >>> model = DenseNet(num_classes=1000)
+
+    Note:
+        The code has nested classes, which I later realised is not a good practice
+    """
 
     @classmethod
     def __class_repr__(cls):
@@ -174,6 +190,41 @@ class DenseNet(nn.Module, metaclass=MetaWrapper):
         self.initializeConv()
 
     def initializeConv(self):
+        """
+        Initialize convolutional layers with specific weight and bias initialization.
+
+        This method initializes the weights and biases of convolutional layers using a specific strategy:
+        - **Weights**: Initialized with a normal distribution where the mean is `0.0` and the standard deviation
+        is computed based on the number of input units and output channels.
+        - **Biases**: Initialized to `0.0`.
+
+        The standard deviation for weight initialization is calculated using the formula:
+
+        .. math::
+
+            \\text{std} = \\sqrt{\\frac{2}{n_{\\text{in}}}}
+
+        where:
+
+        .. math::
+
+            n_{\\text{in}} = \\text{kernel_size[0]}^2 \\times \\text{out_channels}
+
+        The weight initialization is performed as follows:
+
+        .. math::
+
+            \\text{weight} \\sim \\mathcal{N}(\\text{mean}=0.0, \\text{std})
+
+        Biases are initialized with:
+
+        .. math::
+
+            \\text{bias} = 0.0
+
+        This initialization helps in stabilizing the learning process and improving the convergence rate.
+        """
+
         for module in self.init_features.modules():
             if isinstance(module, nn.Conv2d):
                 weight = module.weight
@@ -187,6 +238,21 @@ class DenseNet(nn.Module, metaclass=MetaWrapper):
                 nn.init.constant_(bias, val=0.0)
         
     def forward(self, x):
+        """
+        Forward pass through the DenseNet model.
+
+        The input tensor is processed through the initial feature extraction layers, followed by a series of
+        DenseBlocks, TransitionLayers, and finally a classification layer.
+
+        Args:
+            x (Tensor): Input tensor of shape `(batch_size, in_channels, height, width)`.
+
+        Returns:
+            Tensor: Output tensor of shape `(batch_size, num_classes)`, representing the class scores.
+
+        Example:
+            >>> output = model(torch.randn(1, 3, 224, 224))  # Example input tensor of shape (batch_size, channels, height, width)
+        """
 
         x = self.init_features(x)
         x = self.dense_block_1(x)

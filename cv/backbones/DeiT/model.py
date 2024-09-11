@@ -147,6 +147,9 @@ class DeiT(ViT, metaclass=MetaWrapper):
             tuple: A tuple with two elements:
                 - Tensor: Output from the student model (`student_model` method).
                 - Tensor: Output from the teacher model (computed without gradients).
+
+        Example:
+            >>> output = model(torch.randn(1, 3, 224, 224))  # Example input tensor of shape (batch_size, channels, height, width)
         """
         
         with torch.no_grad():
