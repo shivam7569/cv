@@ -42,16 +42,16 @@ class ConvNeXt(nn.Module, metaclass=MetaWrapper):
     The model also applies techniques like Layer Scaling, Stochastic Depth, and ConvLayerNorm for better training stability and generalization.
 
     Args:
-        num_classes (int): The number of output classes for classification. Default is 1000.
-        in_channels (int): The number of input channels in the input image. Default is 3 for RGB.
-        stem_out_channels (int): The number of output channels from the initial stem convolution. Default is 96.
-        stem_kernel_size (int): The kernel size for the stem convolution. Default is 4.
-        stem_kernel_stride (int): The stride for the stem convolution. Default is 4.
-        num_blocks (list[int]): The number of blocks in each ConvNeXt stage. Default is [3, 3, 9, 3].
-        expansion_rate (int): The expansion rate for the number of channels in the block. Default is 4.
-        depthwise_conv_kernel_size (int): The kernel size for the depthwise convolution. Default is 7.
-        layer_scale (float): The initial value for LayerScale. Default is 1e-6.
-        stochastic_depth_mp (float): The maximum probability for stochastic depth dropout. Default is 0.1.
+        num_classes (int): The number of output classes for classification (default: 1000).
+        in_channels (int): The number of input channels in the input image, typically 3 for RGB (default: 3).
+        stem_out_channels (int): The number of output channels from the initial stem convolution (default: 96).
+        stem_kernel_size (int): The kernel size for the stem convolution (default: 4).
+        stem_kernel_stride (int): The stride for the stem convolution (default: 4).
+        num_blocks (list[int]): The number of blocks in each ConvNeXt stage (default: [3, 3, 9, 3]).
+        expansion_rate (int): The expansion rate for the number of channels in the block (default: 4).
+        depthwise_conv_kernel_size (int): The kernel size for the depthwise convolution (default: 7).
+        layer_scale (float): The initial value for LayerScale (default: 1e-6).
+        stochastic_depth_mp (float): The maximum probability for stochastic depth dropout (default: 0.1).
     
     Example:
         >>> model = ConvNeXt(**kwargs)

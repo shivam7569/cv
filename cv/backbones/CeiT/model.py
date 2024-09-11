@@ -14,42 +14,42 @@ class CeiT(nn.Module, metaclass=MetaWrapper):
     a powerful approach for image classification tasks.
 
     Args:
-        image_size (int, optional): The size of the input image (height and width). Defaults to 224.
-        d_model (int, optional): The dimensionality of the model's feature space. Defaults to 768.
-        patch_size (int, optional): The size of the image patches to be extracted. Defaults to 4.
-        dropout (float, optional): The dropout rate applied to the inputs and outputs of the dropout layers. Defaults to 0.0.
-        encoder_num_heads (int, optional): Number of attention heads in the encoder layers. Defaults to 12.
-        num_encoder_blocks (int, optional): Number of encoder blocks in the transformer. Defaults to 12.
-        encoder_dropout (float, optional): Dropout rate applied in the encoder layers. Defaults to 0.0.
-        encoder_attention_dropout (float, optional): Dropout rate applied to the attention weights in the encoder. Defaults to 0.0.
-        encoder_projection_dropout (float, optional): Dropout rate applied to the projection layers in the encoder. Defaults to 0.0.
-        classifier_mlp_d (int, optional): Dimensionality of the hidden layer in the classifier's MLP. Defaults to 2048.
-        i2t_out_channels (int, optional): Number of output channels in the initial convolutional layer. Defaults to 32.
-        i2t_conv_kernel_size (int, optional): Size of the kernel in the initial convolutional layer. Defaults to 7.
-        i2t_conv_stride (int, optional): Stride of the convolution in the initial layer. Defaults to 2.
-        i2t_max_pool_kernel_size (int, optional): Kernel size of the max pooling layer. Defaults to 3.
-        i2t_max_pool_stride (int, optional): Stride of the max pooling layer. Defaults to 2.
-        leff_expand_ratio (int, optional): Expansion ratio for the Locally Enhanced Feed Forward (LEFF) module. Defaults to 4.
-        leff_depthwise_kernel (int, optional): Kernel size for the depthwise convolution in LEFF. Defaults to 3.
-        leff_depthwise_stride (int, optional): Stride for the depthwise convolution in LEFF. Defaults to 1.
-        leff_depthwise_padding (int, optional): Padding for the depthwise convolution in LEFF. Defaults to 1.
-        leff_depthwise_separable (bool, optional): Whether to use depthwise separable convolutions in LEFF. Defaults to True.
-        lca_encoder_expansion_ratio (int, optional): Expansion ratio for the LCA encoder module. Defaults to 4.
-        lca_encoder_num_heads (int, optional): Number of attention heads in the LCA encoder. Defaults to 12.
-        lca_encoder_dropout (float, optional): Dropout rate in the LCA encoder. Defaults to 0.0.
-        lca_encoder_attention_dropout (float, optional): Dropout rate for attention weights in the LCA encoder. Defaults to 0.0.
-        lca_encoder_projection_dropout (float, optional): Dropout rate for projection layers in the LCA encoder. Defaults to 0.0.
-        lca_encoder_ln_order (str, optional): The order of Layer Normalization in the LCA encoder. Defaults to "post".
-        lca_encoder_stodepth_prob (float, optional): Probability for stochastic depth in the LCA encoder. Defaults to 0.0.
-        lca_encoder_layer_scale (float, optional): Layer scaling factor in the LCA encoder. Defaults to None.
-        lca_encoder_qkv_bias (bool, optional): Whether to use bias in the QKV projections in the LCA encoder. Defaults to False.
-        patchify_technique (str, optional): Technique used for patch extraction ("linear" or "conv"). Defaults to "linear".
-        stochastic_depth (bool, optional): Whether to use stochastic depth in the model. Defaults to False.
-        stochastic_depth_mp (float, optional): Stochastic depth max probability. Defaults to None.
-        layer_scale (float, optional): Scaling factor for the layers. Defaults to None.
-        ln_order (str, optional): The order of Layer Normalization in the model. Defaults to "post".
-        num_classes (int, optional): Number of classes for the classification task. Defaults to 1000.
-        in_channels (int, optional): Number of input channels in the images. Defaults to 3.
+        image_size (int, optional): The size of the input image (height and width) (default: 224).
+        d_model (int, optional): The dimensionality of the model's feature space (default: 768).
+        patch_size (int, optional): The size of the image patches to be extracted (default: 4).
+        dropout (float, optional): The dropout rate applied to the inputs and outputs of the dropout layers (default: 0.0).
+        encoder_num_heads (int, optional): Number of attention heads in the encoder layers (default: 12).
+        num_encoder_blocks (int, optional): Number of encoder blocks in the transformer (default: 12).
+        encoder_dropout (float, optional): Dropout rate applied in the encoder layers (default: 0.0).
+        encoder_attention_dropout (float, optional): Dropout rate applied to the attention weights in the encoder (default: 0.0).
+        encoder_projection_dropout (float, optional): Dropout rate applied to the projection layers in the encoder (default: 0.0).
+        classifier_mlp_d (int, optional): Dimensionality of the hidden layer in the classifier's MLP (default: 2048).
+        i2t_out_channels (int, optional): Number of output channels in the initial convolutional layer (default: 32).
+        i2t_conv_kernel_size (int, optional): Size of the kernel in the initial convolutional layer (default: 7).
+        i2t_conv_stride (int, optional): Stride of the convolution in the initial layer (default: 2).
+        i2t_max_pool_kernel_size (int, optional): Kernel size of the max pooling layer (default: 3).
+        i2t_max_pool_stride (int, optional): Stride of the max pooling layer (default: 2).
+        leff_expand_ratio (int, optional): Expansion ratio for the Locally Enhanced Feed Forward (LEFF) module (default: 4).
+        leff_depthwise_kernel (int, optional): Kernel size for the depthwise convolution in LEFF (default: 3).
+        leff_depthwise_stride (int, optional): Stride for the depthwise convolution in LEFF (default: 1).
+        leff_depthwise_padding (int, optional): Padding for the depthwise convolution in LEFF (default: 1).
+        leff_depthwise_separable (bool, optional): Whether to use depthwise separable convolutions in LEFF (default: True).
+        lca_encoder_expansion_ratio (int, optional): Expansion ratio for the LCA encoder module (default: 4).
+        lca_encoder_num_heads (int, optional): Number of attention heads in the LCA encoder (default: 12).
+        lca_encoder_dropout (float, optional): Dropout rate in the LCA encoder (default: 0.0).
+        lca_encoder_attention_dropout (float, optional): Dropout rate for attention weights in the LCA encoder (default: 0.0).
+        lca_encoder_projection_dropout (float, optional): Dropout rate for projection layers in the LCA encoder (default: 0.0).
+        lca_encoder_ln_order (str, optional): The order of Layer Normalization in the LCA encoder (default: "post").
+        lca_encoder_stodepth_prob (float, optional): Probability for stochastic depth in the LCA encoder (default: 0.0).
+        lca_encoder_layer_scale (float, optional): Layer scaling factor in the LCA encoder (default: None).
+        lca_encoder_qkv_bias (bool, optional): Whether to use bias in the QKV projections in the LCA encoder (default: False).
+        patchify_technique (str, optional): Technique used for patch extraction ("linear" or "conv") (default: linear).
+        stochastic_depth (bool, optional): Whether to use stochastic depth in the model (default: False).
+        stochastic_depth_mp (float, optional): Stochastic depth max probability (default: None).
+        layer_scale (float, optional): Scaling factor for the layers (default: None).
+        ln_order (str, optional): The order of Layer Normalization in the model (default: "post").
+        num_classes (int, optional): Number of classes for the classification task (default: 1000).
+        in_channels (int, optional): Number of input channels in the images, typically 3 for RGB (default: 3).
 
     Example:
         >>> model = CeiT()

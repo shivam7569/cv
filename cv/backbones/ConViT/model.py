@@ -23,22 +23,22 @@ class ConViT(nn.Module, metaclass=MetaWrapper):
         encoder_mlp_d (int): Hidden size of the MLP within the transformer encoder.
         encoder_num_heads (int): Number of attention heads in each transformer encoder block.
         num_encoder_blocks (int): Total number of encoder blocks.
-        num_gated_blocks (int, optional): Number of gated transformer blocks, default is 10.
-        locality_strength (float, optional): Strength of the locality bias in gated blocks, default is 1.0.
-        locality_distance_method (str, optional): Method for determining locality distance, default is "constant".
-        use_conv_init (bool, optional): Whether to use convolutional initialization, default is True.
-        d_pos (int, optional): Dimensionality of positional embeddings, default is 3.
-        dropout (float, optional): Dropout probability for regularization, default is 0.0.
-        encoder_dropout (float, optional): Dropout probability within the encoder, default is 0.0.
-        encoder_attention_dropout (float, optional): Dropout probability in attention layers, default is 0.0.
-        encoder_projection_dropout (float, optional): Dropout probability in projection layers, default is 0.0.
-        patchify_technique (str, optional): Patchification technique, either "linear" or "convolutional", default is "linear".
-        stochastic_depth (bool, optional): Whether to use stochastic depth, default is False.
-        stochastic_depth_mp (optional): Stochastic depth max probability, default is None.
-        layer_scale (optional): Scale factor for layer normalization, default is None.
-        ln_order (str, optional): Layer normalization order, default is "residual".
-        in_channels (int, optional): Number of input channels, typically 3 for RGB images, default is 3.
-        num_classes (int, optional): Number of output classes, default is 1000.
+        num_gated_blocks (int, optional): Number of gated transformer blocks (default: 10).
+        locality_strength (float, optional): Strength of the locality bias in gated blocks (default: 1.0).
+        locality_distance_method (str, optional): Method for determining locality distance (default: "constant").
+        use_conv_init (bool, optional): Whether to use convolutional initialization (default: True).
+        d_pos (int, optional): Dimensionality of positional embeddings (default: 3).
+        dropout (float, optional): Dropout probability for regularization (default: 0.0).
+        encoder_dropout (float, optional): Dropout probability within the encoder (default: 0.0).
+        encoder_attention_dropout (float, optional): Dropout probability in attention layers (default: 0.0).
+        encoder_projection_dropout (float, optional): Dropout probability in projection layers (default: 0.0).
+        patchify_technique (str, optional): Patchification technique, either "linear" or "convolutional" (default: "linear").
+        stochastic_depth (bool, optional): Whether to use stochastic depth (default: False).
+        stochastic_depth_mp (optional): Stochastic depth max probability (default: None).
+        layer_scale (optional): Scale factor for layer normalization (default: None).
+        ln_order (str, optional): Layer normalization order (default: "residual").
+        in_channels (int, optional): Number of input channels, typically 3 for RGB images (default: 3).
+        num_classes (int, optional): Number of output classes (default: 1000).
 
     Example:
         >>> model = ConViT(d_model=8, image_size=224, patch_size=16, classifier_mlp_d=2048, encoder_mlp_d=4096, encoder_num_heads=16, num_encoder_blocks=12)

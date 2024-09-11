@@ -148,9 +148,9 @@ class BoT_ViT(nn.Module, metaclass=MetaWrapper):
 
     Args:
         mhsa_num_heads (int): The number of heads for the multi-head self-attention layer.
-        attention_dropout (float, optional): Dropout rate for attention layers. Default is 0.0.
-        num_classes (int, optional): Number of output classes for classification. Default is 1000.
-        in_channels (int, optional): Number of input channels for the images. Default is 3 for RGB images.
+        attention_dropout (float, optional): Dropout rate for attention layers (default: 0.0).
+        num_classes (int, optional): Number of output classes for classification (default: 1000).
+        in_channels (int, optional): Number of input channels for the images, typically 3 for RGB (default: 3).
 
     Example:
         >>> model = BoT_ViT(mhsa_num_heads=8, attention_dropout=0.1, num_classes=1000)

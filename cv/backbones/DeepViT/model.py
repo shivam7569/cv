@@ -2,11 +2,45 @@ import torch
 import torch.nn as nn
 
 from cv.utils import Global
-from cv.utils.layers import DropPath
 from cv.utils import MetaWrapper
+from cv.utils.layers import DropPath
 from cv.attention.transformers import ViTEncoder
 
 class DeepViT(nn.Module, metaclass=MetaWrapper):
+    """
+    DeepViT: Vision Transformer architecture designed for enhanced depth and re-attention, 
+    inspired by the `paper <https://arxiv.org/abs/2103.11886.pdf>`_.
+
+    The DeepViT model is built to address the limitations of traditional Vision Transformers (ViTs) 
+    when scaling depth. Standard ViTs struggle with gradient degradation and lack sufficient attention 
+    at deeper layers, which can hinder performance in deeper architectures. DeepViT introduces several 
+    innovations to overcome these challenges, including re-attention mechanisms, effective stochastic 
+    depth regularization, and LayerScale initialization.
+
+    Args:
+        num_classes (int): Number of target classes for classification tasks.
+        d_model (int): The dimensionality of the transformer embeddings (also referred to as the hidden size).
+        image_size (int): Input image dimension (assumes a square image of size image_size x image_size).
+        patch_size (int): Size of the square patches into which the image is divided.
+        classifier_mlp_d (int): Dimensionality of the intermediate MLP in the classification head.
+        encoder_mlp_d (int): Dimensionality of the feed-forward network within each transformer encoder block.
+        encoder_num_heads (int): Number of attention heads in each multi-head self-attention (MHSA) layer.
+        num_encoder_blocks (int): Number of transformer encoder layers (blocks) in the model.
+        dropout (float, optional): Dropout probability applied after the linear projection and within the MLP layers. (default: 0.0).
+        encoder_dropout (float, optional): Dropout rate applied within the transformer encoder blocks (default: 0.0).
+        encoder_attention_dropout (float, optional): Dropout probability applied to the attention layers (default: 0.0).
+        encoder_projection_dropout (float, optional): Dropout applied to projections inside the transformer blocks (default: 0.0).
+        patchify_technique (str, optional): Method used to divide the input image into patches. Options are "linear" for unfolding and "convolutional" for using convolution (default: "linear").
+        stochastic_depth (bool, optional): Whether to use stochastic depth regularization (default: False).
+        stochastic_depth_mp (float, optional): Maximum probability for stochastic depth, controlling the likelihood of dropping layers during training (default: None).
+        layer_scale (float, optional): Scaling factor for LayerScale initialization. If None, LayerScale is disabled (default: None).
+        ln_order (str, optional): Order of layer normalization application. Defaults to applying normalization after the residual connection (default: "residual").
+        re_attention (bool, optional): Whether to enable the re-attention mechanism to refine attention maps (default: False).
+        in_channels (int, optional): Number of input channels in the image, typically 3 for RGB (default: 3).
+
+    Example:
+        >>> model = DeepViT(num_classes=1000, d_model=384, image_size=224, patch_size=16, classifier_mlp_d=2048, encoder_mlp_d=1152, encoder_num_blocks=32)
+    """
 
     @classmethod
     def __class_repr__(cls):
@@ -102,12 +136,48 @@ class DeepViT(nn.Module, metaclass=MetaWrapper):
         return conv_projection
 
     def updateStochasticDepthRate(self, k=0.05):
+        """
+        Updates the stochastic depth rate for each block in the transformer encoder.
+
+        Stochastic depth is a regularization technique that randomly drops entire layers 
+        during training to prevent overfitting. This method increases the drop probability 
+        for each transformer encoder block based on its position in the model, using the 
+        following formula:
+
+        .. math::
+
+            \\text{new_drop_prob} = \\text{original_drop_prob} + \\text{block_index} \\times \left( \\frac{k}{\\text{num_blocks} - 1} \\right)
+
+        Args:
+            k (float, optional): A scaling factor for adjusting the drop probability, default is 0.05. This value is spread across the transformer blocks, increasing progressively as you move deeper into the encoder.
+
+        Example:
+            If the model has 12 encoder blocks, and k=0.05, the first block will have its drop probability
+            increased slightly, while the last block will have a larger increase, making the depth randomness
+            more aggressive in the deeper layers.
+        """
+
         for module_name, encoder_module in self.encoder.named_modules():
             if isinstance(encoder_module, DropPath):
                 encoder_number = int(module_name.split(".")[1])
                 encoder_module.drop_prob = encoder_module.drop_prob + encoder_number * (k / (len(self.encoder.encoder) - 1))
 
     def forward(self, x):
+        """
+        Forward pass of the DeepViT model. Processes the input image tensor through patchification, 
+        linear projection, transformer encoder blocks, and classification, producing logits for the 
+        target classes.
+
+        Args:
+            x (torch.Tensor): Input tensor of shape (batch_size, in_channels, height, width).
+
+        Returns:
+            torch.Tensor: Output logits of shape (batch_size, num_classes).
+
+        Example:
+            >>> output = model(torch.randn(1, 3, 224, 224))  # Example input tensor of shape (batch_size, channels, height, width)
+        """
+        
         x = self.patchify(x)
         x = self.linear_projection(x)
 

@@ -14,7 +14,7 @@ class AlexNet(nn.Module, metaclass=MetaWrapper):
 
     Args:
         num_classes (int): The number of output classes for classification.
-        in_channels (int, optional): The number of input channels for the images. Default is 3 for RGB images.
+        in_channels (int, optional): The number of input channels for the images, typically 3 for RGB (default: 3).
 
     Example:
         >>> model = AlexNet(num_classes=1000, in_channels=3)
