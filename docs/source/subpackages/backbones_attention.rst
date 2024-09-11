@@ -8,3 +8,4 @@ Backbones (Attention Based)
    ../backbones_docs/attention_based/CeiT/backbones.CeiT.model
    ../backbones_docs/attention_based/ConViT/backbones.ConViT.model
    ../backbones_docs/attention_based/DeepViT/backbones.DeepViT.model
+   ../backbones_docs/attention_based/DeiT/backbones.DeiT.model

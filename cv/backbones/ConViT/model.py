@@ -41,7 +41,7 @@ class ConViT(nn.Module, metaclass=MetaWrapper):
         num_classes (int, optional): Number of output classes (default: 1000).
 
     Example:
-        >>> model = ConViT(d_model=8, image_size=224, patch_size=16, classifier_mlp_d=2048, encoder_mlp_d=4096, encoder_num_heads=16, num_encoder_blocks=12)
+        >>> model = ConViT(d_model=1024, image_size=224, patch_size=16, classifier_mlp_d=2048, encoder_mlp_d=4096, encoder_num_heads=16, num_encoder_blocks=12)
     """
 
     @classmethod

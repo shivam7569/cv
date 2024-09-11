@@ -26,7 +26,7 @@ class DeepViT(nn.Module, metaclass=MetaWrapper):
         encoder_mlp_d (int): Dimensionality of the feed-forward network within each transformer encoder block.
         encoder_num_heads (int): Number of attention heads in each multi-head self-attention (MHSA) layer.
         num_encoder_blocks (int): Number of transformer encoder layers (blocks) in the model.
-        dropout (float, optional): Dropout probability applied after the linear projection and within the MLP layers. (default: 0.0).
+        dropout (float, optional): Dropout probability applied after the linear projection and within the MLP layers (default: 0.0).
         encoder_dropout (float, optional): Dropout rate applied within the transformer encoder blocks (default: 0.0).
         encoder_attention_dropout (float, optional): Dropout probability applied to the attention layers (default: 0.0).
         encoder_projection_dropout (float, optional): Dropout applied to projections inside the transformer blocks (default: 0.0).
@@ -39,7 +39,7 @@ class DeepViT(nn.Module, metaclass=MetaWrapper):
         in_channels (int, optional): Number of input channels in the image, typically 3 for RGB (default: 3).
 
     Example:
-        >>> model = DeepViT(num_classes=1000, d_model=384, image_size=224, patch_size=16, classifier_mlp_d=2048, encoder_mlp_d=1152, encoder_num_blocks=32)
+        >>> model = DeepViT(num_classes=1000, d_model=384, image_size=224, patch_size=16, classifier_mlp_d=2048, encoder_mlp_d=1152, encoder_num_heads=12, num_encoder_blocks=32)
     """
 
     @classmethod
@@ -177,7 +177,7 @@ class DeepViT(nn.Module, metaclass=MetaWrapper):
         Example:
             >>> output = model(torch.randn(1, 3, 224, 224))  # Example input tensor of shape (batch_size, channels, height, width)
         """
-        
+
         x = self.patchify(x)
         x = self.linear_projection(x)
 

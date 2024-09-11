@@ -30,7 +30,7 @@
   - [x] [Transformer in Transformer](https://arxiv.org/abs/2103.00112v3.pdf)
   - [x] [Hierarchical Pooling ViT](https://arxiv.org/abs/2103.10619.pdf)
   - [x] [Convolutional Inductive ViT](https://shivam7569.github.io/cv/backbones_docs/attention_based/ConViT/backbones.ConViT.model.html)
-  - [x] [Deeper ViT](https://arxiv.org/abs/2103.11886.pdf)
+  - [x] [Deeper ViT](https://shivam7569.github.io/cv/backbones_docs/attention_based/DeepViT/backbones.DeepViT.model.html)
   - [x] [Convolution Designs in ViT](https://shivam7569.github.io/cv/backbones_docs/attention_based/CeiT/backbones.CeiT.model.html)
   - [x] [Swin-Transformers](https://arxiv.org/abs/2103.14030)
   - [ ] [Cross Attention ViT](https://arxiv.org/abs/2103.14899.pdf)
