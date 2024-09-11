@@ -5,5 +5,5 @@ DenseNet
    :members:
    :undoc-members:
    :show-inheritance:
-   :exclude-members: DenseNet.DenseLayer, DenseNet.DenseBlock, DenseNet.CompositeFunction, DenseNet.TransitionLayer
+   :exclude-members: DenseLayer, DenseBlock, CompositeFunction, TransitionLayer
    :no-index:
