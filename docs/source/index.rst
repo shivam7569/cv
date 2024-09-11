@@ -11,6 +11,7 @@ CV
    :caption: Contents:
 
    ./subpackages/backbones
+   ./subpackages/backbones_attention
 
 
 Indices and tables
