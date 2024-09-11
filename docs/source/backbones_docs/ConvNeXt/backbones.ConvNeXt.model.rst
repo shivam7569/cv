@@ -1,5 +1,5 @@
-AlexNet
-========
+ConvNeXt
+=========
 
 .. automodule:: cv.backbones.ConvNeXt.model
    :members:

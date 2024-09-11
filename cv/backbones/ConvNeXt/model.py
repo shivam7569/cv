@@ -43,7 +43,7 @@ class ConvNeXt(nn.Module, metaclass=MetaWrapper):
 
     Args:
         num_classes (int): The number of output classes for classification. Default is 1000.
-        in_channe;s (int): The number of input channels in the input image. Default is 3 for RGB.
+        in_channels (int): The number of input channels in the input image. Default is 3 for RGB.
         stem_out_channels (int): The number of output channels from the initial stem convolution. Default is 96.
         stem_kernel_size (int): The kernel size for the stem convolution. Default is 4.
         stem_kernel_stride (int): The stride for the stem convolution. Default is 4.
@@ -54,7 +54,7 @@ class ConvNeXt(nn.Module, metaclass=MetaWrapper):
         stochastic_depth_mp (float): The maximum probability for stochastic depth dropout. Default is 0.1.
     
     Example:
-        >>> model = ConvNeXt()
+        >>> model = ConvNeXt(**kwargs)
     """
 
     @classmethod
