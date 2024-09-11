@@ -3,10 +3,46 @@ import torch.nn as nn
 from cv.attention.transformers.vit_encoder import ViTEncoder
 
 from cv.utils import Global
-from cv.utils.layers import DropPath
 from cv.utils import MetaWrapper
+from cv.utils.layers import DropPath
 
 class ConViT(nn.Module, metaclass=MetaWrapper):
+
+    """
+    Model class for `ConViT` architecture as described in the `paper <https://arxiv.org/abs/2103.10697.pdf>`_.
+
+    ConViT is a hybrid architecture that combines vision transformers (ViT) with convolutional inductive biases, enabling the model to better capture local 
+    features in images. This is achieved through gated transformer blocks, 
+    allowing flexibility in balancing local and global feature extraction.
+
+    Attributes:
+        d_model (int): Dimension of the model (embedding size).
+        image_size (int): Height and width of the input image.
+        patch_size (int): Size of the patches extracted from the image.
+        classifier_mlp_d (int): Hidden size of the classifier MLP layer.
+        encoder_mlp_d (int): Hidden size of the MLP within the transformer encoder.
+        encoder_num_heads (int): Number of attention heads in each transformer encoder block.
+        num_encoder_blocks (int): Total number of encoder blocks.
+        num_gated_blocks (int, optional): Number of gated transformer blocks, default is 10.
+        locality_strength (float, optional): Strength of the locality bias in gated blocks, default is 1.0.
+        locality_distance_method (str, optional): Method for determining locality distance, default is "constant".
+        use_conv_init (bool, optional): Whether to use convolutional initialization, default is True.
+        d_pos (int, optional): Dimensionality of positional embeddings, default is 3.
+        dropout (float, optional): Dropout probability for regularization, default is 0.0.
+        encoder_dropout (float, optional): Dropout probability within the encoder, default is 0.0.
+        encoder_attention_dropout (float, optional): Dropout probability in attention layers, default is 0.0.
+        encoder_projection_dropout (float, optional): Dropout probability in projection layers, default is 0.0.
+        patchify_technique (str, optional): Patchification technique, either "linear" or "convolutional", default is "linear".
+        stochastic_depth (bool, optional): Whether to use stochastic depth, default is False.
+        stochastic_depth_mp (optional): Stochastic depth max probability, default is None.
+        layer_scale (optional): Scale factor for layer normalization, default is None.
+        ln_order (str, optional): Layer normalization order, default is "residual".
+        in_channels (int, optional): Number of input channels, typically 3 for RGB images, default is 3.
+        num_classes (int, optional): Number of output classes, default is 1000.
+
+    Example:
+        >>> model = ConViT(d_model=8, image_size=224, patch_size=16, classifier_mlp_d=2048, encoder_mlp_d=4096, encoder_num_heads=16, num_encoder_blocks=12)
+    """
 
     @classmethod
     def __class_repr__(cls):
@@ -103,12 +139,49 @@ class ConViT(nn.Module, metaclass=MetaWrapper):
         return conv_projection
 
     def updateStochasticDepthRate(self, k=0.05):
+        """
+        Updates the stochastic depth rate for each block in the transformer encoder.
+
+        Stochastic depth is a regularization technique that randomly drops entire layers 
+        during training to prevent overfitting. This method increases the drop probability 
+        for each transformer encoder block based on its position in the model, using the 
+        following formula:
+
+        .. math::
+
+            \\text{new_drop_prob} = \\text{original_drop_prob} + \\text{block_index} \\times \left( \\frac{k}{\\text{num_blocks} - 1} \\right)
+
+        Args:
+            k (float, optional): A scaling factor for adjusting the drop probability, 
+            default is 0.05. This value is spread across the transformer blocks, increasing 
+            progressively as you move deeper into the encoder.
+
+        Example:
+            If the model has 12 encoder blocks, and k=0.05, the first block will have its 
+            drop probability increased slightly, while the last block will have a larger 
+            increase, making the depth randomness more aggressive in the deeper layers.
+        """
         for module_name, encoder_module in self.encoder.named_modules():
             if isinstance(encoder_module, DropPath):
                 encoder_number = int(module_name.split(".")[1])
                 encoder_module.drop_prob = encoder_module.drop_prob + encoder_number * (k / (len(self.encoder.encoder) - 1))
 
     def forward(self, x):
+        """
+        Forward pass of the ConViT model.
+
+        The input tensor `x` is first patchified, then linearly projected into the 
+        transformer space. It is passed through a transformer encoder with both 
+        global and gated blocks to capture local and global features. The final class 
+        token is used for classification.
+
+        Args:
+            x (torch.Tensor): The input tensor representing a batch of images, with shape (batch_size, in_channels, height, width).
+
+        Returns:
+            torch.Tensor: The classification output with shape (batch_size, num_classes), representing the predicted class probabilities for each image.
+        """
+
         x = self.patchify(x)
         x = self.linear_projection(x)
         x = self.dropout(x)

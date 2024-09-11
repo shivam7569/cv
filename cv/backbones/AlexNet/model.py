@@ -7,7 +7,7 @@ from cv.utils import MetaWrapper
 class AlexNet(nn.Module, metaclass=MetaWrapper):
 
     """
-    AlexNet model for image classification based on the `paper <https://proceedings.neurips.cc/paper_files/paper/2012/file/c399862d3b9d6b76c8436e924a68c45b-Paper.pdf>`_.
+    `AlexNet` model for image classification based on the `paper <https://proceedings.neurips.cc/paper_files/paper/2012/file/c399862d3b9d6b76c8436e924a68c45b-Paper.pdf>`_.
 
     This class defines the AlexNet architecture, which consists of convolutional layers for feature extraction 
     and fully connected layers for classification.

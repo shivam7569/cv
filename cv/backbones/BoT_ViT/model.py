@@ -140,7 +140,7 @@ class ConvBlock(nn.Module):
 class BoT_ViT(nn.Module, metaclass=MetaWrapper):
 
     """
-    BoT-ViT (Bottleneck Transformers for Visual Recognition) model architecture from `paper <https://arxiv.org/abs/2101.11605.pdf>`_.
+    `BoT-ViT` (Bottleneck Transformers for Visual Recognition) model architecture from `paper <https://arxiv.org/abs/2101.11605.pdf>`_.
 
     This class implements the BoT-ViT model, combining convolutional and bottleneck transformer blocks for 
     feature extraction and classification. The model processes input images through multiple residual groups 
