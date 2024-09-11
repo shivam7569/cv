@@ -150,7 +150,7 @@ class HPool_ViT(nn.Module, metaclass=MetaWrapper):
             increased slightly, while the last block will have a larger increase, making the depth randomness
             more aggressive in the deeper layers.
         """
-        
+
         for module_name, encoder_module in self.encoder.named_modules():
             if isinstance(encoder_module, DropPath):
                 encoder_number = int(module_name.split(".")[1])
@@ -167,7 +167,7 @@ class HPool_ViT(nn.Module, metaclass=MetaWrapper):
             Tensor: Output tensor of shape `(batch_size, num_classes)` containing the predicted class scores.
         
         Example:
-            >>> output = model(torch.randn(1, 3, 224, 224))  # Example input tensor of shape (batch_size, channels, height, width)
+            >>> output = model(torch.randn(1, 3, 192, 192))  # Example input tensor of shape (batch_size, channels, height, width)
         """
 
         x = self.patchify(x)
