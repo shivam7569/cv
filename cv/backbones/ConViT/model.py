@@ -152,14 +152,12 @@ class ConViT(nn.Module, metaclass=MetaWrapper):
             \\text{new_drop_prob} = \\text{original_drop_prob} + \\text{block_index} \\times \left( \\frac{k}{\\text{num_blocks} - 1} \\right)
 
         Args:
-            k (float, optional): A scaling factor for adjusting the drop probability, 
-            default is 0.05. This value is spread across the transformer blocks, increasing 
-            progressively as you move deeper into the encoder.
+            k (float, optional): A scaling factor for adjusting the drop probability, default is 0.05. This value is spread across the transformer blocks, increasing progressively as you move deeper into the encoder.
 
         Example:
-            If the model has 12 encoder blocks, and k=0.05, the first block will have its 
-            drop probability increased slightly, while the last block will have a larger 
-            increase, making the depth randomness more aggressive in the deeper layers.
+            If the model has 12 encoder blocks, and k=0.05, the first block will have its drop probability
+            increased slightly, while the last block will have a larger increase, making the depth randomness
+            more aggressive in the deeper layers.
         """
         for module_name, encoder_module in self.encoder.named_modules():
             if isinstance(encoder_module, DropPath):
