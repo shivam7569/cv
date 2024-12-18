@@ -11,8 +11,8 @@ class TensorboardWriter(metaclass=MetaWrapper):
     def __class_repr__(cls):
         return "Tensorboard logging class, used across the package"
 
-    def __init__(self):
-        summary_path = os.path.join(Global.CFG.TENSORBOARD.PATH, Global.CFG.TENSORBOARD.BASENAME)
+    def __init__(self, subdir=''):
+        summary_path = os.path.join(Global.CFG.TENSORBOARD.PATH, Global.CFG.TENSORBOARD.BASENAME, subdir)
         
         train_summary_path = os.path.join(summary_path, "train")
         val_summary_path = os.path.join(summary_path, "val")

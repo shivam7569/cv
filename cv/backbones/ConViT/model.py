@@ -1,10 +1,10 @@
 import torch
 import torch.nn as nn
-from cv.attention.transformers.vit_encoder import ViTEncoder
 
 from cv.utils import Global
 from cv.utils import MetaWrapper
 from cv.utils.layers import DropPath
+from cv.attention.transformers import ViTEncoder
 
 class ConViT(nn.Module, metaclass=MetaWrapper):
 

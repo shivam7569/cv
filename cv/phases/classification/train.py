@@ -27,8 +27,8 @@ class Train(metaclass=MetaWrapper):
     @classmethod
     def __class_repr__(cls):
         return "Training Class for all the backbones"
-
-    _ACTIVITY_MAP = {
+    
+    _ACTIVITY_MAPS = {
         "CPU": torch.profiler.ProfilerActivity.CPU,
         "CUDA": torch.profiler.ProfilerActivity.CUDA
     }
@@ -76,6 +76,7 @@ class Train(metaclass=MetaWrapper):
 
         self.profiling = profiling
         if profiling:
+            Global.LOGGER.info(f"Profiler is being used for bottleneck analysis")
             if profiling: self._setup_profiler()
 
         self.async_parallel = async_parallel
@@ -127,9 +128,10 @@ class Train(metaclass=MetaWrapper):
             if self.tb_writer is not None: self.tb_writer.setWriter("train")
 
             if self.profiling:
-                epoch_loss = self._run_profiling(self.train_loader, epoch)
+                self.profiler.start()
+                epoch_loss = self._run_profiling(epoch=epoch)
             else:
-                epoch_loss = self.train_for_one_epoch(self.train_loader, epoch)
+                epoch_loss = self.train_for_one_epoch(epoch=epoch)
 
             if self.tb_writer is not None: self.tb_writer.write("scaler")(scalar_name="Loss", scalar_value=epoch_loss, step=epoch)
 
@@ -160,14 +162,14 @@ class Train(metaclass=MetaWrapper):
                 if epoch % self.updateStochasticDepthRate[0]["step_epochs"] == 0 and epoch > 0:
                     self.model.module.updateStochasticDepthRate(self.updateStochasticDepthRate[0]["k"])
 
-    def train_for_one_epoch(self, train_loader, epoch):
+    def train_for_one_epoch(self, epoch, profiler=None):
 
         self.model.train()
 
         if Global.CFG.SCHEDULE_FREE_TRAINING: self.optimizer.train()
 
-        num_iterations = len(train_loader)
-        data_iterator = tqdm(train_loader, desc=f"Training: Epoch {epoch+1}", unit="batch") if not self.async_parallel_rank else train_loader
+        num_iterations = len(self.train_loader)
+        data_iterator = tqdm(self.train_loader, desc=f"Training: Epoch {epoch+1}", unit="batch") if not self.async_parallel_rank else self.train_loader
         
         if not self.async_parallel_rank: epoch_loss = 0
         for idx, batch in enumerate(data_iterator):
@@ -221,7 +223,7 @@ class Train(metaclass=MetaWrapper):
 
             loss.backward()
 
-            self._optimizer_step(batch_idx=idx, len_loader=len(train_loader))
+            self._optimizer_step(batch_idx=idx, len_loader=num_iterations)
 
             if not self.async_parallel_rank: epoch_loss += loss.item()
 
@@ -234,10 +236,16 @@ class Train(metaclass=MetaWrapper):
             if not self.lr_tb_write_per_epoch:
                 if self.tb_writer is not None:
                     current_lr = self.optimizer.param_groups[0]['lr']
-                    self.tb_writer.write("scaler")(scalar_name="Learning Rate", scalar_value=current_lr, step=epoch * len(train_loader) + idx)
+                    self.tb_writer.write("scaler")(scalar_name="Learning Rate", scalar_value=current_lr, step=epoch * num_iterations + idx)
+
+            if profiler is not None:
+                profiler.step()
+                if idx >= (sum([v for k, v in Global.CFG.PROFILER.STEPS.items() if k != "repeat"]) * Global.CFG.PROFILER.STEPS["repeat"]):
+                    self.profiler.stop()
+                    break
 
         if not self.async_parallel_rank:
-            epoch_loss /= len(train_loader)
+            epoch_loss /= num_iterations
             Global.LOGGER.info(f"\nTraining loss for epoch {epoch+1}: {round(epoch_loss, 3)}")
 
         self._exponential_moving_average()
@@ -281,10 +289,7 @@ class Train(metaclass=MetaWrapper):
 
     def _exponential_moving_average(self):
         if self.exponential_moving_average is not None:
-            if self.async_parallel:
-                self.ema_model.update(self.model.module)
-            else:
-                self.ema_model.update(self.model)
+            self.ema_model.update()
 
     def _lr_scheduling(self, epoch_based, epoch=None, batch_iteration=None):
         if epoch_based:
@@ -400,11 +405,10 @@ class Train(metaclass=MetaWrapper):
             forcedCreate=True,
             tree=True
         )
+
         self.profiler = torch.profiler.profile(
-                activities=[Train._ACTIVITY_MAP[i] for i in ["CPU", "CUDA"]],
-                schedule=torch.profiler.schedule(
-                    wait=1, warmup=1, active=3, repeat=2
-                ),
+                activities=[Train._ACTIVITY_MAPS[i] for i in ["CPU", "CUDA"]],
+                schedule=torch.profiler.schedule(**Global.CFG.PROFILER.STEPS),
                 record_shapes=True,
                 profile_memory=True,
                 with_stack=False,
@@ -413,10 +417,9 @@ class Train(metaclass=MetaWrapper):
                 on_trace_ready=torch.profiler.tensorboard_trace_handler(self.profiling_trace_path)
             )
 
-    def _run_profiling(self, train_loader, epoch):
+    def _run_profiling(self, epoch):
         with self.profiler as prof:
-            epoch_loss = self.train_for_one_epoch(train_loader, epoch)
-            prof.step()
+            epoch_loss = self.train_for_one_epoch(epoch=epoch, profiler=prof)
 
         return epoch_loss
 

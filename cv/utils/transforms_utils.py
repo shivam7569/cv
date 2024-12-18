@@ -4,6 +4,7 @@ import torch
 import random
 import numpy as np
 from functools import partial
+from torchvision import transforms as T
 from PIL import Image, ImageOps, ImageEnhance, ImageChops, ImageFilter
 
 if hasattr(Image, "Resampling"):
@@ -263,7 +264,6 @@ class Augments:
         x = x.long().view(-1, 1)
         return torch.full((x.size()[0], num_classes), off_value, device=x.device).scatter_(1, x, on_value)
     
-
 class AugmentOp:
 
     def __init__(
@@ -313,8 +313,7 @@ class AugmentOp:
             fs += f", mmax={self.magnitude_max}"
         fs += ')'
         return fs
-
-
+    
 class Augmentations:
 
     _PIL_VER = tuple([int(x) for x in PIL.__version__.split('.')[:2]])
@@ -470,3 +469,56 @@ class Augmentations:
             return torch.empty((patch_size[0], 1, 1), dtype=dtype, device=device).normal_()
         else:
             return torch.zeros((patch_size[0], 1, 1), dtype=dtype, device=device)
+
+
+def parseTransforms(transforms):
+    transforms_list = []
+
+    for transform_entry in transforms:
+        transform_name = transform_entry["name"]
+        transform_params = transform_entry["params"]
+
+        if transform_name == "RandomApply":
+            transform_class = getattr(T, transform_name)
+            rand_transforms = transform_params["transforms"]
+            rand_transforms_list = []
+
+            for random_transform in rand_transforms:
+                rand_transform_name = random_transform["name"]
+                rand_transform_param = random_transform["params"]
+                try:
+                    rand_transform_class = getattr(T, rand_transform_name)
+                    if rand_transform_param is not None:
+                        rand_transform = rand_transform_class(**rand_transform_param)
+                    else:
+                        rand_transform = rand_transform_class()
+                    rand_transforms_list.append(rand_transform)
+                except:
+                    if rand_transform_name in globals():
+                        rand_transform_instnce = globals()[rand_transform_name](**rand_transform_param)
+                        rand_transforms_list.append(rand_transform_instnce)
+            
+            transforms_list.append(transform_class(transforms=rand_transforms_list, p=transform_params["p"]))
+            
+        else:
+            try:
+                transform_class = getattr(T, transform_name)
+                if transform_params is not None:
+                    transform = transform_class(**transform_params)
+                else:
+                    transform = transform_class()
+
+                transforms_list.append(transform)
+            except:
+                if transform_name in globals():
+                    if transform_name == "RepeatedAugmentation":
+                        transform_instnce = globals()[transform_name](
+                            transformations=parseTransforms(transform_params["transformations"]),
+                            repeats=transform_params["repeats"],
+                            p=transform_params["p"]
+                        )
+                    else:
+                        transform_instnce = globals()[transform_name](**transform_params)
+                    transforms_list.append(transform_instnce)
+
+    return transforms_list

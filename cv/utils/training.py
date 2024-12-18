@@ -1,18 +1,17 @@
+from __future__ import annotations
+
 import math
 import torch
 import torch.nn as nn
-from torch import Tensor
 from copy import deepcopy
-from beartype import beartype
+from typing import Callable
 import torch.nn.functional as F
 import torch.distributed as dist
 import torch.multiprocessing as mp
-from beartype.typing import Optional
 
-from cv.utils import Global
 from cv.src.crf import DenseCRF
-from cv.datasets import ClassificationDataset
 from cv.utils import MetaWrapper
+from cv.datasets import ClassificationDataset
 
 class RepeatAugSampler(torch.utils.data.Sampler, metaclass=MetaWrapper):
 
@@ -84,137 +83,6 @@ class RepeatAugSampler(torch.utils.data.Sampler, metaclass=MetaWrapper):
         self.epoch = epoch
 
 
-class EMA(nn.Module, metaclass=MetaWrapper):
-
-    @classmethod
-    def __class_repr__(cls):
-        return "Class implementing exponential moving average of models"
-
-    @staticmethod
-    def exists(val):
-        return val is not None
-    
-    @staticmethod
-    def inplace_copy(target: Tensor, source: Tensor):
-        target.copy_(source)
-
-    @staticmethod
-    def inplace_lerp(target: Tensor, source: Tensor, weight: float):
-        target.lerp_(source, weight=weight)
-
-    @beartype
-    def __init__(
-            self,
-            model: nn.Module,
-            ema_model: Optional[nn.Module] = None,
-            beta: float = 0.9999,
-            warmup_steps: int = 100,
-            decay_period: int = 10,
-            inv_gamma: float = 1.0,
-            power: float = 2/3,
-            min_value: float = 0.0,
-            decay_method: str="epoch_based"
-    ):
-        
-        super(EMA, self).__init__()
-
-        self.beta = beta
-        self.is_frozen = beta == 1.0
-
-        self.ema_model = ema_model
-
-        if not self.exists(self.ema_model):
-            try:
-                self.ema_model = deepcopy(model)
-            except Exception as e:
-                Global.LOGGER.error(f"Could not copy model to shadow")
-
-        self.ema_model.requires_grad_(requires_grad=False)
-
-        self.parameter_names = {
-            name for name, param in self.ema_model.named_parameters() if param.dtype in [torch.float, torch.float16]
-        }
-        self.buffer_names = {
-            name for name, buffer in self.ema_model.named_buffers() if buffer.dtype in [torch.float, torch.float16]
-        }
-
-        self.warmup_steps = warmup_steps
-        self.decay_period = decay_period
-        self.decay_method = decay_method
-
-        self.inv_gamma = inv_gamma
-        self.power = power
-        self.min_value = min_value
-
-        self.register_buffer(
-            "initted", torch.tensor(False)
-        )
-        self.register_buffer(
-            "step", torch.tensor(0)
-        )
-
-    def update(self, network: nn.Module):
-        step = self.step.item()
-        self.step += 1
-
-        if step != Global.CFG.TRAIN.PARAMS.epochs - 1:
-            if step % self.decay_period != 0: return
-        if step <= self.warmup_steps:
-            self.copy_params_from_model_to_ema(network)
-            return
-        
-        if not self.initted.item():
-            self.copy_params_from_model_to_ema(network)
-            self.initted.data.copy_(torch.tensor(True))
-
-        self.update_moving_average(self.ema_model, network)
-
-    @torch.no_grad()
-    def update_moving_average(self, ma_model, current_model):
-        if self.is_frozen: return
-
-        current_decay = self.get_current_decay() if self.decay_method == "epoch_based" else self.beta
-
-        for (_, current_params), (_, ma_params) in zip(self.get_params_iter(current_model), self.get_params_iter(ma_model)):
-            self.inplace_lerp(ma_params.data, current_params.data, 1.0 - current_decay)
-
-        for (_, current_buffers), (_, ma_buffers) in zip(self.get_buffers_iter(current_model), self.get_buffers_iter(ma_model)):
-            self.inplace_lerp(ma_buffers.data, current_buffers.data, 1.0 - current_decay)
-
-    def get_params_iter(self, model: nn.Module):
-        for name, param in model.named_parameters():
-            if name not in self.parameter_names:
-                continue
-
-            yield name, param
-
-    def get_buffers_iter(self, model: nn.Module):
-        for name, buffer in model.named_buffers():
-            if name not in self.buffer_names:
-                continue
-
-            yield name, buffer
-
-    def copy_params_from_model_to_ema(self, model: nn.Module):
-        
-        for (_, ma_params), (_, current_params) in zip(self.get_params_iter(self.ema_model), self.get_params_iter(model)):
-            self.inplace_copy(ma_params.data, current_params.data)
-
-        for (_, ma_buffers), (_, current_buffers) in zip(self.get_buffers_iter(self.ema_model), self.get_buffers_iter(model)):
-            self.inplace_copy(ma_buffers.data, current_buffers.data)
-
-    def get_current_decay(self):
-        epoch = (self.step - self.warmup_steps - 1).clamp(min=0.0)
-        value = 1 - (1 + epoch / self.inv_gamma) ** -self.power
-
-        if epoch.item() <= 0:
-            return 0.0
-
-        return value.clamp(min=self.min_value, max=self.beta).item()   
-
-    def forward(self, x):
-        return self.ema_model(x)
-
 class ConditionalRandomFields(metaclass=MetaWrapper):
 
     @classmethod
@@ -273,3 +141,214 @@ class ConditionalRandomFields(metaclass=MetaWrapper):
         processed_probmap_batch = torch.stack([i[2] for i in results], dim=0).to(img_batch.device)
 
         return output_batch, processed_probmap_batch
+    
+
+class EMA(nn.Module):
+    
+    UTIL_FUNCTIONS = {
+        "exists": lambda x: x is not None,
+        "divisible_by": lambda x, y: (x % y) == 0,
+        "inplace_copy": lambda tgt, src: tgt.copy_(src),
+        "inplace_lerp": lambda tgt, src, weight: tgt.lerp_(src, weight)
+    }
+
+    def __init__(
+        self,
+        model: nn.Module,
+        ema_model: nn.Module | Callable[[], nn.Module] | None = None,
+        beta=0.9999,
+        update_after_step=100,
+        update_every=10,
+        inv_gamma=1.0,
+        power=2/3,
+        min_value=0.0,
+        include_online_model=True,
+        use_foreach=True,
+        update_model_with_ema_every=None,
+        update_model_with_ema_beta=0.,
+    ):
+        super().__init__()
+        self.beta = beta
+        self.is_frozen = beta == 1.
+        self.include_online_model = include_online_model
+
+        if include_online_model:
+            self.online_model = model
+        else:
+            self.online_model = [model]
+
+        if not isinstance(ema_model, nn.Module) and callable(ema_model):
+            ema_model = ema_model()
+
+        self.ema_model = None
+
+        self.init_ema(ema_model)
+
+        self.inplace_copy = EMA.UTIL_FUNCTIONS["inplace_copy"]
+        self.inplace_lerp = EMA.UTIL_FUNCTIONS["inplace_lerp"]
+
+        self.update_every = update_every
+        self.update_after_step = update_after_step
+
+        self.inv_gamma = inv_gamma
+        self.power = power
+        self.min_value = min_value
+
+        # continual learning related
+        self.update_model_with_ema_every = update_model_with_ema_every
+        self.update_model_with_ema_beta = update_model_with_ema_beta
+
+        if use_foreach:
+            try:
+                assert hasattr(torch, '_foreach_lerp_') and hasattr(torch, '_foreach_copy_'), 'your version of torch does not have the prerequisite foreach functions'
+            except:
+                use_foreach = False
+
+        self.use_foreach = use_foreach
+
+        self.register_buffer('initted', torch.tensor(False))
+        self.register_buffer('step', torch.tensor(0))
+
+    def init_ema(
+        self,
+        ema_model: nn.Module | None = None
+    ):
+        self.ema_model = ema_model
+
+        if not EMA.UTIL_FUNCTIONS["exists"](self.ema_model):
+            try:
+                self.ema_model = deepcopy(self.model)
+            except Exception as e:
+                print(f'Error: While trying to deepcopy model: {e}')
+                print('Your model was not copyable. Please make sure you are not using any LazyLinear')
+                exit()
+
+        for p in self.ema_model.parameters():
+            p.detach_()
+
+        self.parameter_names = {name for name, param in self.ema_model.named_parameters() if torch.is_floating_point(param) or torch.is_complex(param)}
+        self.buffer_names = {name for name, buffer in self.ema_model.named_buffers() if torch.is_floating_point(buffer) or torch.is_complex(buffer)}
+
+    def add_to_optimizer_post_step_hook(self, optimizer):
+        assert hasattr(optimizer, 'register_step_post_hook')
+
+        def hook(*_):
+            self.update()
+
+        return optimizer.register_step_post_hook(hook)
+
+    @property
+    def model(self):
+        return self.online_model if self.include_online_model else self.online_model[0]
+
+    def eval(self):
+        return self.ema_model.eval()
+
+    def get_params_iter(self, model):
+        for name, param in model.named_parameters():
+            if name not in self.parameter_names:
+                continue
+            yield name, param
+
+    def get_buffers_iter(self, model):
+        for name, buffer in model.named_buffers():
+            if name not in self.buffer_names:
+                continue
+            yield name, buffer
+
+    def copy_params_from_model_to_ema(self):
+        copy = EMA.UTIL_FUNCTIONS["inplace_copy"]
+
+        for (_, ma_params), (_, current_params) in zip(self.get_params_iter(self.ema_model), self.get_params_iter(self.model)):
+            copy(ma_params.data, current_params.data)
+
+        for (_, ma_buffers), (_, current_buffers) in zip(self.get_buffers_iter(self.ema_model), self.get_buffers_iter(self.model)):
+            copy(ma_buffers.data, current_buffers.data)
+
+    def copy_params_from_ema_to_model(self):
+        copy = EMA.UTIL_FUNCTIONS["inplace_copy"]
+
+        for (_, ma_params), (_, current_params) in zip(self.get_params_iter(self.ema_model), self.get_params_iter(self.model)):
+            copy(current_params.data, ma_params.data)
+
+        for (_, ma_buffers), (_, current_buffers) in zip(self.get_buffers_iter(self.ema_model), self.get_buffers_iter(self.model)):
+            copy(current_buffers.data, ma_buffers.data)
+
+    def update_model_with_ema(self, decay = None):
+        if not EMA.UTIL_FUNCTIONS["exists"](decay):
+            decay = self.update_model_with_ema_beta
+
+        if decay == 0.:
+            return self.copy_params_from_ema_to_model()
+
+        self.update_moving_average(self.model, self.ema_model, decay)
+
+    def get_current_decay(self):
+        epoch = (self.step - self.update_after_step - 1).clamp(min=0.)
+        value = 1 - (1 + epoch / self.inv_gamma) ** - self.power
+
+        if epoch.item() <= 0:
+            return 0.
+
+        print(value.clamp(min=self.min_value, max=self.beta).item())
+
+        return value.clamp(min=self.min_value, max=self.beta).item()
+
+    def update(self):
+        step = self.step.item()
+        self.step += 1
+
+        if not self.initted.item():
+            if not EMA.UTIL_FUNCTIONS["exists"](self.ema_model):
+                self.init_ema()
+
+            self.copy_params_from_model_to_ema()
+            self.initted.data.copy_(torch.tensor(True))
+            return
+
+        should_update = EMA.UTIL_FUNCTIONS["divisible_by"](step, self.update_every)
+
+        if should_update and step <= self.update_after_step:
+            self.copy_params_from_model_to_ema()
+            return
+
+        if should_update:
+            self.update_moving_average(self.ema_model, self.model)
+
+        if EMA.UTIL_FUNCTIONS["exists"](self.update_model_with_ema_every) and EMA.UTIL_FUNCTIONS["divisible_by"](step, self.update_model_with_ema_every):
+            self.update_model_with_ema()
+
+    @torch.no_grad()
+    def update_moving_average(self, ma_model, current_model, current_decay = None):
+        if self.is_frozen:
+            return
+
+        if not EMA.UTIL_FUNCTIONS["exists"](current_decay):
+            current_decay = self.get_current_decay()
+
+        tensors_to_copy = []
+        tensors_to_lerp = []
+
+        for (_, current_params), (_, ma_params) in zip(self.get_params_iter(current_model), self.get_params_iter(ma_model)):
+            tensors_to_lerp.append((ma_params.data, current_params.data))
+
+        for (_, current_buffer), (_, ma_buffer) in zip(self.get_buffers_iter(current_model), self.get_buffers_iter(ma_model)):
+            tensors_to_lerp.append((ma_buffer.data, current_buffer.data))
+
+        if not self.use_foreach:
+            for tgt, src in tensors_to_copy:
+                self.inplace_copy(tgt, src)
+
+            for tgt, src in tensors_to_lerp:
+                self.inplace_lerp(tgt, src, 1. - current_decay)
+        else:
+            if len(tensors_to_copy) > 0:
+                tgt_copy, src_copy = zip(*tensors_to_copy)
+                torch._foreach_copy_(tgt_copy, src_copy)
+
+            if len(tensors_to_lerp) > 0:
+                tgt_lerp, src_lerp = zip(*tensors_to_lerp)
+                torch._foreach_lerp_(tgt_lerp, src_lerp, 1. - current_decay)
+
+    def __call__(self, *args, **kwargs):
+        return self.ema_model(*args, **kwargs)

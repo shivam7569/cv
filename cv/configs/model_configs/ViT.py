@@ -45,9 +45,14 @@ def ViTConfig(cfg):
     cfg.TRAIN.PARAMS.gradient_clipping = ("norm", 1)
     cfg.TRAIN.PARAMS.exponential_moving_average = CN()
     cfg.TRAIN.PARAMS.exponential_moving_average.beta = 0.999
-    cfg.TRAIN.PARAMS.exponential_moving_average.warmup_steps = 0
-    cfg.TRAIN.PARAMS.exponential_moving_average.decay_period = 32
-    cfg.TRAIN.PARAMS.exponential_moving_average.decay_method = "constant"
+    cfg.TRAIN.PARAMS.exponential_moving_average.update_every = 32
+    cfg.TRAIN.PARAMS.exponential_moving_average.update_after_step = 0
+    cfg.TRAIN.PARAMS.exponential_moving_average.inv_gamma = 1.0
+    cfg.TRAIN.PARAMS.exponential_moving_average.power = 2/3
+    cfg.TRAIN.PARAMS.exponential_moving_average.use_foreach = True
+    cfg.TRAIN.PARAMS.exponential_moving_average.include_online_model = False
+    cfg.TRAIN.PARAMS.exponential_moving_average.update_model_with_ema_every = 32*1000
+    cfg.TRAIN.PARAMS.exponential_moving_average.update_model_with_ema_beta = 0.0
     cfg.TRAIN.PARAMS.updateStochasticDepthRate = [dict(
         step_epochs=200, k=0.05
     )]

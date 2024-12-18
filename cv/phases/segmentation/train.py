@@ -127,9 +127,9 @@ class Train(metaclass=MetaWrapper):
             if self.tb_writer is not None: self.tb_writer.setWriter("train")
 
             if self.profiling:
-                epoch_loss = self._run_profiling(self.train_loader, epoch)
+                epoch_loss = self._run_profiling(epoch=epoch)
             else:
-                epoch_loss = self.train_for_one_epoch(self.train_loader, epoch)
+                epoch_loss = self.train_for_one_epoch(epoch=epoch)
 
             if self.tb_writer is not None: self.tb_writer.write("scaler")(scalar_name="Loss", scalar_value=epoch_loss, step=epoch)
 
@@ -165,11 +165,11 @@ class Train(metaclass=MetaWrapper):
                 if epoch % self.updateStochasticDepthRate[0]["step_epochs"] == 0 and epoch > 0:
                     self.model.module.updateStochasticDepthRate(self.updateStochasticDepthRate[0]["k"])
 
-    def train_for_one_epoch(self, train_loader, epoch):
+    def train_for_one_epoch(self, epoch):
 
         self.model.train()
-        num_iterations = len(train_loader)
-        data_iterator = tqdm(train_loader, desc=f"Training: Epoch {epoch+1}", unit="batch") if not self.async_parallel_rank else train_loader
+        num_iterations = len(self.train_loader)
+        data_iterator = tqdm(self.train_loader, desc=f"Training: Epoch {epoch+1}", unit="batch") if not self.async_parallel_rank else self.train_loader
         
         if not self.async_parallel_rank: epoch_loss = 0
         for idx, batch in enumerate(data_iterator):
@@ -208,7 +208,7 @@ class Train(metaclass=MetaWrapper):
 
             loss.backward()
 
-            self._optimizer_step(batch_idx=idx, len_loader=len(train_loader))
+            self._optimizer_step(batch_idx=idx, len_loader=num_iterations)
 
             if not self.async_parallel_rank: epoch_loss += loss.item()
 
@@ -223,10 +223,10 @@ class Train(metaclass=MetaWrapper):
             if not self.lr_tb_write_per_epoch:
                 if self.tb_writer is not None:
                     current_lr = self.optimizer.param_groups[0]['lr']
-                    self.tb_writer.write("scaler")(scalar_name="Learning Rate", scalar_value=current_lr, step=epoch * len(train_loader) + idx)
+                    self.tb_writer.write("scaler")(scalar_name="Learning Rate", scalar_value=current_lr, step=epoch * num_iterations + idx)
 
         if not self.async_parallel_rank:
-            epoch_loss /= len(train_loader)
+            epoch_loss /= num_iterations
             Global.LOGGER.info(f"\nTraining loss for epoch {epoch+1}: {round(epoch_loss, 3)}")
             
         if not self.async_parallel_rank: return epoch_loss
@@ -402,9 +402,9 @@ class Train(metaclass=MetaWrapper):
                 on_trace_ready=torch.profiler.tensorboard_trace_handler(self.profiling_trace_path)
             )
 
-    def _run_profiling(self, train_loader, epoch):
+    def _run_profiling(self, epoch):
         with self.profiler as prof:
-            epoch_loss = self.train_for_one_epoch(train_loader, epoch)
+            epoch_loss = self.train_for_one_epoch(epoch=epoch)
             prof.step()
 
         return epoch_loss

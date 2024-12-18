@@ -56,6 +56,35 @@ def inceptionv2_loss(outputs, labels, primitive_loss_fn):
 
     return loss
 
+class Inceptionv3Loss(nn.Module, metaclass=MetaWrapper):
+
+    @classmethod
+    def __class_repr__(cls):
+        return "Loss function as introduced in Inceptionv3 paper"
+
+    def __init__(self, **params):
+
+        super(Inceptionv3Loss, self).__init__()
+
+        self.aux_loss_weightage = params.pop("aux_loss_weightage", 0.3)
+        self.ce = nn.CrossEntropyLoss(
+            **params
+        )
+
+    def forward(self, outputs, labels, phase="eval"):
+
+        if phase == "eval":
+            return self.ce(outputs, labels)
+
+        aux_out, out = outputs
+
+        aux_classifier_loss = self.ce(aux_out, labels)
+        main_classifier_loss = self.ce(out, labels)
+
+        loss = main_classifier_loss + self.aux_loss_weightage * aux_classifier_loss
+
+        return loss
+
 class OHEM_Loss(nn.Module, metaclass=MetaWrapper):
 
     @classmethod

@@ -1,4 +1,3 @@
-import os
 import torch
 import random
 from PIL import ImageDraw, ImageFont
@@ -8,12 +7,12 @@ from torchvision import transforms as T
 from torchvision.transforms.functional import pil_to_tensor
 
 from cv.utils import Global
+from cv.utils import MetaWrapper
 from cv.src.custom_transforms import *
 from cv.utils.file_utils import read_txt
 from cv.src import pipeline_functions as PF
-from cv.utils import MetaWrapper
-from cv.utils.transforms_utils import Augments
 from cv.utils.imagenet_utils import ImagenetData
+from cv.utils.transforms_utils import Augments, parseTransforms
 
 
 class ClassificationDataset(Dataset, metaclass=MetaWrapper):
@@ -48,16 +47,16 @@ class ClassificationDataset(Dataset, metaclass=MetaWrapper):
             Global.LOGGER.error("Invalid phase")
 
         self.img_and_class = read_txt(self.phase_text)
-        random.shuffle(self.img_and_class)
 
         if debug is not None:
-            self.img_and_class = self.img_and_class[:debug]
-
+            if debug < len(self.img_and_class):
+                self.img_and_class = random.sample(self.img_and_class, k=debug)
+                
 
         self.transforms = transforms
         if not standalone:
             if transforms is not None:
-                self.transforms = T.Compose(self.parseTransforms(transforms))
+                self.transforms = T.Compose(parseTransforms(transforms))
 
         self.ddp = ddp
         if ddp:
@@ -65,59 +64,6 @@ class ClassificationDataset(Dataset, metaclass=MetaWrapper):
 
         if Global.CFG.DATA_MIXING.enabled and self.phase == "train":
             self.data_mixing = MixUp(**{k: v for k, v in Global.CFG.DATA_MIXING.items() if k != "enabled"})
-
-    @classmethod
-    def parseTransforms(self, transforms):
-        transforms_list = []
-
-        for transform_entry in transforms:
-            transform_name = transform_entry["name"]
-            transform_params = transform_entry["params"]
-
-            if transform_name == "RandomApply":
-                transform_class = getattr(T, transform_name)
-                rand_transforms = transform_params["transforms"]
-                rand_transforms_list = []
-
-                for random_transform in rand_transforms:
-                    rand_transform_name = random_transform["name"]
-                    rand_transform_param = random_transform["params"]
-                    try:
-                        rand_transform_class = getattr(T, rand_transform_name)
-                        if rand_transform_param is not None:
-                            rand_transform = rand_transform_class(**rand_transform_param)
-                        else:
-                            rand_transform = rand_transform_class()
-                        rand_transforms_list.append(rand_transform)
-                    except:
-                        if rand_transform_name in globals():
-                            rand_transform_instnce = globals()[rand_transform_name](**rand_transform_param)
-                            rand_transforms_list.append(rand_transform_instnce)
-                
-                transforms_list.append(transform_class(transforms=rand_transforms_list, p=transform_params["p"]))
-                
-            else:
-                try:
-                    transform_class = getattr(T, transform_name)
-                    if transform_params is not None:
-                        transform = transform_class(**transform_params)
-                    else:
-                        transform = transform_class()
-
-                    transforms_list.append(transform)
-                except:
-                    if transform_name in globals():
-                        if transform_name == "RepeatedAugmentation":
-                            transform_instnce = globals()[transform_name](
-                                transformations=ClassificationDataset.parseTransforms(transform_params["transformations"]),
-                                repeats=transform_params["repeats"],
-                                p=transform_params["p"]
-                            )
-                        else:
-                            transform_instnce = globals()[transform_name](**transform_params)
-                        transforms_list.append(transform_instnce)
-
-        return transforms_list
     
     def executePipeline(self, img_path):
         img_pipeline = Global.CFG.PIPELINES.TRAIN if self.phase == "train" else Global.CFG.PIPELINES.VAL
@@ -173,26 +119,34 @@ class ClassificationDataset(Dataset, metaclass=MetaWrapper):
         image_size = images.size(-1)
 
         k = min(k, images.size(0))
+        random_indices = random.sample([i for i in range(images.size(0))], k=k)
 
         if isinstance(labels, list):
-            labels = labels[2] * labels[0] + (1 - labels[2]) * labels[1]
-            labels = labels.long()
+            lam = labels[-1]
+            labels = [(labels[0][j], labels[1][j]) for j in range(labels[0].shape[0])]
+            labels = [labels[i] for i in random_indices]
+            class_names = [
+                f"{imagenet_id_vs_name[str(i[0].item())]}: {round(lam * 100, 1)}%\n{imagenet_id_vs_name[str(i[1].item())]}: {round((1-lam) * 100, 1)}%" 
+                for i in labels
+            ]
+            x_offset, y_offset, font_size = 10, 60, 15
+        else:
+            labels = labels[torch.tensor(random_indices)].tolist()
+            class_names = [imagenet_id_vs_name[str(i)] for i in labels]
+            x_offset, y_offset, font_size = 25, 50, 20
 
-        random_indices = torch.randperm(images.size(0))
-
-        images, labels = images[random_indices][:k], labels[random_indices][:k].tolist()
-        class_names = [imagenet_id_vs_name[str(i)] for i in labels]
+        images = images[random_indices]
 
         images = ClassificationDataset.INVERSE_TRANSFORM(images)
         out = make_grid(images, nrow=4, padding=2)
         canvas = T.ToPILImage()(out)
 
         draw = ImageDraw.Draw(canvas)
-        font = ImageFont.truetype(Global.CFG.FONT_PATH, 20)
+        font = ImageFont.truetype(Global.CFG.FONT_PATH, font_size)
 
         for i in range(4):
             for j in range(k // 4):
-                draw.text(((image_size+4) * i + 25, (image_size+4) * (j + 1) - 50), class_names[i+j*4], (0, 102, 204), font=font)
+                draw.text(((image_size+4) * i + x_offset, (image_size+4) * (j + 1) - y_offset), class_names[i+j*4], (0, 102, 204), font=font)
 
         canvas = pil_to_tensor(canvas)
 
@@ -206,17 +160,7 @@ class ClassificationDataset(Dataset, metaclass=MetaWrapper):
         if self.ddp:
             Global.CFG = self.cfg
 
-        img_name, _id = self.img_and_class[index].split(" ")
-        
-        if self.phase == "train":
-            id_vs_class = {
-                i[1]: i[0] for i in [j.split(" ") for j in read_txt(Global.CFG.DATA.IMAGENET_CLASS_VS_ID_TXT)]
-            }
-            img_path = os.path.join(Global.CFG.DATA.IMAGENET_TRAIN_IMAGES, id_vs_class[_id], img_name)
-        elif self.phase == "val":
-            img_path = os.path.join(Global.CFG.DATA.IMAGENET_VAL_IMAGES, img_name)
-        else:
-            Global.LOGGER.error("Invalid phase")
+        img_path, _id = self.img_and_class[index].split(" ")
 
         img = self.executePipeline(img_path)
 

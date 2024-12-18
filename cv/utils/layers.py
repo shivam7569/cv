@@ -26,6 +26,9 @@ class DropPath(nn.Module, metaclass=MetaWrapper):
 
         return x * random_tensor
     
+    def __repr__(self):
+        return f"{self.__class__.__name__}(drop_prob={round(self.drop_prob, 4)})"
+    
 class LayerScale(nn.Module, metaclass=MetaWrapper):
 
     @classmethod
@@ -34,6 +37,8 @@ class LayerScale(nn.Module, metaclass=MetaWrapper):
 
     def __init__(self, num_channels, init_value, type_="conv"):
         super(LayerScale, self).__init__()
+
+        self.init_value = init_value
 
         if type_ == "conv":
             self.scale = nn.Parameter(
@@ -46,6 +51,9 @@ class LayerScale(nn.Module, metaclass=MetaWrapper):
 
     def forward(self, x):
         return x * self.scale
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(scale={self.init_value})"
 
 class ConvLayerNorm(nn.Module, metaclass=MetaWrapper):
 

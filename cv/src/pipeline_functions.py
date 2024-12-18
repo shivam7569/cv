@@ -15,12 +15,12 @@ __COMBINED_PIPELINE_FUNCTIONS__ = [
 ]
 
 
-def readImage(img_path, uint8):
+def readImage(img_path, uint8, rgb=True):
 
-    img = Image.open(img_path).convert("RGB")
+    img = Image.open(img_path).convert("RGB") if rgb else Image.open(img_path)
     img = np.array(img)
 
-    if len(img.shape) == 2:
+    if len(img.shape) == 2 and rgb:
         height, width = img.shape
         rgb_image = np.zeros((height, width, 3), dtype=np.uint8)
         rgb_image[:, :, 0] = img
@@ -28,6 +28,8 @@ def readImage(img_path, uint8):
         rgb_image[:, :, 2] = img
 
         img = rgb_image
+    elif not rgb:
+        img = img[..., np.newaxis]
     
     if uint8:
         img = img.astype('uint8')

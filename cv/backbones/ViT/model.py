@@ -38,6 +38,9 @@ class ViT(nn.Module, metaclass=MetaWrapper):
 
         ViT._assertions(image_size=image_size, patch_size=patch_size, patchify_technique=patchify_technique)
 
+        scale = d_model ** -0.5
+        num_patches = (image_size // patch_size) ** 2
+
         self.num_classes = num_classes
         self.in_channels = in_channels
         self.patch_size = patch_size
@@ -51,14 +54,17 @@ class ViT(nn.Module, metaclass=MetaWrapper):
         )
 
         self.class_token = nn.Parameter(
-            torch.rand((1, 1, d_model)), requires_grad=True
+            scale * torch.rand((1, 1, d_model)), requires_grad=True
         )
 
-        self.position_embeddings = nn.Parameter(
-            torch.normal(mean=0.0, std=0.02, size=(1, 1, d_model)), requires_grad=True
+        self.position_embeddings = nn.Embedding(num_patches + 1, self.embed_size)
+        self.register_buffer(
+            "position_ids",
+            torch.arange(num_patches + 1).expand(1, -1),
+            persistent=False
         )
-        nn.init.trunc_normal_(tensor=self.position_embeddings, mean=0.0, std=0.02)
-        nn.init.trunc_normal_(tensor=self.class_token, mean=0.0, std=0.02)
+
+        nn.init.normal_(tensor=self.position_embeddings.weight, mean=0.0, std=scale)       
 
         self.dropout = nn.Dropout(p=dropout)
 
@@ -110,7 +116,7 @@ class ViT(nn.Module, metaclass=MetaWrapper):
         x = self.linear_projection(x)
 
         x = torch.cat([self.class_token.expand(x.size(0), -1, -1), x], dim=1)
-        x = x + self.position_embeddings.expand(x.size(0), x.size(1), -1)
+        x = x + self.position_embeddings(self.position_ids)
         x = self.dropout(x)
 
         x = self.encoder(x)
