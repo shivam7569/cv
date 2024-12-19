@@ -31,7 +31,8 @@ class ViT(nn.Module, metaclass=MetaWrapper):
             stochastic_depth_mp=None,
             layer_scale=None,
             ln_order="residual",
-            in_channels=3
+            in_channels=3,
+            classifier=True
         ):
         
         super(ViT, self).__init__()
@@ -44,27 +45,29 @@ class ViT(nn.Module, metaclass=MetaWrapper):
         self.num_classes = num_classes
         self.in_channels = in_channels
         self.patch_size = patch_size
+        self.d_model = d_model
+        self.num_encoder_blocks = num_encoder_blocks
         self.embed_size = (patch_size ** 2) * in_channels
 
         self.patchify = self._linear_patchify if patchify_technique == "linear" else self._conv_patchify
-
-        self.linear_projection = nn.Sequential(
-            nn.Linear(in_features=self.embed_size, out_features=d_model),
-            nn.LayerNorm(normalized_shape=d_model)
+        if patchify_technique == "convolutional":
+            self.conv_patcher = nn.Conv2d(
+            in_channels=in_channels, out_channels=d_model,
+            kernel_size=patch_size, stride=patch_size, padding="valid"
         )
+
+        self.linear_projection = nn.Linear(in_features=self.embed_size, out_features=d_model) if patchify_technique == "linear" else nn.Identity()
 
         self.class_token = nn.Parameter(
             scale * torch.rand((1, 1, d_model)), requires_grad=True
         )
 
-        self.position_embeddings = nn.Embedding(num_patches + 1, self.embed_size)
+        self.position_embeddings = nn.Embedding(num_patches + 1, d_model)
         self.register_buffer(
             "position_ids",
             torch.arange(num_patches + 1).expand(1, -1),
             persistent=False
-        )
-
-        nn.init.normal_(tensor=self.position_embeddings.weight, mean=0.0, std=scale)       
+        )       
 
         self.dropout = nn.Dropout(p=dropout)
 
@@ -80,7 +83,11 @@ class ViT(nn.Module, metaclass=MetaWrapper):
             nn.Tanh(),
             nn.Dropout(p=dropout),
             nn.Linear(in_features=classifier_mlp_d, out_features=num_classes)
-        )
+        ) if classifier else nn.Identity()
+
+        self.final_ln = nn.LayerNorm(normalized_shape=d_model)
+
+        self._initialize()
 
     @staticmethod
     def _assertions(image_size, patch_size, patchify_technique):
@@ -96,14 +103,26 @@ class ViT(nn.Module, metaclass=MetaWrapper):
         return linear_projection
 
     def _conv_patchify(self, img):
-        conv_projection = nn.Conv2d(
-            in_channels=self.in_channels, out_channels=self.embed_size,
-            kernel_size=self.patch_size, stride=self.patch_size
-        )(img)
+        conv_projection = self.conv_patcher(img)
         conv_projection = torch.flatten(input=conv_projection, start_dim=2)
         conv_projection = conv_projection.transpose(dim0=1, dim1=2)
 
         return conv_projection
+
+    def _initialize(self):
+        attn_std = self.d_model ** -0.5
+        fc_std = (2 * self.d_model) ** -0.5
+        proj_std = (self.d_model ** -0.5) * ((2 * self.num_encoder_blocks) ** -0.5)
+
+        for block in self.encoder.encoder_layers:
+            nn.init.normal_(block.msa.w_q.weight, std=attn_std)
+            nn.init.normal_(block.msa.w_k.weight, std=attn_std)
+            nn.init.normal_(block.msa.w_v.weight, std=attn_std)
+            nn.init.normal_(block.msa.w_o.weight, std=proj_std)
+            nn.init.normal_(block.mlp[0].weight, std=fc_std)
+            nn.init.normal_(block.mlp[-1].weight, std=proj_std)
+
+        nn.init.normal_(tensor=self.position_embeddings.weight, mean=0.0, std=0.01)
 
     def updateStochasticDepthRate(self, k=0.05):
         for module_name, encoder_module in self.encoder.named_modules():
@@ -121,7 +140,7 @@ class ViT(nn.Module, metaclass=MetaWrapper):
 
         x = self.encoder(x)
 
-        class_token = x[:, 0, :]
+        class_token = self.final_ln(x[:, 0, :])
 
         x = self.classifier(class_token)
 

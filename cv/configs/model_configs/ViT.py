@@ -30,12 +30,13 @@ def ViTConfig(cfg):
     cfg.ViT.PARAMS.encoder_dropout = 0.0
     cfg.ViT.PARAMS.encoder_attention_dropout = 0.0
     cfg.ViT.PARAMS.encoder_projection_dropout = 0.0
-    cfg.ViT.PARAMS.patchify_technique = "linear"
+    cfg.ViT.PARAMS.patchify_technique = "convolutional"
     cfg.ViT.PARAMS.stochastic_depth = True
     cfg.ViT.PARAMS.stochastic_depth_mp = 0.1
     cfg.ViT.PARAMS.layer_scale = 1e-4
     cfg.ViT.PARAMS.ln_order = "residual"
     cfg.ViT.PARAMS.in_channels = 3
+    cfg.ViT.PARAMS.classifier = True
 
     cfg.TRAIN = CN()
     cfg.TRAIN.PARAMS = CN()
@@ -51,7 +52,7 @@ def ViTConfig(cfg):
     cfg.TRAIN.PARAMS.exponential_moving_average.power = 2/3
     cfg.TRAIN.PARAMS.exponential_moving_average.use_foreach = True
     cfg.TRAIN.PARAMS.exponential_moving_average.include_online_model = False
-    cfg.TRAIN.PARAMS.exponential_moving_average.update_model_with_ema_every = 32*1000
+    cfg.TRAIN.PARAMS.exponential_moving_average.update_model_with_ema_every = 32*5
     cfg.TRAIN.PARAMS.exponential_moving_average.update_model_with_ema_beta = 0.0
     cfg.TRAIN.PARAMS.updateStochasticDepthRate = [dict(
         step_epochs=200, k=0.05
@@ -79,7 +80,7 @@ def ViTConfig(cfg):
     ]
 
     cfg.ViT.DATALOADER_TRAIN_PARAMS = CN()
-    cfg.ViT.DATALOADER_TRAIN_PARAMS.batch_size = 64
+    cfg.ViT.DATALOADER_TRAIN_PARAMS.batch_size = 32
     cfg.ViT.DATALOADER_TRAIN_PARAMS.shuffle = True
     cfg.ViT.DATALOADER_TRAIN_PARAMS.num_workers = 8
     cfg.ViT.DATALOADER_TRAIN_PARAMS.pin_memory = True
