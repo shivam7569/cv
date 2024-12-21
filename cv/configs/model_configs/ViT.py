@@ -26,6 +26,7 @@ def ViTConfig(cfg):
     cfg.ViT.PARAMS.encoder_mlp_d = 768 * 4
     cfg.ViT.PARAMS.encoder_num_heads = 12
     cfg.ViT.PARAMS.num_encoder_blocks = 12
+    cfg.ViT.PARAMS.registers = 16
     cfg.ViT.PARAMS.dropout = 0.0
     cfg.ViT.PARAMS.encoder_dropout = 0.0
     cfg.ViT.PARAMS.encoder_attention_dropout = 0.0
