@@ -1,9 +1,10 @@
 import torch
 import torch.nn as nn
+from einops import pack, unpack
 
 from cv.utils import Global
-from cv.utils.layers import DropPath
 from cv.utils import MetaWrapper
+from cv.utils.layers import DropPath
 from cv.attention.transformers import ViTEncoder
 
 class ViT(nn.Module, metaclass=MetaWrapper):
@@ -22,6 +23,7 @@ class ViT(nn.Module, metaclass=MetaWrapper):
             encoder_mlp_d,
             encoder_num_heads,
             num_encoder_blocks,
+            registers=None,
             dropout=0.0,
             encoder_dropout=0.0,
             encoder_attention_dropout=0.0,
@@ -45,6 +47,7 @@ class ViT(nn.Module, metaclass=MetaWrapper):
         self.num_classes = num_classes
         self.in_channels = in_channels
         self.patch_size = patch_size
+        self.registers = registers
         self.d_model = d_model
         self.num_encoder_blocks = num_encoder_blocks
         self.embed_size = (patch_size ** 2) * in_channels
@@ -61,6 +64,10 @@ class ViT(nn.Module, metaclass=MetaWrapper):
         self.class_token = nn.Parameter(
             scale * torch.rand((1, 1, d_model)), requires_grad=True
         )
+        if registers is not None:
+            self.register_tokens = nn.Parameter(
+                torch.randn(1, registers, d_model)
+            )
 
         self.position_embeddings = nn.Embedding(num_patches + 1, d_model)
         self.register_buffer(
@@ -138,8 +145,13 @@ class ViT(nn.Module, metaclass=MetaWrapper):
         x = x + self.position_embeddings(self.position_ids)
         x = self.dropout(x)
 
-        x = self.encoder(x)
-
+        if self.registers is not None:
+            x, ps = pack([self.register_tokens.expand(x.size(0), -1, -1), x], "b * d")
+            x = self.encoder(x)
+            _, x = unpack(x, ps, 'b * d')
+        else:
+            x = self.encoder(x)
+            
         class_token = self.final_ln(x[:, 0, :])
 
         x = self.classifier(class_token)
