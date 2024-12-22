@@ -248,7 +248,7 @@ class Train(metaclass=MetaWrapper):
             epoch_loss /= num_iterations
             Global.LOGGER.info(f"\nTraining loss for epoch {epoch+1}: {round(epoch_loss, 3)}")
 
-        self._exponential_moving_average()
+        self._exponential_moving_average(last_epoch=epoch==self.epochs-1)
             
         if not self.async_parallel_rank: return epoch_loss
 
@@ -287,9 +287,9 @@ class Train(metaclass=MetaWrapper):
         else:
             self.checkpointer.save(epoch=epoch, chkp_name="epoch_checkpoint.pth", overwrite=False)
 
-    def _exponential_moving_average(self):
+    def _exponential_moving_average(self, last_epoch):
         if self.exponential_moving_average is not None:
-            self.ema_model.update()
+            self.ema_model.update(last_epoch)
 
     def _lr_scheduling(self, epoch_based, epoch=None, batch_iteration=None):
         if epoch_based:

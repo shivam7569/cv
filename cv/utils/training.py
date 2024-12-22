@@ -290,11 +290,9 @@ class EMA(nn.Module):
         if epoch.item() <= 0:
             return 0.
 
-        print(value.clamp(min=self.min_value, max=self.beta).item())
-
         return value.clamp(min=self.min_value, max=self.beta).item()
 
-    def update(self):
+    def update(self, last_epoch):
         step = self.step.item()
         self.step += 1
 
@@ -306,7 +304,7 @@ class EMA(nn.Module):
             self.initted.data.copy_(torch.tensor(True))
             return
 
-        should_update = EMA.UTIL_FUNCTIONS["divisible_by"](step, self.update_every)
+        should_update = EMA.UTIL_FUNCTIONS["divisible_by"](step, self.update_every) or last_epoch
 
         if should_update and step <= self.update_after_step:
             self.copy_params_from_model_to_ema()

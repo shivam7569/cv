@@ -50,7 +50,7 @@ def ViTConfig(cfg):
     cfg.TRAIN.PARAMS.exponential_moving_average.update_every = 32
     cfg.TRAIN.PARAMS.exponential_moving_average.update_after_step = 0
     cfg.TRAIN.PARAMS.exponential_moving_average.inv_gamma = 1.0
-    cfg.TRAIN.PARAMS.exponential_moving_average.power = 2/3
+    cfg.TRAIN.PARAMS.exponential_moving_average.power = 11/10
     cfg.TRAIN.PARAMS.exponential_moving_average.use_foreach = True
     cfg.TRAIN.PARAMS.exponential_moving_average.include_online_model = False
     cfg.TRAIN.PARAMS.exponential_moving_average.update_model_with_ema_every = 32*5

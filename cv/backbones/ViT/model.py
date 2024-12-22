@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-from einops import pack, unpack
 
 from cv.utils import Global
 from cv.utils import MetaWrapper
@@ -146,12 +145,12 @@ class ViT(nn.Module, metaclass=MetaWrapper):
         x = self.dropout(x)
 
         if self.registers is not None:
-            x, ps = pack([self.register_tokens.expand(x.size(0), -1, -1), x], "b * d")
+            x = torch.cat([self.register_tokens.expand(x.size(0), -1, -1), x], dim=1)
             x = self.encoder(x)
-            _, x = unpack(x, ps, 'b * d')
+            _, x = torch.split(x, [self.registers, x.size(1) - self.registers], dim=1)
         else:
             x = self.encoder(x)
-            
+
         class_token = self.final_ln(x[:, 0, :])
 
         x = self.classifier(class_token)
