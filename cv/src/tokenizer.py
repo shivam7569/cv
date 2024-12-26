@@ -6,6 +6,7 @@ import regex as re
 from packaging import version
 from functools import lru_cache
 
+from cv.utils import MetaWrapper
 from cv.configs.config import get_cfg
 
 @lru_cache()
@@ -60,7 +61,12 @@ def whitespace_clean(text):
     return text
 
 
-class SimpleTokenizer(object):
+class SimpleTokenizer(metaclass=MetaWrapper):
+
+    @classmethod
+    def __class_repr__(cls):
+        return "Simple tokenizer of texts using BPE"
+
     def __init__(self, bpe_path: str = default_bpe()):
         self.byte_encoder = bytes_to_unicode()
         self.byte_decoder = {v: k for k, v in self.byte_encoder.items()}

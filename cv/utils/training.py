@@ -9,6 +9,7 @@ import torch.nn.functional as F
 import torch.distributed as dist
 import torch.multiprocessing as mp
 
+from cv.utils import Global
 from cv.src.crf import DenseCRF
 from cv.utils import MetaWrapper
 from cv.datasets import ClassificationDataset
@@ -217,10 +218,11 @@ class EMA(nn.Module):
 
         if not EMA.UTIL_FUNCTIONS["exists"](self.ema_model):
             try:
+                Global.LOGGER.info(f"Initializing EMA model")
                 self.ema_model = deepcopy(self.model)
             except Exception as e:
-                print(f'Error: While trying to deepcopy model: {e}')
-                print('Your model was not copyable. Please make sure you are not using any LazyLinear')
+                Global.LOGGER.error(f"Error: While trying to deepcopy model: {e}")
+                Global.LOGGER.error("Model was not copyable. Please make sure any LazyLinear is not being used")
                 exit()
 
         for p in self.ema_model.parameters():
@@ -296,25 +298,32 @@ class EMA(nn.Module):
         step = self.step.item()
         self.step += 1
 
+        beta = self.get_current_decay()
+
         if not self.initted.item():
             if not EMA.UTIL_FUNCTIONS["exists"](self.ema_model):
                 self.init_ema()
 
             self.copy_params_from_model_to_ema()
             self.initted.data.copy_(torch.tensor(True))
-            return
+            
+            return beta
 
         should_update = EMA.UTIL_FUNCTIONS["divisible_by"](step, self.update_every) or last_epoch
 
         if should_update and step <= self.update_after_step:
             self.copy_params_from_model_to_ema()
-            return
+            
+            return beta
 
         if should_update:
+            Global.LOGGER.info(f"Updating EMA model")
             self.update_moving_average(self.ema_model, self.model)
 
         if EMA.UTIL_FUNCTIONS["exists"](self.update_model_with_ema_every) and EMA.UTIL_FUNCTIONS["divisible_by"](step, self.update_model_with_ema_every):
             self.update_model_with_ema()
+
+        return beta
 
     @torch.no_grad()
     def update_moving_average(self, ma_model, current_model, current_decay = None):

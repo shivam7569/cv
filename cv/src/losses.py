@@ -499,3 +499,48 @@ class DeepLabv1Loss(nn.Module, metaclass=MetaWrapper):
             loss = (1 - self._lambda) * first_lose + self._lambda * second_loss
 
         return loss
+
+class NT_XentLoss(nn.Module):
+
+    def __init__(self, temperature: float):
+
+        super(NT_XentLoss, self).__init__()
+
+        self.temperature = temperature
+
+    @staticmethod
+    def get_pair_indices(batch_size):
+
+        arrange_indices, pairs = [], []
+
+        for i in range(batch_size):
+            arrange_indices.extend([i, i+batch_size])
+
+        for i in range(0, 2*batch_size, 2):
+            pairs.append((range(2*batch_size)[i], range(2*batch_size)[i+1]))
+            pairs.append((range(2*batch_size)[i+1], range(2*batch_size)[i]))
+
+        return (arrange_indices, torch.tensor(pairs))
+
+    def forward(self, z1, z2):
+
+        assert z1.size(0) == z2.size(0)
+
+        B, _ = z1.shape
+
+        embeddings = torch.cat([z1, z2], dim=0)
+        embeddings = embeddings / embeddings.norm(dim=1, keepdim=True)
+
+        arrange_indices, pair_indices = self.get_pair_indices(B)
+
+        embeddings = embeddings[arrange_indices]
+
+        similarity = embeddings @ embeddings.t()
+        similarity = (similarity / self.temperature).exp()
+
+        numerator = similarity[pair_indices[:, 0], pair_indices[:, 1]]
+        denominator = similarity.sum(dim=1) - similarity.diag()
+
+        loss = (-torch.log(numerator / denominator)).sum() / (2 * B)
+
+        return loss

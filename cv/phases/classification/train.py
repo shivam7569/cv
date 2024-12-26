@@ -133,6 +133,10 @@ class Train(metaclass=MetaWrapper):
             else:
                 epoch_loss = self.train_for_one_epoch(epoch=epoch)
 
+            if self.exponential_moving_average is not None:
+                ema_beta_val =self._exponential_moving_average(last_epoch=epoch==self.epochs-1)
+                self.tb_writer.write("scaler")(scalar_name="EMA beta", scalar_value=ema_beta_val, step=epoch)
+
             if self.tb_writer is not None: self.tb_writer.write("scaler")(scalar_name="Loss", scalar_value=epoch_loss, step=epoch)
 
             if not self.async_parallel_rank:
@@ -247,8 +251,6 @@ class Train(metaclass=MetaWrapper):
         if not self.async_parallel_rank:
             epoch_loss /= num_iterations
             Global.LOGGER.info(f"\nTraining loss for epoch {epoch+1}: {round(epoch_loss, 3)}")
-
-        self._exponential_moving_average(last_epoch=epoch==self.epochs-1)
             
         if not self.async_parallel_rank: return epoch_loss
 
@@ -289,7 +291,9 @@ class Train(metaclass=MetaWrapper):
 
     def _exponential_moving_average(self, last_epoch):
         if self.exponential_moving_average is not None:
-            self.ema_model.update(last_epoch)
+            current_beta_val = self.ema_model.update(last_epoch)
+
+            return current_beta_val
 
     def _lr_scheduling(self, epoch_based, epoch=None, batch_iteration=None):
         if epoch_based:

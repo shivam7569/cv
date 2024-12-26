@@ -1,3 +1,4 @@
+import cv2
 import math
 import torch
 import random
@@ -615,6 +616,15 @@ class ThreeAugment(metaclass=MetaWrapper):
             kernel_size=(5, 9), sigma=(0.1, 5.0)
         )
 
+    def __repr__(self):
+        fs = self.__class__.__name__ + f"(p={self.p}, ops="
+        fs += f"\n\t{self.grayscale}"
+        fs += f"\n\t{self.solarize}"
+        fs += f"\n\t{self.gaussian_blur}"
+        fs += ')'
+
+        return fs
+    
     def __call__(self, x):
         if random.random() > self.p:
             return x
@@ -625,3 +635,32 @@ class ThreeAugment(metaclass=MetaWrapper):
         self.solarize.threshold = min(256, int((random.choice(range(10)) / 10.0) * 256))
 
         return x
+
+class SobelFilter(metaclass=MetaWrapper):
+
+    @classmethod
+    def __class_repr__(cls):
+        return "Image augmentation class for sobel filtering of images"
+
+    def __init__(self, kernel_size=3, p=0.5):
+
+        self.p = p
+        self.kernel_size = kernel_size
+
+    def __call__(self, img):
+        if np.random.random() > self.p:
+            return img
+
+        img = np.array(img)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+        gX = cv2.Sobel(img, ddepth=cv2.CV_32F, dx=1, dy=0, ksize=self.kernel_size)
+        gY = cv2.Sobel(img, ddepth=cv2.CV_32F, dx=0, dy=1, ksize=self.kernel_size)
+        gX = cv2.convertScaleAbs(gX)
+        gY = cv2.convertScaleAbs(gY)
+
+        sobel = cv2.addWeighted(gX, 0.5, gY, 0.5, 0)
+        sobel = sobel[..., np.newaxis]
+        sobel = np.repeat(sobel, repeats=3, axis=-1)
+
+        return sobel
