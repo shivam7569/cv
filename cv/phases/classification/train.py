@@ -135,7 +135,8 @@ class Train(metaclass=MetaWrapper):
 
             if self.exponential_moving_average is not None:
                 ema_beta_val =self._exponential_moving_average(last_epoch=epoch==self.epochs-1)
-                self.tb_writer.write("scaler")(scalar_name="EMA beta", scalar_value=ema_beta_val, step=epoch)
+                if self.tb_writer is not None:
+                    self.tb_writer.write("scaler")(scalar_name="EMA beta", scalar_value=ema_beta_val, step=epoch)
 
             if self.tb_writer is not None: self.tb_writer.write("scaler")(scalar_name="Loss", scalar_value=epoch_loss, step=epoch)
 
