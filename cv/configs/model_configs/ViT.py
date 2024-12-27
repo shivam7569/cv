@@ -103,7 +103,7 @@ def ViTConfig(cfg):
         dict(name="ThreeAugment", params=dict(p=0.5)),
         dict(name="RandomApply", params=dict(
             transforms=[
-                dict(name="ColorJitter", params=dict(brightness=0.3, contrast=0.3, saturation=0.3))
+                dict(name="ColorJitter", params=dict(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.1))
             ], p=0.5
         )),
         dict(name="ToTensor", params=None),
