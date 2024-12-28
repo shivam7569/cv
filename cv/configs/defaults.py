@@ -91,4 +91,7 @@ _C.WRITE_TENSORBOARD_GRAPH = True
 _C.COCO_MEAN = [0.470, 0.447, 0.408]
 _C.COCO_STD = [0.278, 0.274, 0.289]
 
+_C.SAME_CONTRASTIVE_TRANSFORMS = False
+
 os.environ["TORCH_HOME"] = f"{project_dir}/checkpoints/pytorch_hub/"
+_C.TEMP_DIR = f"{project_dir}/tmp"

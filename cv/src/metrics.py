@@ -83,11 +83,18 @@ class ClassificationMetrics(metaclass=MetaWrapper):
 
         return np.round(f1, decimals=3)
 
-    def aggregate_metrics(self):
-        class_accuracies = self.accuracy()
-        class_precisions = self.precision()
-        class_recalls = self.recall()
-        class_f1_scores = self.f1_score()
+    def aggregate_metrics(self, **kwargs):
+        
+        if len(kwargs) > 0:
+            class_accuracies = kwargs["accuracy"]
+            class_precisions = kwargs["precision"]
+            class_recalls = kwargs["recall"]
+            class_f1_scores = kwargs["f1_score"]
+        else:
+            class_accuracies = self.accuracy()
+            class_precisions = self.precision()
+            class_recalls = self.recall()
+            class_f1_scores = self.f1_score()
 
         self.metrics_aggregated["accuracy"] = np.round(np.mean(class_accuracies), decimals=3)
         self.metrics_aggregated["precision"] = np.round(np.mean(class_precisions), decimals=3)

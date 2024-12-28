@@ -111,3 +111,5 @@ class ModelConfigs:
             DeepLabv1Config(cfg)
         elif model_name.lower() == "segnet":
             SegNetConfig(cfg)
+        elif model_name.lower() == "simclr":
+            SimCLRConfig(cfg)

@@ -522,13 +522,11 @@ class NT_XentLoss(nn.Module):
 
         return (arrange_indices, torch.tensor(pairs))
 
-    def forward(self, z1, z2):
+    def forward(self, embeddings):
 
-        assert z1.size(0) == z2.size(0)
+        B, _ = embeddings.shape
+        B = B // 2
 
-        B, _ = z1.shape
-
-        embeddings = torch.cat([z1, z2], dim=0)
         embeddings = embeddings / embeddings.norm(dim=1, keepdim=True)
 
         arrange_indices, pair_indices = self.get_pair_indices(B)

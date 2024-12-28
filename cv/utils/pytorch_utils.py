@@ -54,7 +54,7 @@ def async_parallel_setup(rank, world_size, torchrun=False):
         torch.cuda.set_device(int(os.environ["LOCAL_RANK"]))
     else:
         os.environ["MASTER_ADDR"] = "localhost"
-        os.environ["MASTER_PORT"] = "12369"
+        os.environ["MASTER_PORT"] = "12329"
         os.environ["WORLD_SIZE"] = str(world_size)
         os.environ["RANK"] = str(rank)
 

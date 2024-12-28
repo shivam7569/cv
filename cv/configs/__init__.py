@@ -30,3 +30,4 @@ from .model_configs.FCN import FCNConfig
 from .model_configs.UNet import UNetConfig
 from .model_configs.DeepLabv1 import DeepLabv1Config
 from .model_configs.SegNet import SegNetConfig
+from .model_configs.SimCLR import SimCLRConfig

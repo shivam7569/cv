@@ -647,6 +647,11 @@ class SobelFilter(metaclass=MetaWrapper):
         self.p = p
         self.kernel_size = kernel_size
 
+    def __repr__(self):
+        fs = self.__class__.__name__ + f"(p={self.p}, kernel_size={self.kernel_size})"
+
+        return fs
+
     def __call__(self, img):
         if np.random.random() > self.p:
             return img
