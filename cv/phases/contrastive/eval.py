@@ -152,8 +152,7 @@ class KnnEval(metaclass=MetaWrapper):
 
         Global.LOGGER.info(f"Fitting KNN on extracted features")
 
-        if not hasattr(self, "knn_k"):
-            self.knn_k = self._find_best_k()
+        self.knn_k = self._find_best_k()
 
         X = np.load(os.path.join(self.feature_dir, "features.npy"))
         y = np.load(os.path.join(self.feature_dir, "labels.npy"))
