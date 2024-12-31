@@ -28,7 +28,7 @@ def SimCLRConfig(cfg):
 
     cfg.TRAIN = CN()
     cfg.TRAIN.PARAMS = CN()
-    cfg.TRAIN.PARAMS.epochs = 1000
+    cfg.TRAIN.PARAMS.epochs = 600
     cfg.TRAIN.PARAMS.gradient_accumulation = True
     cfg.TRAIN.PARAMS.gradient_accumulation_batch_size = 4096
     cfg.TRAIN.PARAMS.gradient_clipping = None
@@ -93,7 +93,7 @@ def SimCLRConfig(cfg):
     cfg.SimCLR.OPTIMIZER = CN()
     cfg.SimCLR.OPTIMIZER.NAME = "Adam"
     cfg.SimCLR.OPTIMIZER.PARAMS = CN()
-    cfg.SimCLR.OPTIMIZER.PARAMS.lr = 0.4
+    cfg.SimCLR.OPTIMIZER.PARAMS.lr = 0.3
     cfg.SimCLR.OPTIMIZER.PARAMS.betas = (0.9, 0.999)
     cfg.SimCLR.OPTIMIZER.PARAMS.weight_decay = 1e-6
 
