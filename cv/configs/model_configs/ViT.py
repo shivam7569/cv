@@ -35,7 +35,7 @@ def ViTConfig(cfg):
     cfg.ViT.PARAMS.stochastic_depth = True
     cfg.ViT.PARAMS.stochastic_depth_mp = 0.1
     cfg.ViT.PARAMS.layer_scale = 1e-4
-    cfg.ViT.PARAMS.ln_order = "residual"
+    cfg.ViT.PARAMS.ln_order = "pre"
     cfg.ViT.PARAMS.in_channels = 3
     cfg.ViT.PARAMS.classifier = True
 
