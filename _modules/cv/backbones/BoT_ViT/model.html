@@ -1,0 +1,386 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>cv.backbones.BoT_ViT.model &mdash; cv 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            cv
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../subpackages/backbones.html">Backbones</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../subpackages/backbones_attention.html">Backbones (Attention Based)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">cv</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">cv.backbones.BoT_ViT.model</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for cv.backbones.BoT_ViT.model</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">cv.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">MetaWrapper</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cv.attention.variants</span><span class="w"> </span><span class="kn">import</span> <span class="n">BottleNeck_MHSA</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">BoT_ViTParams</span><span class="p">:</span>
+
+    <span class="n">MHSA_NUM_HEADS</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">MHSA_DROPOUT</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ResidualGroup</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">):</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_blocks</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">channels_1x1_in</span><span class="p">,</span> <span class="n">channels_3x3</span><span class="p">,</span> <span class="n">channels_1x1_out</span><span class="p">,</span> <span class="n">bold</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">last_group</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ResidualGroup</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="n">downsample</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_blocks</span><span class="p">):</span>
+            <span class="n">block</span> <span class="o">=</span> <span class="n">ResidualBlock</span><span class="p">(</span>
+                <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">channels_1x1_in</span><span class="o">=</span><span class="n">channels_1x1_in</span><span class="p">,</span> <span class="n">channels_3x3</span><span class="o">=</span><span class="n">channels_3x3</span><span class="p">,</span>
+                <span class="n">channels_1x1_out</span><span class="o">=</span><span class="n">channels_1x1_out</span><span class="p">,</span> <span class="n">bold</span><span class="o">=</span><span class="n">bold</span><span class="p">,</span> <span class="n">downsample</span><span class="o">=</span><span class="n">downsample</span><span class="p">,</span> <span class="n">last_group</span><span class="o">=</span><span class="n">last_group</span>
+            <span class="p">)</span>
+            <span class="n">in_channels</span> <span class="o">=</span> <span class="n">channels_1x1_out</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">bold</span><span class="p">:</span> <span class="n">bold</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">downsample</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">block</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">block</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">x</span>
+    
+<span class="k">class</span><span class="w"> </span><span class="nc">ResidualBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">channels_1x1_in</span><span class="p">,</span> <span class="n">channels_3x3</span><span class="p">,</span>
+                <span class="n">channels_1x1_out</span><span class="p">,</span> <span class="n">bold</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">downsample</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">last_group</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        
+        <span class="nb">super</span><span class="p">(</span><span class="n">ResidualBlock</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="n">downsample_conv_stride</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">bold</span> <span class="k">else</span> <span class="mi">2</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">last_group</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">block</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">ConvBlock</span><span class="p">(</span>
+                        <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">channels_1x1_in</span><span class="p">,</span>
+                        <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="kc">True</span>
+                    <span class="p">),</span>
+                    <span class="n">ConvBlock</span><span class="p">(</span>
+                        <span class="n">in_channels</span><span class="o">=</span><span class="n">channels_1x1_in</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">channels_3x3</span><span class="p">,</span>
+                        <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="n">downsample_conv_stride</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="kc">True</span>
+                    <span class="p">),</span>
+                    <span class="n">ConvBlock</span><span class="p">(</span>
+                        <span class="n">in_channels</span><span class="o">=</span><span class="n">channels_3x3</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">channels_1x1_out</span><span class="p">,</span>
+                        <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="kc">False</span>
+                    <span class="p">)</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="n">downsample_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Identity</span><span class="p">()</span> <span class="k">if</span> <span class="n">bold</span> <span class="k">else</span> <span class="n">nn</span><span class="o">.</span><span class="n">AvgPool2d</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">block</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">ConvBlock</span><span class="p">(</span>
+                        <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">channels_1x1_in</span><span class="p">,</span>
+                        <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="kc">True</span>
+                    <span class="p">),</span>
+                    <span class="n">BottleNeck_MHSA</span><span class="p">(</span>
+                        <span class="n">embed_dims</span><span class="o">=</span><span class="n">channels_1x1_in</span><span class="p">,</span> <span class="n">num_heads</span><span class="o">=</span><span class="n">BoT_ViTParams</span><span class="o">.</span><span class="n">MHSA_NUM_HEADS</span><span class="p">,</span> <span class="n">feature_map_size</span><span class="o">=</span><span class="p">(</span><span class="mi">64</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">bold</span> <span class="k">else</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">bold</span> <span class="k">else</span> <span class="mi">32</span><span class="p">),</span>
+                        <span class="n">attention_dropout</span><span class="o">=</span><span class="n">BoT_ViTParams</span><span class="o">.</span><span class="n">MHSA_DROPOUT</span><span class="p">,</span> <span class="n">qkv_bias</span><span class="o">=</span><span class="kc">False</span>
+                    <span class="p">),</span>
+                    <span class="n">downsample_layer</span><span class="p">,</span>
+                    <span class="n">ConvBlock</span><span class="p">(</span>
+                        <span class="n">in_channels</span><span class="o">=</span><span class="n">channels_3x3</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">channels_1x1_out</span><span class="p">,</span>
+                        <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="kc">False</span>
+                    <span class="p">)</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">downsample</span><span class="p">:</span>
+            <span class="n">downsample_stride</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">bold</span> <span class="k">else</span> <span class="mi">2</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">identity_downsample</span> <span class="o">=</span> <span class="n">ConvBlock</span><span class="p">(</span>
+                <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">channels_1x1_out</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="n">downsample_stride</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">initializeConv</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">channels</span><span class="o">=</span><span class="n">channels_1x1_out</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">identity_downsample</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">initializeConv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">channels</span><span class="p">):</span>
+        <span class="n">init_n</span> <span class="o">=</span> <span class="p">(</span><span class="n">kernel_size</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">channels</span>
+        <span class="n">init_mean</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">init_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span> <span class="o">/</span> <span class="n">init_n</span><span class="p">)</span>
+        
+        <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">normal_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">identity_downsample</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="n">init_mean</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="n">init_std</span><span class="p">)</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">constant_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">identity_downsample</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">res_x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">blk</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">block</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">blk</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">identity_downsample</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>    
+            <span class="n">res_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">identity_downsample</span><span class="p">(</span><span class="n">res_x</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">res_x</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)(</span><span class="n">out</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">out</span>
+    
+<span class="k">class</span><span class="w"> </span><span class="nc">ConvBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ConvBlock</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span>
+            <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">out_channels</span><span class="p">,</span>
+            <span class="n">kernel_size</span><span class="o">=</span><span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">padding</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">num_features</span><span class="o">=</span><span class="n">out_channels</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">relu</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">if</span> <span class="n">activation</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">initializeConv</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="n">kernel_size</span><span class="p">,</span> <span class="n">channels</span><span class="o">=</span><span class="n">out_channels</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">initializeConv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">channels</span><span class="p">):</span>
+        <span class="n">init_n</span> <span class="o">=</span> <span class="p">(</span><span class="n">kernel_size</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">channels</span>
+        <span class="n">init_mean</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">init_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span> <span class="o">/</span> <span class="n">init_n</span><span class="p">)</span>
+        
+        <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">normal_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="n">init_mean</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="n">init_std</span><span class="p">)</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">constant_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bn</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">relu</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">x</span>
+
+        <span class="k">return</span> <span class="n">x</span>
+
+<div class="viewcode-block" id="BoT_ViT">
+<a class="viewcode-back" href="../../../../backbones_docs/attention_based/BoT_ViT/backbones.BoT_ViT.model.html#cv.backbones.BoT_ViT.model.BoT_ViT">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BoT_ViT</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">MetaWrapper</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    `BoT-ViT` (Bottleneck Transformers for Visual Recognition) model architecture from `paper &lt;https://arxiv.org/abs/2101.11605.pdf&gt;`_.</span>
+
+<span class="sd">    This class implements the BoT-ViT model, combining convolutional and bottleneck transformer blocks for </span>
+<span class="sd">    feature extraction and classification. The model processes input images through multiple residual groups </span>
+<span class="sd">    and a final classification layer.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        mhsa_num_heads (int): The number of heads for the multi-head self-attention layer.</span>
+<span class="sd">        attention_dropout (float, optional): Dropout rate for attention layers (default: 0.0).</span>
+<span class="sd">        num_classes (int, optional): Number of output classes for classification (default: 1000).</span>
+<span class="sd">        in_channels (int, optional): Number of input channels for the images, typically 3 for RGB (default: 3).</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; model = BoT_ViT(mhsa_num_heads=8, attention_dropout=0.1, num_classes=1000)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__class_repr__</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;Model Class for BoT-ViT architecture from paper on: Bottleneck Transformers for Visual Recognition&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mhsa_num_heads</span><span class="p">,</span> <span class="n">attention_dropout</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">in_channels</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">BoT_ViT</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="n">BoT_ViTParams</span><span class="o">.</span><span class="n">MHSA_NUM_HEADS</span> <span class="o">=</span> <span class="n">mhsa_num_heads</span>
+        <span class="n">BoT_ViTParams</span><span class="o">.</span><span class="n">MHSA_DROPOUT</span> <span class="o">=</span> <span class="n">attention_dropout</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_features</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span>
+                <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">3</span>
+            <span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">num_features</span><span class="o">=</span><span class="mi">64</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">res_group_1</span> <span class="o">=</span> <span class="n">ResidualGroup</span><span class="p">(</span>
+            <span class="n">num_blocks</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">in_channels</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">channels_1x1_in</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+            <span class="n">channels_3x3</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">channels_1x1_out</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">bold</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">res_group_2</span> <span class="o">=</span> <span class="n">ResidualGroup</span><span class="p">(</span>
+            <span class="n">num_blocks</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">in_channels</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">channels_1x1_in</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span>
+            <span class="n">channels_3x3</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">channels_1x1_out</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">bold</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">res_group_3</span> <span class="o">=</span> <span class="n">ResidualGroup</span><span class="p">(</span>
+            <span class="n">num_blocks</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">in_channels</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">channels_1x1_in</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
+            <span class="n">channels_3x3</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">channels_1x1_out</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">bold</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">res_group_4</span> <span class="o">=</span> <span class="n">ResidualGroup</span><span class="p">(</span>
+            <span class="n">num_blocks</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">in_channels</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">channels_1x1_in</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+            <span class="n">channels_3x3</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">channels_1x1_out</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span> <span class="n">bold</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">last_group</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">AdaptiveAvgPool2d</span><span class="p">(</span><span class="n">output_size</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(</span><span class="n">start_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="n">num_classes</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">initializeConv</span><span class="p">()</span>
+
+<div class="viewcode-block" id="BoT_ViT.initializeConv">
+<a class="viewcode-back" href="../../../../backbones_docs/attention_based/BoT_ViT/backbones.BoT_ViT.model.html#cv.backbones.BoT_ViT.model.BoT_ViT.initializeConv">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">initializeConv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize convolutional layers with specific weight and bias initialization.</span>
+
+<span class="sd">        This method initializes the weights and biases of convolutional layers using a specific strategy:</span>
+<span class="sd">        - **Weights**: Initialized with a normal distribution where the mean is `0.0` and the standard deviation</span>
+<span class="sd">        is computed based on the number of input units and output channels.</span>
+<span class="sd">        - **Biases**: Initialized to `0.0`.</span>
+
+<span class="sd">        The standard deviation for weight initialization is calculated using the formula:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            \\text{std} = \\sqrt{\\frac{2}{n_{\\text{in}}}}</span>
+
+<span class="sd">        where:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            n_{\\text{in}} = \\text{kernel_size[0]}^2 \\times \\text{out_channels}</span>
+
+<span class="sd">        The weight initialization is performed as follows:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            \\text{weight} \\sim \\mathcal{N}(\\text{mean}=0.0, \\text{std})</span>
+
+<span class="sd">        Biases are initialized with:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            \\text{bias} = 0.0</span>
+
+<span class="sd">        This initialization helps in stabilizing the learning process and improving the convergence rate.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_features</span><span class="o">.</span><span class="n">modules</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">):</span>
+                <span class="n">weight</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">weight</span>
+                <span class="n">bias</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">bias</span>
+
+                <span class="n">init_n</span> <span class="o">=</span> <span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">kernel_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">module</span><span class="o">.</span><span class="n">out_channels</span>
+                <span class="n">init_mean</span> <span class="o">=</span> <span class="mf">0.0</span>
+                <span class="n">init_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span> <span class="o">/</span> <span class="n">init_n</span><span class="p">)</span>
+
+                <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">normal_</span><span class="p">(</span><span class="n">weight</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="n">init_mean</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="n">init_std</span><span class="p">)</span>
+                <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">constant_</span><span class="p">(</span><span class="n">bias</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BoT_ViT.forward">
+<a class="viewcode-back" href="../../../../backbones_docs/attention_based/BoT_ViT/backbones.BoT_ViT.model.html#cv.backbones.BoT_ViT.model.BoT_ViT.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Defines the forward pass through the BoT-ViT model.</span>
+
+<span class="sd">        The input tensor passes through the initial convolutional layers, followed by multiple residual groups, </span>
+<span class="sd">        and is then processed through the classifier for final classification.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (torch.Tensor): Input tensor of shape (batch_size, in_channels, height, width).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: Output tensor after passing through the model, with shape (batch_size, num_classes).</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; output = model(torch.randn(1, 3, 224, 224))  # Example input tensor of shape (batch_size, channels, height, width)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_features</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">res_group_1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">res_group_2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">res_group_3</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">res_group_4</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">x</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Shivam Chaudhary.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

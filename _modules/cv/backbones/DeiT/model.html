@@ -1,0 +1,271 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>cv.backbones.DeiT.model &mdash; cv 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            cv
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../subpackages/backbones.html">Backbones</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../subpackages/backbones_attention.html">Backbones (Attention Based)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">cv</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">cv.backbones.DeiT.model</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for cv.backbones.DeiT.model</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">cv</span><span class="w"> </span><span class="kn">import</span> <span class="n">backbones</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cv.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">Global</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cv.backbones</span><span class="w"> </span><span class="kn">import</span> <span class="n">ViT</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cv.src.checkpoints</span><span class="w"> </span><span class="kn">import</span> <span class="n">Checkpoint</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cv.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">MetaWrapper</span>
+
+<div class="viewcode-block" id="DeiT">
+<a class="viewcode-back" href="../../../../backbones_docs/attention_based/DeiT/backbones.DeiT.model.html#cv.backbones.DeiT.model.DeiT">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DeiT</span><span class="p">(</span><span class="n">ViT</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">MetaWrapper</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Data-efficient Image Transformer (DeiT) model class from `paper &lt;https://arxiv.org/abs/2012.12877.pdf&gt;`_.</span>
+
+<span class="sd">    This class implements the DeiT architecture, which is designed to efficiently train Vision Transformers</span>
+<span class="sd">    with the additional feature of knowledge distillation. DeiT uses a teacher-student framework where the </span>
+<span class="sd">    student model (DeiT) is trained to mimic the output of a pre-trained teacher model.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        - num_classes (int): Number of output classes for classification.</span>
+<span class="sd">        - d_model (int): Dimensionality of the model&#39;s hidden representations.</span>
+<span class="sd">        - image_size (int): Size of the input image (should be divisible by patch_size).</span>
+<span class="sd">        - patch_size (int): Size of the patches used in the image processing.</span>
+<span class="sd">        - classifier_mlp_d (int): Dimensionality of the intermediate MLP in the classification head.</span>
+<span class="sd">        - encoder_mlp_d (int): Dimension of the feed-forward layers in the Transformer encoder.</span>
+<span class="sd">        - encoder_num_heads (int): Number of attention heads in the Transformer encoder.</span>
+<span class="sd">        - num_encoder_blocks (int): Number of blocks in the Transformer encoder.</span>
+<span class="sd">        - dropout (float, optional): Dropout probability applied after the linear projection and within the MLP layers.</span>
+<span class="sd">        - encoder_dropout (float, optional): Dropout rate applied within the transformer encoder blocks.</span>
+<span class="sd">        - encoder_attention_dropout (float, optional): Dropout probability applied to the attention layers.</span>
+<span class="sd">        - patchify_technique (str, optional): Method used to divide the input image into patches. Options are &quot;linear&quot; for unfolding and &quot;convolutional&quot; for using convolution.</span>
+<span class="sd">        - stochastic_depth (bool, optional): Whether to use stochastic depth regularization.</span>
+<span class="sd">        - stochastic_depth_mp (float, optional): Maximum probability for stochastic depth, controlling the likelihood of dropping layers during training.</span>
+<span class="sd">        - layer_scale (float, optional): Scaling factor for LayerScale initialization. If None, LayerScale is disabled.</span>
+<span class="sd">        - return_logits_type (str): Type of logits to return. Options are &quot;classification&quot;, &quot;distillation&quot;, or &quot;fusion&quot;.</span>
+<span class="sd">        - teacher_model_name (str): Name of the pre-trained teacher model to use for distillation.</span>
+<span class="sd">        - in_channels (int, optional): Number of input channels in the image, typically 3 for RGB.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        Make sure the weights for the teacher model exists.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; model = DeiT(num_classes=1000, d_model=768, image_size=224, patch_size=16, classifier_mlp_d=2048, encoder_mlp_d=3072, encoder_num_heads=12, num_encoder_blocks=12, dropout=0.1, encoder_dropout=0.0, encoder_attention_dropout=0.0, patchify_technique=&quot;linear&quot;, stochastic_depth=False, stochastic_depth_mp=0.0, layer_scale=None, return_logits_type=&quot;fusion&quot;, teacher_model_name=&quot;ConvNeXt&quot;, in_channels=3)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__class_repr__</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;Model Class for DeiT architecture from paper on: Training data-efficient image transformers &amp; distillation through attention&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">return_logits_type</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;return_logits_type&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">teacher_model_name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;teacher_model_name&quot;</span><span class="p">]</span>
+
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">return_logits_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;classification&quot;</span><span class="p">,</span> <span class="s2">&quot;distillation&quot;</span><span class="p">,</span> <span class="s2">&quot;fusion&quot;</span><span class="p">]</span>
+
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;return_logits_type&quot;</span><span class="p">)</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;teacher_model_name&quot;</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">DeiT</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">Global</span><span class="o">.</span><span class="n">LOGGER</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="n">Global</span><span class="o">.</span><span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Using </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">teacher_model_name</span><span class="si">}</span><span class="s2"> as teacher model&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">distillation_token</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">class_token</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">teacher_model</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">backbones</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">teacher_model_name</span><span class="p">)()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loadTeacherModel</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span>
+            <span class="n">in_features</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;d_model&quot;</span><span class="p">],</span> <span class="n">out_features</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;num_classes&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distillation_token_classifier</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span>
+            <span class="n">in_features</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;d_model&quot;</span><span class="p">],</span> <span class="n">out_features</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;num_classes&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="DeiT.loadTeacherModel">
+<a class="viewcode-back" href="../../../../backbones_docs/attention_based/DeiT/backbones.DeiT.model.html#cv.backbones.DeiT.model.DeiT.loadTeacherModel">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">loadTeacherModel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loads and prepares the pre-trained teacher model for distillation.</span>
+
+<span class="sd">        This method loads the teacher model from checkpoints, sets it to evaluation mode, and disables gradient computation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">teacher_model</span> <span class="o">=</span> <span class="n">Checkpoint</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">teacher_model</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">teacher_model_name</span>
+        <span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">teacher_model</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
+            <span class="n">param</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">teacher_model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="DeiT.student_model">
+<a class="viewcode-back" href="../../../../backbones_docs/attention_based/DeiT/backbones.DeiT.model.html#cv.backbones.DeiT.model.DeiT.student_model">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">student_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Performs a forward pass of the student model, including the handling of the distillation token.</span>
+
+<span class="sd">        This method processes the input through the student model, computes logits for the class token and </span>
+<span class="sd">        optionally for the distillation token based on the `return_logits_type` setting.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (Tensor): Input tensor of shape `(batch_size, channels, height, width)`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tensor: The output logits from the student model. The type of logits returned is determined by:</span>
+<span class="sd">                - If `return_logits_type` is &quot;classification&quot;: Returns logits from the classification head.</span>
+<span class="sd">                - If `return_logits_type` is &quot;distillation&quot;: Returns logits from the distillation token classifier.</span>
+<span class="sd">                - If `return_logits_type` is &quot;fusion&quot;: Returns the average of logits from both classifiers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">patchify</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear_projection</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">class_token</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+                <span class="n">x</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">distillation_token</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span>
+        <span class="p">)</span>
+        <span class="n">x</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">position_embeddings</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="n">class_token</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">class_token_classifier</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span><span class="p">(</span><span class="n">class_token</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">return_logits_type</span> <span class="o">==</span> <span class="s2">&quot;classification&quot;</span><span class="p">:</span> <span class="k">return</span> <span class="n">class_token_classifier</span>
+
+        <span class="n">distillation_token</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">distillation_token_classifier</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distillation_token_classifier</span><span class="p">(</span><span class="n">distillation_token</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">return_logits_type</span> <span class="o">==</span> <span class="s2">&quot;distillation&quot;</span><span class="p">:</span> <span class="k">return</span> <span class="n">distillation_token_classifier</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">return_logits_type</span> <span class="o">==</span> <span class="s2">&quot;fusion&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">class_token_classifier</span> <span class="o">+</span> <span class="n">distillation_token_classifier</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span></div>
+
+
+<div class="viewcode-block" id="DeiT.forward">
+<a class="viewcode-back" href="../../../../backbones_docs/attention_based/DeiT/backbones.DeiT.model.html#cv.backbones.DeiT.model.DeiT.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Performs a forward pass of the DeiT model.</span>
+
+<span class="sd">        This method computes the outputs of both the student and teacher models. It returns a tuple containing </span>
+<span class="sd">        the student model&#39;s output and the teacher model&#39;s output.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (Tensor): Input tensor of shape `(batch_size, channels, height, width)`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: A tuple with two elements:</span>
+<span class="sd">                - Tensor: Output from the student model (`student_model` method).</span>
+<span class="sd">                - Tensor: Output from the teacher model (computed without gradients).</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; output = model(torch.randn(1, 3, 224, 224))  # Example input tensor of shape (batch_size, channels, height, width)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="n">teacher_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">teacher_model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        
+        <span class="n">student_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">student_model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">student_out</span><span class="p">,</span> <span class="n">teacher_out</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Shivam Chaudhary.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

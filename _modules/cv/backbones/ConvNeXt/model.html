@@ -1,0 +1,324 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>cv.backbones.ConvNeXt.model &mdash; cv 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            cv
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../subpackages/backbones.html">Backbones</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../subpackages/backbones_attention.html">Backbones (Attention Based)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">cv</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">cv.backbones.ConvNeXt.model</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for cv.backbones.ConvNeXt.model</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">cv.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">MetaWrapper</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">cv.utils.layers</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConvLayerNorm</span><span class="p">,</span> <span class="n">DropPath</span><span class="p">,</span> <span class="n">LayerScale</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ConvNeXtParams</span><span class="p">:</span>
+
+    <span class="n">NUM_CLASSES</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span>
+    <span class="n">IN_CHANNELS</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">STEM_OUT_CHANNELS</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">96</span>
+    <span class="n">STEM_KERNEL_SIZE</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">STEM_KERNEL_STRIDE</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">NUM_BLOCKS</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+    <span class="n">EXPANSION_RATE</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">DEPTHWISE_CONV_KERNEL_SIZE</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">7</span>
+    <span class="n">LAYER_SCALE</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span>
+    <span class="n">STOCHASTIC_DEPTH_MP</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setParams</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">NUM_CLASSES</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;num_classes&quot;</span><span class="p">]</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">IN_CHANNELS</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;in_channels&quot;</span><span class="p">]</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">STEM_OUT_CHANNELS</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;stem_out_channels&quot;</span><span class="p">]</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">STEM_KERNEL_SIZE</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;stem_kernel_size&quot;</span><span class="p">]</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">STEM_KERNEL_STRIDE</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;stem_kernel_stride&quot;</span><span class="p">]</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">NUM_BLOCKS</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;num_blocks&quot;</span><span class="p">]</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">EXPANSION_RATE</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;expansion_rate&quot;</span><span class="p">]</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">DEPTHWISE_CONV_KERNEL_SIZE</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;depthwise_conv_kernel_size&quot;</span><span class="p">]</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">LAYER_SCALE</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;layer_scale&quot;</span><span class="p">]</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">STOCHASTIC_DEPTH_MP</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;stochastic_depth_mp&quot;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="ConvNeXt">
+<a class="viewcode-back" href="../../../../backbones_docs/ConvNeXt/backbones.ConvNeXt.model.html#cv.backbones.ConvNeXt.model.ConvNeXt">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ConvNeXt</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">MetaWrapper</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    `ConvNeXt` model architecture, adapted from the `paper &lt;https://arxiv.org/abs/2201.03545.pdf&gt;`_.</span>
+<span class="sd">    </span>
+<span class="sd">    This class implements the ConvNeXt architecture, which is a modernized version of the traditional convolutional network (ConvNet). The model consists of four main stages (or groups) of ConvNeXt blocks, with a stem at the beginning for initial feature extraction and a classifier at the end for final prediction.</span>
+
+<span class="sd">    Each group consists of multiple ConvNeXt blocks, with optional downsampling at the start of some groups to progressively reduce the spatial dimensions and increase the feature channels. The model can dynamically adjust its configuration through the `ConvNeXtParams` class, which stores hyperparameters such as the number of blocks per stage, expansion rate, and stochastic depth probability.</span>
+
+<span class="sd">    The model also applies techniques like Layer Scaling, Stochastic Depth, and ConvLayerNorm for better training stability and generalization.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        num_classes (int): The number of output classes for classification (default: 1000).</span>
+<span class="sd">        in_channels (int): The number of input channels in the input image, typically 3 for RGB (default: 3).</span>
+<span class="sd">        stem_out_channels (int): The number of output channels from the initial stem convolution (default: 96).</span>
+<span class="sd">        stem_kernel_size (int): The kernel size for the stem convolution (default: 4).</span>
+<span class="sd">        stem_kernel_stride (int): The stride for the stem convolution (default: 4).</span>
+<span class="sd">        num_blocks (list[int]): The number of blocks in each ConvNeXt stage (default: [3, 3, 9, 3]).</span>
+<span class="sd">        expansion_rate (int): The expansion rate for the number of channels in the block (default: 4).</span>
+<span class="sd">        depthwise_conv_kernel_size (int): The kernel size for the depthwise convolution (default: 7).</span>
+<span class="sd">        layer_scale (float): The initial value for LayerScale (default: 1e-6).</span>
+<span class="sd">        stochastic_depth_mp (float): The maximum probability for stochastic depth dropout (default: 0.1).</span>
+<span class="sd">    </span>
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; model = ConvNeXt(**kwargs)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__class_repr__</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;Model Class for ConvNeXt architecture from paper on: A ConvNet for the 2020s&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ConvNeXt</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">kwargs</span><span class="p">):</span> <span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">setParams</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">STOCHASTIC_DEPTH_MP</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">drop_probs</span> <span class="o">=</span> <span class="p">[</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">STOCHASTIC_DEPTH_MP</span> <span class="o">/</span> <span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">NUM_BLOCKS</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">NUM_BLOCKS</span><span class="p">))]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">drop_probs</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">NUM_BLOCKS</span><span class="p">))]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">stem</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">ConvBlock</span><span class="p">(</span>
+                <span class="n">in_channels</span><span class="o">=</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">IN_CHANNELS</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">STEM_OUT_CHANNELS</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">STEM_KERNEL_SIZE</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">STEM_KERNEL_STRIDE</span><span class="p">,</span>
+                <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span>
+            <span class="p">),</span>
+            <span class="n">ConvLayerNorm</span><span class="p">(</span><span class="n">normalized_shape</span><span class="o">=</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">STEM_OUT_CHANNELS</span><span class="p">,</span> <span class="n">data_format</span><span class="o">=</span><span class="s2">&quot;channels_first&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">convnext_group_1</span> <span class="o">=</span> <span class="n">ConvNeXtGroup</span><span class="p">(</span>
+            <span class="n">num_blocks</span><span class="o">=</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">NUM_BLOCKS</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">in_channels</span><span class="o">=</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">STEM_OUT_CHANNELS</span><span class="p">,</span>
+            <span class="n">expansion_rate</span><span class="o">=</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">EXPANSION_RATE</span><span class="p">,</span> <span class="n">downsample</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">drop_probs</span><span class="o">=</span><span class="n">drop_probs</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">NUM_BLOCKS</span><span class="p">[:</span><span class="mi">1</span><span class="p">])]</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">convnext_group_2</span> <span class="o">=</span> <span class="n">ConvNeXtGroup</span><span class="p">(</span>
+            <span class="n">num_blocks</span><span class="o">=</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">NUM_BLOCKS</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">in_channels</span><span class="o">=</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">STEM_OUT_CHANNELS</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="n">expansion_rate</span><span class="o">=</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">EXPANSION_RATE</span><span class="p">,</span> <span class="n">downsample</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">drop_probs</span><span class="o">=</span><span class="n">drop_probs</span><span class="p">[</span><span class="nb">sum</span><span class="p">(</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">NUM_BLOCKS</span><span class="p">[:</span><span class="mi">1</span><span class="p">]):</span> <span class="nb">sum</span><span class="p">(</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">NUM_BLOCKS</span><span class="p">[:</span><span class="mi">2</span><span class="p">])]</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">convnext_group_3</span> <span class="o">=</span> <span class="n">ConvNeXtGroup</span><span class="p">(</span>
+            <span class="n">num_blocks</span><span class="o">=</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">NUM_BLOCKS</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">in_channels</span><span class="o">=</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">STEM_OUT_CHANNELS</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span>
+            <span class="n">expansion_rate</span><span class="o">=</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">EXPANSION_RATE</span><span class="p">,</span> <span class="n">downsample</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">drop_probs</span><span class="o">=</span><span class="n">drop_probs</span><span class="p">[</span><span class="nb">sum</span><span class="p">(</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">NUM_BLOCKS</span><span class="p">[:</span><span class="mi">2</span><span class="p">]):</span> <span class="nb">sum</span><span class="p">(</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">NUM_BLOCKS</span><span class="p">[:</span><span class="mi">3</span><span class="p">])]</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">convnext_group_4</span> <span class="o">=</span> <span class="n">ConvNeXtGroup</span><span class="p">(</span>
+            <span class="n">num_blocks</span><span class="o">=</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">NUM_BLOCKS</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">in_channels</span><span class="o">=</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">STEM_OUT_CHANNELS</span> <span class="o">*</span> <span class="mi">8</span><span class="p">,</span>
+            <span class="n">expansion_rate</span><span class="o">=</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">EXPANSION_RATE</span><span class="p">,</span> <span class="n">downsample</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">drop_probs</span><span class="o">=</span><span class="n">drop_probs</span><span class="p">[</span><span class="nb">sum</span><span class="p">(</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">NUM_BLOCKS</span><span class="p">[:</span><span class="mi">3</span><span class="p">]):</span> <span class="nb">sum</span><span class="p">(</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">NUM_BLOCKS</span><span class="p">[:</span><span class="mi">4</span><span class="p">])]</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">AdaptiveAvgPool2d</span><span class="p">(</span><span class="n">output_size</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(</span><span class="n">start_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="n">normalized_shape</span><span class="o">=</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">STEM_OUT_CHANNELS</span> <span class="o">*</span> <span class="mi">8</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">STEM_OUT_CHANNELS</span> <span class="o">*</span> <span class="mi">8</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">NUM_CLASSES</span><span class="p">)</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="ConvNeXt.forward">
+<a class="viewcode-back" href="../../../../backbones_docs/ConvNeXt/backbones.ConvNeXt.model.html#cv.backbones.ConvNeXt.model.ConvNeXt.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Defines the forward pass of the ConvNeXt model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (torch.Tensor): Input tensor of shape (batch_size, in_channels, height, width).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: Output logits of shape (batch_size, num_classes).</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; output = model(torch.randn(1, 3, 224, 224))  # Example input tensor of shape (batch_size, channels, height, width)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stem</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convnext_group_1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convnext_group_2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convnext_group_3</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convnext_group_4</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">x</span></div>
+</div>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ConvNeXtGroup</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_blocks</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">expansion_rate</span><span class="p">,</span> <span class="n">downsample</span><span class="p">,</span> <span class="n">drop_probs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ConvNeXtGroup</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">downsample</span><span class="p">:</span>
+            <span class="n">downsample_layer</span> <span class="o">=</span> <span class="n">ConvBlock</span><span class="p">(</span>
+                <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span>
+            <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">downsample_layer</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_blocks</span><span class="p">):</span>
+            <span class="n">block</span> <span class="o">=</span> <span class="n">ConvNeXtBlock</span><span class="p">(</span>
+                <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">expansion_rate</span><span class="o">=</span><span class="n">expansion_rate</span><span class="p">,</span> <span class="n">drop_prob</span><span class="o">=</span><span class="n">drop_probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">block</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">layer</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">x</span>
+    
+<span class="k">class</span><span class="w"> </span><span class="nc">ConvNeXtBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">expansion_rate</span><span class="p">,</span> <span class="n">drop_prob</span><span class="p">):</span>
+        
+        <span class="nb">super</span><span class="p">(</span><span class="n">ConvNeXtBlock</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">depth_wise_conv</span> <span class="o">=</span> <span class="n">ConvBlock</span><span class="p">(</span>
+            <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span>
+            <span class="n">kernel_size</span><span class="o">=</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">DEPTHWISE_CONV_KERNEL_SIZE</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">in_channels</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">point_wise_expansion</span> <span class="o">=</span> <span class="n">ConvBlock</span><span class="p">(</span>
+            <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">expansion_rate</span><span class="o">*</span><span class="n">in_channels</span><span class="p">,</span>
+            <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">point_wise_conv</span> <span class="o">=</span> <span class="n">ConvBlock</span><span class="p">(</span>
+            <span class="n">in_channels</span><span class="o">=</span><span class="n">expansion_rate</span><span class="o">*</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span>
+            <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ln</span> <span class="o">=</span> <span class="n">ConvLayerNorm</span><span class="p">(</span><span class="n">normalized_shape</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">data_format</span><span class="o">=</span><span class="s2">&quot;channels_first&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gelu</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">GELU</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">layer_scale</span> <span class="o">=</span> <span class="n">LayerScale</span><span class="p">(</span>
+            <span class="n">num_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span>
+            <span class="n">init_value</span><span class="o">=</span><span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">LAYER_SCALE</span>
+        <span class="p">)</span> <span class="k">if</span> <span class="n">ConvNeXtParams</span><span class="o">.</span><span class="n">LAYER_SCALE</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dropPath</span> <span class="o">=</span> <span class="n">DropPath</span><span class="p">(</span><span class="n">drop_prob</span><span class="o">=</span><span class="n">drop_prob</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">block_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">depth_wise_conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">block_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ln</span><span class="p">(</span><span class="n">block_out</span><span class="p">)</span>
+        <span class="n">block_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">point_wise_expansion</span><span class="p">(</span><span class="n">block_out</span><span class="p">)</span>
+        <span class="n">block_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gelu</span><span class="p">(</span><span class="n">block_out</span><span class="p">)</span>
+        <span class="n">block_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">point_wise_conv</span><span class="p">(</span><span class="n">block_out</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer_scale</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">block_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer_scale</span><span class="p">(</span><span class="n">block_out</span><span class="p">)</span>
+
+        <span class="n">block_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropPath</span><span class="p">(</span><span class="n">block_out</span><span class="p">)</span>
+
+        <span class="n">res</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">block_out</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">res</span>
+    
+<span class="k">class</span><span class="w"> </span><span class="nc">ConvBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">groups</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ConvBlock</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span>
+            <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">out_channels</span><span class="p">,</span>
+            <span class="n">kernel_size</span><span class="o">=</span><span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">groups</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">initializeConv</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">initializeConv</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">trunc_normal_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">zeros_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="o">.</span><span class="n">bias</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">x</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Shivam Chaudhary.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

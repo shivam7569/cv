@@ -1,0 +1,203 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deep ViT &mdash; cv 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Bottleneck ViT" href="../BoT_ViT/backbones.BoT_ViT.model.html" />
+    <link rel="prev" title="DeiT" href="../DeiT/backbones.DeiT.model.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            cv
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../subpackages/backbones.html">Backbones</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../subpackages/backbones_attention.html">Backbones (Attention Based)</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../DeiT/backbones.DeiT.model.html">DeiT</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Deep ViT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../BoT_ViT/backbones.BoT_ViT.model.html">Bottleneck ViT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../HPool_ViT/backbones.HPool_ViT.model.html">Hierarchical Pooling ViT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../CeiT/backbones.CeiT.model.html">Convolutional Designs in ViT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ConViT/backbones.ConViT.model.html">ViT with Soft Convolutional Inductive Biases</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">cv</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../subpackages/backbones_attention.html">Backbones (Attention Based)</a></li>
+      <li class="breadcrumb-item active">Deep ViT</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/backbones_docs/attention_based/DeepViT/backbones.DeepViT.model.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="deep-vit">
+<h1>Deep ViT<a class="headerlink" href="#deep-vit" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cv.backbones.DeepViT.model.</span></span><span class="sig-name descname"><span class="pre">DeepViT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_classes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classifier_mlp_d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoder_mlp_d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoder_num_heads</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_encoder_blocks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoder_dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoder_attention_dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoder_projection_dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patchify_technique</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stochastic_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stochastic_depth_mp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layer_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ln_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'residual'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">re_attention</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/cv/backbones/DeepViT/model.html#DeepViT"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>DeepViT: Vision Transformer architecture designed for enhanced depth and re-attention,
+inspired by the <a class="reference external" href="https://arxiv.org/abs/2103.11886.pdf">paper</a>.</p>
+<p>The DeepViT model is built to address the limitations of traditional Vision Transformers (ViTs)
+when scaling depth. Standard ViTs struggle with gradient degradation and lack sufficient attention
+at deeper layers, which can hinder performance in deeper architectures. DeepViT introduces several
+innovations to overcome these challenges, including re-attention mechanisms, effective stochastic
+depth regularization, and LayerScale initialization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_classes</strong> (<em>int</em>) – Number of target classes for classification tasks.</p></li>
+<li><p><strong>d_model</strong> (<em>int</em>) – The dimensionality of the transformer embeddings (also referred to as the hidden size).</p></li>
+<li><p><strong>image_size</strong> (<em>int</em>) – Input image dimension (assumes a square image of size image_size x image_size).</p></li>
+<li><p><strong>patch_size</strong> (<em>int</em>) – Size of the square patches into which the image is divided.</p></li>
+<li><p><strong>classifier_mlp_d</strong> (<em>int</em>) – Dimensionality of the intermediate MLP in the classification head.</p></li>
+<li><p><strong>encoder_mlp_d</strong> (<em>int</em>) – Dimensionality of the feed-forward network within each transformer encoder block.</p></li>
+<li><p><strong>encoder_num_heads</strong> (<em>int</em>) – Number of attention heads in each multi-head self-attention (MHSA) layer.</p></li>
+<li><p><strong>num_encoder_blocks</strong> (<em>int</em>) – Number of transformer encoder layers (blocks) in the model.</p></li>
+<li><p><strong>dropout</strong> (<em>float</em><em>, </em><em>optional</em>) – Dropout probability applied after the linear projection and within the MLP layers (default: 0.0).</p></li>
+<li><p><strong>encoder_dropout</strong> (<em>float</em><em>, </em><em>optional</em>) – Dropout rate applied within the transformer encoder blocks (default: 0.0).</p></li>
+<li><p><strong>encoder_attention_dropout</strong> (<em>float</em><em>, </em><em>optional</em>) – Dropout probability applied to the attention layers (default: 0.0).</p></li>
+<li><p><strong>encoder_projection_dropout</strong> (<em>float</em><em>, </em><em>optional</em>) – Dropout applied to projections inside the transformer blocks (default: 0.0).</p></li>
+<li><p><strong>patchify_technique</strong> (<em>str</em><em>, </em><em>optional</em>) – Method used to divide the input image into patches. Options are “linear” for unfolding and “convolutional” for using convolution (default: “linear”).</p></li>
+<li><p><strong>stochastic_depth</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to use stochastic depth regularization (default: False).</p></li>
+<li><p><strong>stochastic_depth_mp</strong> (<em>float</em><em>, </em><em>optional</em>) – Maximum probability for stochastic depth, controlling the likelihood of dropping layers during training (default: None).</p></li>
+<li><p><strong>layer_scale</strong> (<em>float</em><em>, </em><em>optional</em>) – Scaling factor for LayerScale initialization. If None, LayerScale is disabled (default: None).</p></li>
+<li><p><strong>ln_order</strong> (<em>str</em><em>, </em><em>optional</em>) – Order of layer normalization application. Defaults to applying normalization after the residual connection (default: “residual”).</p></li>
+<li><p><strong>re_attention</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to enable the re-attention mechanism to refine attention maps (default: False).</p></li>
+<li><p><strong>in_channels</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of input channels in the image, typically 3 for RGB (default: 3).</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">DeepViT</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">d_model</span><span class="o">=</span><span class="mi">384</span><span class="p">,</span> <span class="n">image_size</span><span class="o">=</span><span class="mi">224</span><span class="p">,</span> <span class="n">patch_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">classifier_mlp_d</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span> <span class="n">encoder_mlp_d</span><span class="o">=</span><span class="mi">1152</span><span class="p">,</span> <span class="n">encoder_num_heads</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">num_encoder_blocks</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">updateStochasticDepthRate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/cv/backbones/DeepViT/model.html#DeepViT.updateStochasticDepthRate"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Updates the stochastic depth rate for each block in the transformer encoder.</p>
+<p>Stochastic depth is a regularization technique that randomly drops entire layers
+during training to prevent overfitting. This method increases the drop probability
+for each transformer encoder block based on its position in the model, using the
+following formula:</p>
+<div class="math notranslate nohighlight">
+\[\text{new_drop_prob} = \text{original_drop_prob} + \text{block_index} \times \left( \frac{k}{\text{num_blocks} - 1} \right)\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>k</strong> (<em>float</em><em>, </em><em>optional</em>) – A scaling factor for adjusting the drop probability, default is 0.05. This value is spread across the transformer blocks, increasing progressively as you move deeper into the encoder.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p>If the model has 12 encoder blocks, and k=0.05, the first block will have its drop probability
+increased slightly, while the last block will have a larger increase, making the depth randomness
+more aggressive in the deeper layers.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/cv/backbones/DeepViT/model.html#DeepViT.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Forward pass of the DeepViT model. Processes the input image tensor through patchification,
+linear projection, transformer encoder blocks, and classification, producing logits for the
+target classes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – Input tensor of shape (batch_size, in_channels, height, width).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Output logits of shape (batch_size, num_classes).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">))</span>  <span class="c1"># Example input tensor of shape (batch_size, channels, height, width)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../DeiT/backbones.DeiT.model.html" class="btn btn-neutral float-left" title="DeiT" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../BoT_ViT/backbones.BoT_ViT.model.html" class="btn btn-neutral float-right" title="Bottleneck ViT" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Shivam Chaudhary.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

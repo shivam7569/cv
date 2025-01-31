@@ -1,0 +1,214 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Convolutional Designs in ViT &mdash; cv 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="ViT with Soft Convolutional Inductive Biases" href="../ConViT/backbones.ConViT.model.html" />
+    <link rel="prev" title="Hierarchical Pooling ViT" href="../HPool_ViT/backbones.HPool_ViT.model.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            cv
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../subpackages/backbones.html">Backbones</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../subpackages/backbones_attention.html">Backbones (Attention Based)</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../DeiT/backbones.DeiT.model.html">DeiT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../DeepViT/backbones.DeepViT.model.html">Deep ViT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../BoT_ViT/backbones.BoT_ViT.model.html">Bottleneck ViT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../HPool_ViT/backbones.HPool_ViT.model.html">Hierarchical Pooling ViT</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Convolutional Designs in ViT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ConViT/backbones.ConViT.model.html">ViT with Soft Convolutional Inductive Biases</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">cv</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../subpackages/backbones_attention.html">Backbones (Attention Based)</a></li>
+      <li class="breadcrumb-item active">Convolutional Designs in ViT</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/backbones_docs/attention_based/CeiT/backbones.CeiT.model.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="convolutional-designs-in-vit">
+<h1>Convolutional Designs in ViT<a class="headerlink" href="#convolutional-designs-in-vit" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cv.backbones.CeiT.model.</span></span><span class="sig-name descname"><span class="pre">CeiT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">224</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">768</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoder_num_heads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_encoder_blocks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoder_dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoder_attention_dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoder_projection_dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classifier_mlp_d</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2048</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i2t_out_channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i2t_conv_kernel_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i2t_conv_stride</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i2t_max_pool_kernel_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i2t_max_pool_stride</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leff_expand_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leff_depthwise_kernel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leff_depthwise_stride</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leff_depthwise_padding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leff_depthwise_separable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lca_encoder_expansion_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lca_encoder_num_heads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lca_encoder_dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lca_encoder_attention_dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lca_encoder_projection_dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lca_encoder_ln_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'post'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lca_encoder_stodepth_prob</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lca_encoder_layer_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lca_encoder_qkv_bias</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patchify_technique</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stochastic_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stochastic_depth_mp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layer_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ln_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'post'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/cv/backbones/CeiT/model.html#CeiT"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>The <cite>CeiT</cite> class implements the CeiT (Convolutional Enhanced Image Transformer) architecture,
+as described in the <a class="reference external" href="https://arxiv.org/abs/2103.11816.pdf">paper</a>.</p>
+<p>This model combines convolutional layers with transformer-based image processing, providing
+a powerful approach for image classification tasks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image_size</strong> (<em>int</em><em>, </em><em>optional</em>) – The size of the input image (height and width) (default: 224).</p></li>
+<li><p><strong>d_model</strong> (<em>int</em><em>, </em><em>optional</em>) – The dimensionality of the model’s feature space (default: 768).</p></li>
+<li><p><strong>patch_size</strong> (<em>int</em><em>, </em><em>optional</em>) – The size of the image patches to be extracted (default: 4).</p></li>
+<li><p><strong>dropout</strong> (<em>float</em><em>, </em><em>optional</em>) – The dropout rate applied to the inputs and outputs of the dropout layers (default: 0.0).</p></li>
+<li><p><strong>encoder_num_heads</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of attention heads in the encoder layers (default: 12).</p></li>
+<li><p><strong>num_encoder_blocks</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of encoder blocks in the transformer (default: 12).</p></li>
+<li><p><strong>encoder_dropout</strong> (<em>float</em><em>, </em><em>optional</em>) – Dropout rate applied in the encoder layers (default: 0.0).</p></li>
+<li><p><strong>encoder_attention_dropout</strong> (<em>float</em><em>, </em><em>optional</em>) – Dropout rate applied to the attention weights in the encoder (default: 0.0).</p></li>
+<li><p><strong>encoder_projection_dropout</strong> (<em>float</em><em>, </em><em>optional</em>) – Dropout rate applied to the projection layers in the encoder (default: 0.0).</p></li>
+<li><p><strong>classifier_mlp_d</strong> (<em>int</em><em>, </em><em>optional</em>) – Dimensionality of the hidden layer in the classifier’s MLP (default: 2048).</p></li>
+<li><p><strong>i2t_out_channels</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of output channels in the initial convolutional layer (default: 32).</p></li>
+<li><p><strong>i2t_conv_kernel_size</strong> (<em>int</em><em>, </em><em>optional</em>) – Size of the kernel in the initial convolutional layer (default: 7).</p></li>
+<li><p><strong>i2t_conv_stride</strong> (<em>int</em><em>, </em><em>optional</em>) – Stride of the convolution in the initial layer (default: 2).</p></li>
+<li><p><strong>i2t_max_pool_kernel_size</strong> (<em>int</em><em>, </em><em>optional</em>) – Kernel size of the max pooling layer (default: 3).</p></li>
+<li><p><strong>i2t_max_pool_stride</strong> (<em>int</em><em>, </em><em>optional</em>) – Stride of the max pooling layer (default: 2).</p></li>
+<li><p><strong>leff_expand_ratio</strong> (<em>int</em><em>, </em><em>optional</em>) – Expansion ratio for the Locally Enhanced Feed Forward (LEFF) module (default: 4).</p></li>
+<li><p><strong>leff_depthwise_kernel</strong> (<em>int</em><em>, </em><em>optional</em>) – Kernel size for the depthwise convolution in LEFF (default: 3).</p></li>
+<li><p><strong>leff_depthwise_stride</strong> (<em>int</em><em>, </em><em>optional</em>) – Stride for the depthwise convolution in LEFF (default: 1).</p></li>
+<li><p><strong>leff_depthwise_padding</strong> (<em>int</em><em>, </em><em>optional</em>) – Padding for the depthwise convolution in LEFF (default: 1).</p></li>
+<li><p><strong>leff_depthwise_separable</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to use depthwise separable convolutions in LEFF (default: True).</p></li>
+<li><p><strong>lca_encoder_expansion_ratio</strong> (<em>int</em><em>, </em><em>optional</em>) – Expansion ratio for the LCA encoder module (default: 4).</p></li>
+<li><p><strong>lca_encoder_num_heads</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of attention heads in the LCA encoder (default: 12).</p></li>
+<li><p><strong>lca_encoder_dropout</strong> (<em>float</em><em>, </em><em>optional</em>) – Dropout rate in the LCA encoder (default: 0.0).</p></li>
+<li><p><strong>lca_encoder_attention_dropout</strong> (<em>float</em><em>, </em><em>optional</em>) – Dropout rate for attention weights in the LCA encoder (default: 0.0).</p></li>
+<li><p><strong>lca_encoder_projection_dropout</strong> (<em>float</em><em>, </em><em>optional</em>) – Dropout rate for projection layers in the LCA encoder (default: 0.0).</p></li>
+<li><p><strong>lca_encoder_ln_order</strong> (<em>str</em><em>, </em><em>optional</em>) – The order of Layer Normalization in the LCA encoder (default: “post”).</p></li>
+<li><p><strong>lca_encoder_stodepth_prob</strong> (<em>float</em><em>, </em><em>optional</em>) – Probability for stochastic depth in the LCA encoder (default: 0.0).</p></li>
+<li><p><strong>lca_encoder_layer_scale</strong> (<em>float</em><em>, </em><em>optional</em>) – Layer scaling factor in the LCA encoder (default: None).</p></li>
+<li><p><strong>lca_encoder_qkv_bias</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to use bias in the QKV projections in the LCA encoder (default: False).</p></li>
+<li><p><strong>patchify_technique</strong> (<em>str</em><em>, </em><em>optional</em>) – Technique used for patch extraction (“linear” or “conv”) (default: linear).</p></li>
+<li><p><strong>stochastic_depth</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to use stochastic depth in the model (default: False).</p></li>
+<li><p><strong>stochastic_depth_mp</strong> (<em>float</em><em>, </em><em>optional</em>) – Stochastic depth max probability (default: None).</p></li>
+<li><p><strong>layer_scale</strong> (<em>float</em><em>, </em><em>optional</em>) – Scaling factor for the layers (default: None).</p></li>
+<li><p><strong>ln_order</strong> (<em>str</em><em>, </em><em>optional</em>) – The order of Layer Normalization in the model (default: “post”).</p></li>
+<li><p><strong>num_classes</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of classes for the classification task (default: 1000).</p></li>
+<li><p><strong>in_channels</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of input channels in the images, typically 3 for RGB (default: 3).</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">CeiT</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/cv/backbones/CeiT/model.html#CeiT.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Forward pass through the CeiT model.</p>
+<p>This method performs a forward pass of the input tensor through the CeiT model. It includes the following steps:</p>
+<ol class="arabic simple">
+<li><p>Initial feature extraction using the <cite>i2t_module</cite> (i2t: image-to-tokens).</p></li>
+<li><p>Transformation of the extracted features into patches using the <cite>patchify</cite> method.</p></li>
+<li><p>Linear projection of the patchified features.</p></li>
+<li><p>Addition of positional embeddings and class tokens.</p></li>
+<li><p>Application of dropout.</p></li>
+<li><p>Processing of the features through the transformer encoder.</p></li>
+<li><p>Application of LCA attention to the encoder’s output.</p></li>
+<li><p>Classification of the final token output using the classifier.</p></li>
+</ol>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – Input tensor of shape (batch_size, in_channels, height, width).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Output tensor after passing through the model, with shape (batch_size, num_classes).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>The <cite>i2t_module</cite> first processes the input images, extracting initial features through convolutional layers followed by max pooling.</p></li>
+<li><p>The <cite>patchify</cite> method converts the feature maps into a sequence of patches suitable for the transformer encoder.</p></li>
+<li><p>Positional embeddings and class tokens are added to the sequence of patches to incorporate positional information and a class-specific token.</p></li>
+<li><p>Dropout is applied to prevent overfitting during training.</p></li>
+<li><p>The transformer encoder processes the sequence of patches, producing an encoded representation.</p></li>
+<li><p>LCA attention is applied to the encoded representation to enhance the feature representation.</p></li>
+<li><p>Finally, the class token is passed through a classifier to obtain the predicted class scores.</p></li>
+</ul>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">))</span>  <span class="c1"># Example input tensor of shape (batch_size, channels, height, width)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../HPool_ViT/backbones.HPool_ViT.model.html" class="btn btn-neutral float-left" title="Hierarchical Pooling ViT" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../ConViT/backbones.ConViT.model.html" class="btn btn-neutral float-right" title="ViT with Soft Convolutional Inductive Biases" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Shivam Chaudhary.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

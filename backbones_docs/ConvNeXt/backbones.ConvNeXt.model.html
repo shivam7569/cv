@@ -1,0 +1,165 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ConvNeXt &mdash; cv 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Backbones (Attention Based)" href="../../subpackages/backbones_attention.html" />
+    <link rel="prev" title="Inception-v1" href="../Inception/backbones.Inception.model.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            cv
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../subpackages/backbones.html">Backbones</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../AlexNet/backbones.AlexNet.model.html">AlexNet</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../DenseNet/backbones.DenseNet.model.html">DenseNet</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Inception/backbones.Inception.model.html">Inception-v1</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">ConvNeXt</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../subpackages/backbones_attention.html">Backbones (Attention Based)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">cv</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../subpackages/backbones.html">Backbones</a></li>
+      <li class="breadcrumb-item active">ConvNeXt</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/backbones_docs/ConvNeXt/backbones.ConvNeXt.model.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="convnext">
+<h1>ConvNeXt<a class="headerlink" href="#convnext" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cv.backbones.ConvNeXt.model.</span></span><span class="sig-name descname"><span class="pre">ConvNeXt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cv/backbones/ConvNeXt/model.html#ConvNeXt"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p><cite>ConvNeXt</cite> model architecture, adapted from the <a class="reference external" href="https://arxiv.org/abs/2201.03545.pdf">paper</a>.</p>
+<p>This class implements the ConvNeXt architecture, which is a modernized version of the traditional convolutional network (ConvNet). The model consists of four main stages (or groups) of ConvNeXt blocks, with a stem at the beginning for initial feature extraction and a classifier at the end for final prediction.</p>
+<p>Each group consists of multiple ConvNeXt blocks, with optional downsampling at the start of some groups to progressively reduce the spatial dimensions and increase the feature channels. The model can dynamically adjust its configuration through the <cite>ConvNeXtParams</cite> class, which stores hyperparameters such as the number of blocks per stage, expansion rate, and stochastic depth probability.</p>
+<p>The model also applies techniques like Layer Scaling, Stochastic Depth, and ConvLayerNorm for better training stability and generalization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_classes</strong> (<em>int</em>) – The number of output classes for classification (default: 1000).</p></li>
+<li><p><strong>in_channels</strong> (<em>int</em>) – The number of input channels in the input image, typically 3 for RGB (default: 3).</p></li>
+<li><p><strong>stem_out_channels</strong> (<em>int</em>) – The number of output channels from the initial stem convolution (default: 96).</p></li>
+<li><p><strong>stem_kernel_size</strong> (<em>int</em>) – The kernel size for the stem convolution (default: 4).</p></li>
+<li><p><strong>stem_kernel_stride</strong> (<em>int</em>) – The stride for the stem convolution (default: 4).</p></li>
+<li><p><strong>num_blocks</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – The number of blocks in each ConvNeXt stage (default: [3, 3, 9, 3]).</p></li>
+<li><p><strong>expansion_rate</strong> (<em>int</em>) – The expansion rate for the number of channels in the block (default: 4).</p></li>
+<li><p><strong>depthwise_conv_kernel_size</strong> (<em>int</em>) – The kernel size for the depthwise convolution (default: 7).</p></li>
+<li><p><strong>layer_scale</strong> (<em>float</em>) – The initial value for LayerScale (default: 1e-6).</p></li>
+<li><p><strong>stochastic_depth_mp</strong> (<em>float</em>) – The maximum probability for stochastic depth dropout (default: 0.1).</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">ConvNeXt</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cv/backbones/ConvNeXt/model.html#ConvNeXt.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Defines the forward pass of the ConvNeXt model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – Input tensor of shape (batch_size, in_channels, height, width).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Output logits of shape (batch_size, num_classes).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">))</span>  <span class="c1"># Example input tensor of shape (batch_size, channels, height, width)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../Inception/backbones.Inception.model.html" class="btn btn-neutral float-left" title="Inception-v1" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../subpackages/backbones_attention.html" class="btn btn-neutral float-right" title="Backbones (Attention Based)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Shivam Chaudhary.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

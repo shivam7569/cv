@@ -1,0 +1,187 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bottleneck ViT &mdash; cv 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Hierarchical Pooling ViT" href="../HPool_ViT/backbones.HPool_ViT.model.html" />
+    <link rel="prev" title="Deep ViT" href="../DeepViT/backbones.DeepViT.model.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            cv
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../subpackages/backbones.html">Backbones</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../subpackages/backbones_attention.html">Backbones (Attention Based)</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../DeiT/backbones.DeiT.model.html">DeiT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../DeepViT/backbones.DeepViT.model.html">Deep ViT</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Bottleneck ViT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../HPool_ViT/backbones.HPool_ViT.model.html">Hierarchical Pooling ViT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../CeiT/backbones.CeiT.model.html">Convolutional Designs in ViT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ConViT/backbones.ConViT.model.html">ViT with Soft Convolutional Inductive Biases</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">cv</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../subpackages/backbones_attention.html">Backbones (Attention Based)</a></li>
+      <li class="breadcrumb-item active">Bottleneck ViT</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/backbones_docs/attention_based/BoT_ViT/backbones.BoT_ViT.model.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="bottleneck-vit">
+<h1>Bottleneck ViT<a class="headerlink" href="#bottleneck-vit" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cv.backbones.BoT_ViT.model.</span></span><span class="sig-name descname"><span class="pre">BoT_ViT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mhsa_num_heads</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attention_dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/cv/backbones/BoT_ViT/model.html#BoT_ViT"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p><cite>BoT-ViT</cite> (Bottleneck Transformers for Visual Recognition) model architecture from <a class="reference external" href="https://arxiv.org/abs/2101.11605.pdf">paper</a>.</p>
+<p>This class implements the BoT-ViT model, combining convolutional and bottleneck transformer blocks for
+feature extraction and classification. The model processes input images through multiple residual groups
+and a final classification layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mhsa_num_heads</strong> (<em>int</em>) – The number of heads for the multi-head self-attention layer.</p></li>
+<li><p><strong>attention_dropout</strong> (<em>float</em><em>, </em><em>optional</em>) – Dropout rate for attention layers (default: 0.0).</p></li>
+<li><p><strong>num_classes</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of output classes for classification (default: 1000).</p></li>
+<li><p><strong>in_channels</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of input channels for the images, typically 3 for RGB (default: 3).</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">BoT_ViT</span><span class="p">(</span><span class="n">mhsa_num_heads</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">attention_dropout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">initializeConv</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/cv/backbones/BoT_ViT/model.html#BoT_ViT.initializeConv"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Initialize convolutional layers with specific weight and bias initialization.</p>
+<p>This method initializes the weights and biases of convolutional layers using a specific strategy:
+- <strong>Weights</strong>: Initialized with a normal distribution where the mean is <cite>0.0</cite> and the standard deviation
+is computed based on the number of input units and output channels.
+- <strong>Biases</strong>: Initialized to <cite>0.0</cite>.</p>
+<p>The standard deviation for weight initialization is calculated using the formula:</p>
+<div class="math notranslate nohighlight">
+\[\text{std} = \sqrt{\frac{2}{n_{\text{in}}}}\]</div>
+<p>where:</p>
+<div class="math notranslate nohighlight">
+\[n_{\text{in}} = \text{kernel_size[0]}^2 \times \text{out_channels}\]</div>
+<p>The weight initialization is performed as follows:</p>
+<div class="math notranslate nohighlight">
+\[\text{weight} \sim \mathcal{N}(\text{mean}=0.0, \text{std})\]</div>
+<p>Biases are initialized with:</p>
+<div class="math notranslate nohighlight">
+\[\text{bias} = 0.0\]</div>
+<p>This initialization helps in stabilizing the learning process and improving the convergence rate.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/cv/backbones/BoT_ViT/model.html#BoT_ViT.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Defines the forward pass through the BoT-ViT model.</p>
+<p>The input tensor passes through the initial convolutional layers, followed by multiple residual groups,
+and is then processed through the classifier for final classification.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – Input tensor of shape (batch_size, in_channels, height, width).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Output tensor after passing through the model, with shape (batch_size, num_classes).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">))</span>  <span class="c1"># Example input tensor of shape (batch_size, channels, height, width)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../DeepViT/backbones.DeepViT.model.html" class="btn btn-neutral float-left" title="Deep ViT" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../HPool_ViT/backbones.HPool_ViT.model.html" class="btn btn-neutral float-right" title="Hierarchical Pooling ViT" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Shivam Chaudhary.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,222 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DeiT &mdash; cv 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Deep ViT" href="../DeepViT/backbones.DeepViT.model.html" />
+    <link rel="prev" title="Backbones (Attention Based)" href="../../../subpackages/backbones_attention.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            cv
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../subpackages/backbones.html">Backbones</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../subpackages/backbones_attention.html">Backbones (Attention Based)</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">DeiT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../DeepViT/backbones.DeepViT.model.html">Deep ViT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../BoT_ViT/backbones.BoT_ViT.model.html">Bottleneck ViT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../HPool_ViT/backbones.HPool_ViT.model.html">Hierarchical Pooling ViT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../CeiT/backbones.CeiT.model.html">Convolutional Designs in ViT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../ConViT/backbones.ConViT.model.html">ViT with Soft Convolutional Inductive Biases</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">cv</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../subpackages/backbones_attention.html">Backbones (Attention Based)</a></li>
+      <li class="breadcrumb-item active">DeiT</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/backbones_docs/attention_based/DeiT/backbones.DeiT.model.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="deit">
+<h1>DeiT<a class="headerlink" href="#deit" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cv.backbones.DeiT.model.</span></span><span class="sig-name descname"><span class="pre">DeiT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/cv/backbones/DeiT/model.html#DeiT"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ViT</span></code></p>
+<p>Data-efficient Image Transformer (DeiT) model class from <a class="reference external" href="https://arxiv.org/abs/2012.12877.pdf">paper</a>.</p>
+<p>This class implements the DeiT architecture, which is designed to efficiently train Vision Transformers
+with the additional feature of knowledge distillation. DeiT uses a teacher-student framework where the
+student model (DeiT) is trained to mimic the output of a pre-trained teacher model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_classes</strong> (<em>-</em>) – Number of output classes for classification.</p></li>
+<li><p><strong>d_model</strong> (<em>-</em>) – Dimensionality of the model’s hidden representations.</p></li>
+<li><p><strong>image_size</strong> (<em>-</em>) – Size of the input image (should be divisible by patch_size).</p></li>
+<li><p><strong>patch_size</strong> (<em>-</em>) – Size of the patches used in the image processing.</p></li>
+<li><p><strong>classifier_mlp_d</strong> (<em>-</em>) – Dimensionality of the intermediate MLP in the classification head.</p></li>
+<li><p><strong>encoder_mlp_d</strong> (<em>-</em>) – Dimension of the feed-forward layers in the Transformer encoder.</p></li>
+<li><p><strong>encoder_num_heads</strong> (<em>-</em>) – Number of attention heads in the Transformer encoder.</p></li>
+<li><p><strong>num_encoder_blocks</strong> (<em>-</em>) – Number of blocks in the Transformer encoder.</p></li>
+<li><p><strong>dropout</strong> (<em>-</em>) – Dropout probability applied after the linear projection and within the MLP layers.</p></li>
+<li><p><strong>encoder_dropout</strong> (<em>-</em>) – Dropout rate applied within the transformer encoder blocks.</p></li>
+<li><p><strong>encoder_attention_dropout</strong> (<em>-</em>) – Dropout probability applied to the attention layers.</p></li>
+<li><p><strong>patchify_technique</strong> (<em>-</em>) – Method used to divide the input image into patches. Options are “linear” for unfolding and “convolutional” for using convolution.</p></li>
+<li><p><strong>stochastic_depth</strong> (<em>-</em>) – Whether to use stochastic depth regularization.</p></li>
+<li><p><strong>stochastic_depth_mp</strong> (<em>-</em>) – Maximum probability for stochastic depth, controlling the likelihood of dropping layers during training.</p></li>
+<li><p><strong>layer_scale</strong> (<em>-</em>) – Scaling factor for LayerScale initialization. If None, LayerScale is disabled.</p></li>
+<li><p><strong>return_logits_type</strong> (<em>-</em>) – Type of logits to return. Options are “classification”, “distillation”, or “fusion”.</p></li>
+<li><p><strong>teacher_model_name</strong> (<em>-</em>) – Name of the pre-trained teacher model to use for distillation.</p></li>
+<li><p><strong>in_channels</strong> (<em>-</em>) – Number of input channels in the image, typically 3 for RGB.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Make sure the weights for the teacher model exists.</p>
+</div>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">DeiT</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">d_model</span><span class="o">=</span><span class="mi">768</span><span class="p">,</span> <span class="n">image_size</span><span class="o">=</span><span class="mi">224</span><span class="p">,</span> <span class="n">patch_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">classifier_mlp_d</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span> <span class="n">encoder_mlp_d</span><span class="o">=</span><span class="mi">3072</span><span class="p">,</span> <span class="n">encoder_num_heads</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">num_encoder_blocks</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">dropout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">encoder_dropout</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">encoder_attention_dropout</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">patchify_technique</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="n">stochastic_depth</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">stochastic_depth_mp</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">layer_scale</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_logits_type</span><span class="o">=</span><span class="s2">&quot;fusion&quot;</span><span class="p">,</span> <span class="n">teacher_model_name</span><span class="o">=</span><span class="s2">&quot;ConvNeXt&quot;</span><span class="p">,</span> <span class="n">in_channels</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">loadTeacherModel</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/cv/backbones/DeiT/model.html#DeiT.loadTeacherModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Loads and prepares the pre-trained teacher model for distillation.</p>
+<p>This method loads the teacher model from checkpoints, sets it to evaluation mode, and disables gradient computation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">student_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/cv/backbones/DeiT/model.html#DeiT.student_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Performs a forward pass of the student model, including the handling of the distillation token.</p>
+<p>This method processes the input through the student model, computes logits for the class token and
+optionally for the distillation token based on the <cite>return_logits_type</cite> setting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>Tensor</em>) – Input tensor of shape <cite>(batch_size, channels, height, width)</cite>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>The output logits from the student model. The type of logits returned is determined by:</dt><dd><ul class="simple">
+<li><p>If <cite>return_logits_type</cite> is “classification”: Returns logits from the classification head.</p></li>
+<li><p>If <cite>return_logits_type</cite> is “distillation”: Returns logits from the distillation token classifier.</p></li>
+<li><p>If <cite>return_logits_type</cite> is “fusion”: Returns the average of logits from both classifiers.</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/cv/backbones/DeiT/model.html#DeiT.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Performs a forward pass of the DeiT model.</p>
+<p>This method computes the outputs of both the student and teacher models. It returns a tuple containing
+the student model’s output and the teacher model’s output.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>Tensor</em>) – Input tensor of shape <cite>(batch_size, channels, height, width)</cite>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tuple with two elements:</dt><dd><ul class="simple">
+<li><p>Tensor: Output from the student model (<cite>student_model</cite> method).</p></li>
+<li><p>Tensor: Output from the teacher model (computed without gradients).</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">))</span>  <span class="c1"># Example input tensor of shape (batch_size, channels, height, width)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../../../subpackages/backbones_attention.html" class="btn btn-neutral float-left" title="Backbones (Attention Based)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../DeepViT/backbones.DeepViT.model.html" class="btn btn-neutral float-right" title="Deep ViT" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Shivam Chaudhary.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
